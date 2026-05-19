@@ -2,6 +2,8 @@
 
 A production-ready, scalable admin dashboard for a Travel and Tour Company built with React 19, Vite, Tailwind CSS, and modern tooling.
 
+**Repository:** https://github.com/Expedition-Go-Tours/Expedition-Go-Dashboard
+
 ## Features
 
 ### Core Pages (10 Navigation Items)
