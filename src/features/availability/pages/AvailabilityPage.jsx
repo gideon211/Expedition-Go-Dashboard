@@ -159,11 +159,11 @@ export default function AvailabilityPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#1e293b]">Availability</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-[#1e293b]">Availability</h1>
           <p className="text-sm text-[#64748b] mt-1">Manage tour availability and capacity</p>
         </div>
         <div className="flex items-center gap-3">
@@ -196,7 +196,7 @@ export default function AvailabilityPage() {
       </div>
 
       {/* Month Stats */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
           { label: "Available Days", value: monthStats.available, color: "text-[#00d67f]" },
           { label: "Limited Days", value: monthStats.limited, color: "text-[#ffc400]" },
@@ -211,7 +211,7 @@ export default function AvailabilityPage() {
       </div>
 
       {/* Calendar Navigation */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
         <div className="flex items-center gap-2">
           <button
             onClick={handlePrevMonth}
@@ -237,7 +237,7 @@ export default function AvailabilityPage() {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4">
           {["available", "limited", "full", "blocked"].map((status) => (
             <LegendItem key={status} status={status} />
           ))}
@@ -268,7 +268,7 @@ export default function AvailabilityPage() {
               return (
                 <div
                   key={index}
-                  className={`min-h-[100px] border-r border-b border-[#eaeaea] p-2 relative group cursor-pointer transition-colors hover:bg-[#f8fafc] ${
+                  className={`min-h-[60px] sm:min-h-[100px] border-r border-b border-[#eaeaea] p-1.5 sm:p-2 relative group cursor-pointer transition-colors hover:bg-[#f8fafc] ${
                     !isCurrentMonth ? "bg-[#fafafa]" : ""
                   }`}
                   onClick={() => handleDateClick(day)}
@@ -301,16 +301,16 @@ export default function AvailabilityPage() {
 
                   {/* Status Indicator */}
                   {isCurrentMonth && (
-                    <div className={`rounded-md p-1.5 ${statusStyle.bg} border ${statusStyle.border}`}>
-                      <div className="flex items-center gap-1 mb-1">
+                    <div className={`rounded-md p-1 sm:p-1.5 ${statusStyle.bg} border ${statusStyle.border}`}>
+                      <div className="flex items-center gap-1 mb-0.5 sm:mb-1">
                         <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} />
-                        <span className={`text-[10px] font-semibold ${statusStyle.text}`}>
+                        <span className={`text-[9px] sm:text-[10px] font-semibold ${statusStyle.text}`}>
                           {statusStyle.label}
                         </span>
                       </div>
                       {dayStatus.status !== "blocked" && (
-                        <div className="mt-1">
-                          <div className="flex items-center justify-between text-[10px] text-[#64748b]">
+                        <div className="mt-0.5 sm:mt-1">
+                          <div className="flex items-center justify-between text-[9px] sm:text-[10px] text-[#64748b]">
                             <span>{dayStatus.booked}/{dayStatus.capacity}</span>
                             <span>{Math.round(fillPercent)}%</span>
                           </div>
@@ -336,8 +336,8 @@ export default function AvailabilityPage() {
 
       {/* Week View */}
       {viewMode === "week" && (
-        <div className="bg-white rounded-lg border border-[#eaeaea] overflow-hidden">
-          <div className="grid grid-cols-7">
+        <div className="bg-white rounded-lg border border-[#eaeaea] overflow-hidden overflow-x-auto">
+          <div className="grid grid-cols-7 min-w-[600px]">
             {days.slice(0, 7).map((day, index) => {
               const dayStatus = getDayStatus(day);
               const statusStyle = STATUS_COLORS[dayStatus.status];
@@ -440,7 +440,7 @@ export default function AvailabilityPage() {
       {/* Edit Modal */}
       {editModalOpen && selectedDate && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+          <div className="bg-white rounded-xl shadow-xl max-w-full sm:max-w-md w-full mx-4 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-[#1e293b]">
                 {format(selectedDate, "MMMM d, yyyy")}

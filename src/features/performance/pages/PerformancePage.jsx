@@ -102,11 +102,11 @@ export default function PerformancePage() {
   const [dateRange, setDateRange] = useState("6months");
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#1e293b]">Performance</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-[#1e293b]">Performance</h1>
           <p className="text-sm text-[#64748b] mt-1">Analytics and insights for your business</p>
         </div>
         <select
@@ -257,7 +257,7 @@ export default function PerformancePage() {
               <Bar dataKey="count" fill="#044b3b" radius={[0, 4, 4, 0]} name="Count" />
             </BarChart>
           </ResponsiveContainer>
-          <div className="mt-4 grid grid-cols-3 gap-4 text-center">
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
             {[
               { label: "Page Views", value: "15,420" },
               { label: "Add to Cart", value: "3,450" },

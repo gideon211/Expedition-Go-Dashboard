@@ -95,10 +95,10 @@ export default function DashboardPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       {/* Page Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#1e293b]">Dashboard</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-[#1e293b]">Dashboard</h1>
         <p className="text-sm text-[#64748b] mt-1">Welcome back! Here's what's happening with your business.</p>
       </div>
 

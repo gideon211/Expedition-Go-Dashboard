@@ -149,9 +149,9 @@ function ReviewCard({ review, onApprove, onReject, onFlag, onView }) {
   return (
     <div className="bg-white rounded-lg border border-[#eaeaea] p-5 hover:shadow-md transition-shadow">
       {/* Header */}
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#044b3b] flex items-center justify-center text-white font-medium text-sm">
+          <div className="w-10 h-10 rounded-full bg-[#044b3b] flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
             {review.customerName.charAt(0)}
           </div>
           <div>
@@ -177,12 +177,12 @@ function ReviewCard({ review, onApprove, onReject, onFlag, onView }) {
       </div>
 
       {/* Tour & Rating */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-3">
         <div>
           <p className="text-xs text-[#64748b] uppercase tracking-wider">Tour</p>
           <p className="text-sm font-medium text-[#044b3b]">{review.tourName}</p>
         </div>
-        <div className="text-right">
+        <div className="sm:text-right">
           <RatingStars rating={review.rating} />
           <p className="text-xs text-[#64748b] mt-0.5">{formatDate(review.date)}</p>
         </div>
@@ -220,7 +220,7 @@ function ReviewCard({ review, onApprove, onReject, onFlag, onView }) {
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-3 border-t border-[#eaeaea]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-3 border-t border-[#eaeaea] gap-3 sm:gap-0">
         <div className="flex items-center gap-4 text-sm text-[#64748b]">
           <span className="flex items-center gap-1">
             <ThumbsUp size={14} />
@@ -229,7 +229,7 @@ function ReviewCard({ review, onApprove, onReject, onFlag, onView }) {
           <span className="text-xs">Booking: {review.bookingId}</span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {review.status === "pending" && (
             <>
               <button
@@ -354,11 +354,11 @@ export default function ReviewsPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#1e293b]">Reviews</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-[#1e293b]">Reviews</h1>
           <p className="text-sm text-[#64748b] mt-1">Moderate and manage customer reviews</p>
         </div>
         <div className="flex items-center gap-3">

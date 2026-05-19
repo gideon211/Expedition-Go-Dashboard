@@ -271,11 +271,11 @@ export default function BookingsPage() {
   );
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#1e293b]">Bookings</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-[#1e293b]">Bookings</h1>
           <p className="text-sm text-[#64748b] mt-1">
             Manage and track all customer bookings
           </p>
@@ -283,11 +283,11 @@ export default function BookingsPage() {
         <div className="flex items-center gap-3">
           <button className="flex items-center gap-2 px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm font-medium text-[#64748b] hover:bg-[#f8fafc] hover:text-[#1e293b] transition-colors">
             <Download size={16} />
-            Export
+            <span className="hidden sm:inline">Export</span>
           </button>
           <button className="flex items-center gap-2 px-4 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors">
             <Plus size={16} />
-            Create Booking
+            <span className="hidden sm:inline">Create Booking</span>
           </button>
         </div>
       </div>
@@ -322,7 +322,7 @@ export default function BookingsPage() {
 
       {/* Filters Bar */}
       <div className="bg-white rounded-lg border border-[#eaeaea] p-4 mb-4">
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
           {/* Search */}
           <div className="relative flex-1 min-w-[240px]">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9e9e9e]" />
@@ -387,7 +387,7 @@ export default function BookingsPage() {
           </div>
 
           {/* Date Range */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
               <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9e9e9e]" />
               <input

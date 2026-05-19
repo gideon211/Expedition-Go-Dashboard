@@ -178,11 +178,11 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#1e293b]">Notifications</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-[#1e293b]">Notifications</h1>
           <p className="text-sm text-[#64748b] mt-1">
             You have {unreadCount} unread notification{unreadCount !== 1 ? "s" : ""}
           </p>
@@ -206,7 +206,7 @@ export default function NotificationsPage() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-1 mb-6">
+      <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-1">
         {[
           { key: "all", label: "All Notifications" },
           { key: "unread", label: "Unread" },
@@ -214,7 +214,7 @@ export default function NotificationsPage() {
           <button
             key={tab.key}
             onClick={() => setFilter(tab.key)}
-            className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
               filter === tab.key
                 ? "bg-[#044b3b] text-white"
                 : "bg-white text-[#64748b] border border-[#eaeaea] hover:bg-[#f8fafc]"
@@ -253,7 +253,7 @@ export default function NotificationsPage() {
                   return (
                     <div
                       key={notification.id}
-                      className={`group flex items-start gap-4 p-4 rounded-lg border transition-all ${
+                      className={`group flex flex-col sm:flex-row items-start gap-3 sm:gap-4 p-4 rounded-lg border transition-all ${
                         notification.read
                           ? "bg-white border-[#eaeaea]"
                           : "bg-[#f8fafc] border-[#044b3b]/20 shadow-sm"
@@ -292,7 +292,7 @@ export default function NotificationsPage() {
                       </div>
 
                       {/* Actions */}
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity self-end sm:self-auto">
                         {!notification.read && (
                           <button
                             onClick={() => markAsRead(notification.id)}

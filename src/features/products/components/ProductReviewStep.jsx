@@ -88,7 +88,7 @@ export default function ProductReviewStep() {
 
       {/* Product Preview */}
       <div className="border border-[#eaeaea] rounded-lg overflow-hidden">
-        <div className="px-4 py-3 bg-[#f8fafc] border-b border-[#eaeaea] flex items-center justify-between">
+        <div className="px-4 py-3 bg-[#f8fafc] border-b border-[#eaeaea] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <h3 className="text-sm font-semibold text-[#1e293b]">Product Preview</h3>
           <button className="flex items-center gap-1 text-xs text-[#044b3b] hover:underline">
             <Eye size={14} />
@@ -96,7 +96,7 @@ export default function ProductReviewStep() {
           </button>
         </div>
         <div className="p-4 space-y-3">
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-[#64748b]">Title:</span>
               <span className="ml-2 text-[#1e293b] font-medium">{product.title || "—"}</span>
@@ -138,22 +138,22 @@ export default function ProductReviewStep() {
       {/* Status Selection */}
       <div>
         <label className="block text-sm font-medium text-[#1e293b] mb-3">Publish Status</label>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { value: "draft", label: "Draft", desc: "Save but don't publish" },
             { value: "pending_approval", label: "Pending Approval", desc: "Submit for admin review" },
             { value: "active", label: "Active", desc: "Publish immediately" },
           ].map((status) => (
-            <button
-              key={status.value}
-              onClick={() => useProductBuilderStore.getState().updateProduct({ status: status.value })}
-              className={`p-4 rounded-lg border-2 text-left transition-colors ${
-                product.status === status.value
-                  ? "border-[#044b3b] bg-[#f0fdf4]"
-                  : "border-[#eaeaea] hover:border-[#044b3b]/30"
-              }`}
-            >
-              <div className="flex items-center gap-3">
+              <button
+                key={status.value}
+                onClick={() => useProductBuilderStore.getState().updateProduct({ status: status.value })}
+                className={`p-3 sm:p-4 rounded-lg border-2 text-left transition-colors ${
+                  product.status === status.value
+                    ? "border-[#044b3b] bg-[#f0fdf4]"
+                    : "border-[#eaeaea] hover:border-[#044b3b]/30"
+                }`}
+              >
+                <div className="flex items-center gap-3">
                 <div
                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                     product.status === status.value ? "border-[#044b3b] bg-[#044b3b]" : "border-[#eaeaea]"

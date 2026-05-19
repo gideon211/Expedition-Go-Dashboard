@@ -109,7 +109,7 @@ export default function DataTable({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between mt-4 px-1">
+      <div className="flex flex-col sm:flex-row items-center justify-between mt-4 px-1 gap-4">
         <div className="flex items-center gap-2 text-sm text-[#64748b]">
           <span>Showing</span>
           <select

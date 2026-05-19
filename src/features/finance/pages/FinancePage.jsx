@@ -100,21 +100,21 @@ export default function FinancePage() {
   ];
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#1e293b]">Finance</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-[#1e293b]">Finance</h1>
           <p className="text-sm text-[#64748b] mt-1">Manage payments, payouts, and earnings</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm font-medium text-[#64748b] hover:bg-[#f8fafc] hover:text-[#1e293b] transition-colors">
+        <button className="flex items-center justify-center gap-2 px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm font-medium text-[#64748b] hover:bg-[#f8fafc] hover:text-[#1e293b] transition-colors">
           <Download size={16} />
           Export Report
         </button>
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
           { label: "Total Revenue", value: formatCurrency(totalRevenue), icon: ArrowUpRight, color: "text-[#00d67f]", bg: "bg-[#ebfcf5]" },
           { label: "Total Refunds", value: formatCurrency(totalRefunds), icon: ArrowDownLeft, color: "text-[#dc3545]", bg: "bg-[#ffebeb]" },
@@ -134,14 +134,14 @@ export default function FinancePage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 mb-6">
+      <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-1">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           return (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab.key
                   ? "bg-[#044b3b] text-white"
                   : "bg-white text-[#64748b] border border-[#eaeaea] hover:bg-[#f8fafc]"
@@ -203,7 +203,7 @@ export default function FinancePage() {
       )}
 
       {activeTab === "earnings" && (
-        <div className="bg-white rounded-lg border border-[#eaeaea] p-6">
+        <div className="bg-white rounded-lg border border-[#eaeaea] p-4 md:p-6">
           <h3 className="text-lg font-semibold text-[#1e293b] mb-4">Earnings Breakdown</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>

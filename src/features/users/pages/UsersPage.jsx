@@ -107,16 +107,16 @@ export default function UsersPage() {
   ];
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#1e293b]">User Management</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-[#1e293b]">User Management</h1>
           <p className="text-sm text-[#64748b] mt-1">Manage customers, suppliers, and admin users</p>
         </div>
         <button
           onClick={() => setShowInviteModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
         >
           <Plus size={16} />
           Invite Admin
@@ -124,7 +124,7 @@ export default function UsersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
           { label: "Total Users", value: MOCK_USERS.length, color: "text-[#044b3b]" },
           { label: "Customers", value: MOCK_USERS.filter((u) => u.role === "CUSTOMER").length, color: "text-[#64748b]" },
@@ -139,8 +139,8 @@ export default function UsersPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="relative flex-1 max-w-sm">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
+        <div className="relative flex-1 w-full sm:max-w-sm">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9e9e9e]" />
           <input
             type="text"
@@ -184,7 +184,7 @@ export default function UsersPage() {
       {/* Invite Admin Modal */}
       {showInviteModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+          <div className="bg-white rounded-xl shadow-xl max-w-full sm:max-w-md w-full mx-4 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-[#1e293b]">Invite Admin</h3>
               <button

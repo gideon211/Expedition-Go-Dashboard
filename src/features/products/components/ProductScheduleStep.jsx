@@ -68,12 +68,12 @@ export default function ProductScheduleStep() {
         <label className="block text-sm font-medium text-[#1e293b] mb-3">
           Operating Days <span className="text-[#dc3545]">*</span>
         </label>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {DAYS.map((day) => (
             <button
               key={day.value}
               onClick={() => toggleDay(day.value)}
-              className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex-1 min-w-[3rem] py-2.5 px-2 sm:px-3 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                 schedule.operatingDays.includes(day.value)
                   ? "bg-[#044b3b] text-white"
                   : "bg-[#f8fafc] text-[#64748b] border border-[#eaeaea] hover:bg-[#f0fdf4] hover:text-[#044b3b]"
@@ -106,9 +106,9 @@ export default function ProductScheduleStep() {
 
         <div className="space-y-3">
           {schedule.timeSlots.map((slot, index) => (
-            <div key={index} className="flex items-center gap-3 p-4 bg-[#f8fafc] rounded-lg border border-[#eaeaea]">
+            <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-[#f8fafc] rounded-lg border border-[#eaeaea]">
               <span className="text-sm text-[#64748b] w-8">{index + 1}.</span>
-              <div className="flex-1 grid grid-cols-2 gap-3">
+              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-[#64748b] mb-1">Start Time</label>
                   <input

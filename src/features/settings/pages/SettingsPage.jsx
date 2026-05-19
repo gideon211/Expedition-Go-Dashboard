@@ -54,25 +54,25 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       {/* Page Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#1e293b]">Settings</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-[#1e293b]">Settings</h1>
         <p className="text-sm text-[#64748b] mt-1">Manage your account and platform settings</p>
       </div>
 
       {/* Settings Layout */}
-      <div className="flex gap-6">
+      <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar Tabs */}
-        <div className="w-64 flex-shrink-0">
-          <div className="space-y-1">
+        <div className="w-full lg:w-64 flex-shrink-0">
+          <div className="flex lg:flex-col overflow-x-auto lg:overflow-visible gap-1 pb-2 lg:pb-0">
             {SETTINGS_TABS.map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                  className={`w-auto lg:w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                     activeTab === tab.key
                       ? "bg-[#044b3b] text-white"
                       : "text-[#64748b] hover:bg-[#f8fafc] hover:text-[#1e293b]"
@@ -90,7 +90,7 @@ export default function SettingsPage() {
         <div className="flex-1">
           {/* Company Profile */}
           {activeTab === "company" && (
-            <div className="bg-white rounded-lg border border-[#eaeaea] p-6 space-y-6">
+            <div className="bg-white rounded-lg border border-[#eaeaea] p-4 md:p-6 space-y-6">
               <h2 className="text-lg font-semibold text-[#1e293b]">Company Profile</h2>
 
               {/* Logo Upload */}
@@ -189,7 +189,7 @@ export default function SettingsPage() {
 
           {/* Notification Preferences */}
           {activeTab === "notifications" && (
-            <div className="bg-white rounded-lg border border-[#eaeaea] p-6 space-y-6">
+            <div className="bg-white rounded-lg border border-[#eaeaea] p-4 md:p-6 space-y-6">
               <h2 className="text-lg font-semibold text-[#1e293b]">Notification Preferences</h2>
 
               {[
@@ -202,7 +202,7 @@ export default function SettingsPage() {
                 { title: "System Maintenance", desc: "Get notified about scheduled maintenance", email: true, push: false },
                 { title: "Weekly Summary", desc: "Receive a weekly summary of your business", email: true, push: false },
               ].map((pref) => (
-                <div key={pref.title} className="flex items-center justify-between py-3 border-b border-[#eaeaea] last:border-0">
+                <div key={pref.title} className="flex flex-col sm:flex-row sm:items-center justify-between py-3 border-b border-[#eaeaea] last:border-0 gap-3">
                   <div>
                     <p className="text-sm font-medium text-[#1e293b]">{pref.title}</p>
                     <p className="text-xs text-[#64748b]">{pref.desc}</p>
@@ -224,7 +224,7 @@ export default function SettingsPage() {
 
           {/* API Keys */}
           {activeTab === "api" && (
-            <div className="bg-white rounded-lg border border-[#eaeaea] p-6 space-y-6">
+            <div className="bg-white rounded-lg border border-[#eaeaea] p-4 md:p-6 space-y-6">
               <h2 className="text-lg font-semibold text-[#1e293b]">API Keys</h2>
               <p className="text-sm text-[#64748b]">Manage API keys for integrations and webhooks</p>
 
@@ -257,15 +257,15 @@ export default function SettingsPage() {
 
           {/* Integrations */}
           {activeTab === "integrations" && (
-            <div className="bg-white rounded-lg border border-[#eaeaea] p-6 space-y-6">
+            <div className="bg-white rounded-lg border border-[#eaeaea] p-4 md:p-6 space-y-6">
               <h2 className="text-lg font-semibold text-[#1e293b]">Integrations</h2>
               <p className="text-sm text-[#64748b]">Connect third-party services to your platform</p>
 
               <div className="space-y-4">
                 {INTEGRATIONS.map((integration) => (
-                  <div key={integration.name} className="flex items-center justify-between p-4 bg-[#f8fafc] rounded-lg border border-[#eaeaea]">
+                  <div key={integration.name} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-[#f8fafc] rounded-lg border border-[#eaeaea] gap-4">
                     <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${integration.connected ? "bg-[#ebfcf5]" : "bg-[#f8fafc]"}`}>
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${integration.connected ? "bg-[#ebfcf5]" : "bg-[#f8fafc]"}`}>
                         <Plug size={20} className={integration.connected ? "text-[#00d67f]" : "text-[#9e9e9e]"} />
                       </div>
                       <div>
@@ -293,7 +293,7 @@ export default function SettingsPage() {
 
           {/* Audit Log */}
           {activeTab === "audit" && (
-            <div className="bg-white rounded-lg border border-[#eaeaea] p-6">
+            <div className="bg-white rounded-lg border border-[#eaeaea] p-4 md:p-6">
               <h2 className="text-lg font-semibold text-[#1e293b] mb-4">Audit Log</h2>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">

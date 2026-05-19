@@ -45,16 +45,16 @@ export default function ProductsListPage() {
   });
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#1e293b]">Products</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-[#1e293b]">Products</h1>
           <p className="text-sm text-[#64748b] mt-1">Manage your tour products and experiences</p>
         </div>
         <button
           onClick={() => navigate("/products/build/new/basics")}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
         >
           <Plus size={16} />
           Create Product
@@ -62,10 +62,10 @@ export default function ProductsListPage() {
       </div>
 
       {/* Filters & View Toggle */}
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3 flex-1">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-1">
           {/* Search */}
-          <div className="relative flex-1 max-w-md">
+          <div className="relative flex-1 w-full sm:max-w-md">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9e9e9e]" />
             <input
               type="text"

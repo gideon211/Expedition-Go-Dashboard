@@ -25,14 +25,14 @@ export default function WizardNavFooter() {
   };
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center gap-3">
         <button
           onClick={handleDiscard}
           className="flex items-center gap-2 px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm font-medium text-[#64748b] hover:bg-[#f8fafc] hover:text-[#1e293b] transition-colors"
         >
           <X size={16} />
-          Discard
+          <span className="hidden sm:inline">Discard</span>
         </button>
         <button
           onClick={handleSave}
@@ -40,7 +40,7 @@ export default function WizardNavFooter() {
           className="flex items-center gap-2 px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm font-medium text-[#64748b] hover:bg-[#f8fafc] hover:text-[#1e293b] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-          Save Draft
+          <span className="hidden sm:inline">Save Draft</span>
         </button>
         {lastSaved && (
           <span className="text-xs text-[#9e9e9e]">
@@ -49,29 +49,29 @@ export default function WizardNavFooter() {
         )}
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 w-full sm:w-auto">
         <button
           onClick={prevStep}
           disabled={isFirst}
-          className="flex items-center gap-2 px-5 py-2.5 border border-[#eaeaea] rounded-lg text-sm font-medium text-[#64748b] hover:bg-[#f8fafc] hover:text-[#1e293b] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 border border-[#eaeaea] rounded-lg text-sm font-medium text-[#64748b] hover:bg-[#f8fafc] hover:text-[#1e293b] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <ChevronLeft size={16} />
-          Previous
+          <span className="hidden sm:inline">Previous</span>
         </button>
 
         {isLast ? (
           <button
             onClick={() => alert("Product submitted for review!")}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
           >
             Submit for Review
           </button>
         ) : (
           <button
             onClick={handleNext}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
           >
-            Next
+            <span className="hidden sm:inline">Next</span>
             <ChevronRight size={16} />
           </button>
         )}

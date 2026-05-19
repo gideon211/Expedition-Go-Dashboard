@@ -93,8 +93,8 @@ export default function ProductPricingStep() {
 
         <div className="space-y-3">
           {pricing.tiers.map((tier, index) => (
-            <div key={index} className="grid grid-cols-12 gap-3 items-end p-4 bg-[#f8fafc] rounded-lg border border-[#eaeaea]">
-              <div className="col-span-3">
+            <div key={index} className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end p-4 bg-[#f8fafc] rounded-lg border border-[#eaeaea]">
+              <div className="sm:col-span-3">
                 <label className="block text-xs text-[#64748b] mb-1">Tier Name</label>
                 <input
                   type="text"
@@ -104,7 +104,7 @@ export default function ProductPricingStep() {
                   className="w-full px-3 py-2 border border-[#eaeaea] rounded-md text-sm text-[#1e293b] focus:outline-none focus:ring-1 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
                 />
               </div>
-              <div className="col-span-3">
+              <div className="sm:col-span-3">
                 <label className="block text-xs text-[#64748b] mb-1">Price</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9e9e9e] text-sm">$</span>
@@ -118,7 +118,7 @@ export default function ProductPricingStep() {
                   />
                 </div>
               </div>
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 <label className="block text-xs text-[#64748b] mb-1">Min Age</label>
                 <input
                   type="number"
@@ -128,7 +128,7 @@ export default function ProductPricingStep() {
                   className="w-full px-3 py-2 border border-[#eaeaea] rounded-md text-sm text-[#1e293b] focus:outline-none focus:ring-1 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
                 />
               </div>
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 <label className="block text-xs text-[#64748b] mb-1">Max Age</label>
                 <input
                   type="number"
@@ -138,7 +138,7 @@ export default function ProductPricingStep() {
                   className="w-full px-3 py-2 border border-[#eaeaea] rounded-md text-sm text-[#1e293b] focus:outline-none focus:ring-1 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
                 />
               </div>
-              <div className="col-span-2 flex justify-end">
+              <div className="sm:col-span-2 flex justify-end">
                 {pricing.tiers.length > 1 && (
                   <button
                     onClick={() => removeTier(index)}

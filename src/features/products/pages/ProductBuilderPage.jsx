@@ -61,10 +61,10 @@ export default function ProductBuilderPage() {
   const CurrentStepComponent = STEPS[currentStep]?.component;
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       {/* Page Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#1e293b]">
+        <h1 className="text-xl md:text-2xl font-bold text-[#1e293b]">
           {id && id !== "new" ? "Edit Product" : "Create New Product"}
         </h1>
         <p className="text-sm text-[#64748b] mt-1">
