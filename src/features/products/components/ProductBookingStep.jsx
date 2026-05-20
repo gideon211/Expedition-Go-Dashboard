@@ -77,7 +77,7 @@ export default function ProductBookingStep() {
       </div>
 
       {/* Group Size & Advance Booking */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div>
           <label className="block text-sm font-medium text-[#1e293b] mb-2">
             <span className="flex items-center gap-2">
@@ -125,26 +125,96 @@ export default function ProductBookingStep() {
             className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
           />
         </div>
+
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">Refund Percentage (%)</label>
+          <input
+            type="number"
+            value={bookingRules.refundPercentage}
+            onChange={(e) => updateNested("bookingRules.refundPercentage", Number(e.target.value))}
+            min="0"
+            max="100"
+            className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+          />
+        </div>
+      </div>
+
+      {/* Instant Booking Toggle */}
+      <div className="flex items-center gap-3 p-4 bg-[#f8fafc] rounded-lg border border-[#eaeaea]">
+        <input
+          type="checkbox"
+          id="instantBooking"
+          checked={bookingRules.instantBooking}
+          onChange={(e) => updateNested("bookingRules.instantBooking", e.target.checked)}
+          className="w-5 h-5 rounded border-[#eaeaea] text-[#044b3b] focus:ring-[#044b3b]"
+        />
+        <label htmlFor="instantBooking" className="text-sm font-medium text-[#1e293b]">
+          Enable Instant Booking
+        </label>
+        <span className="text-xs text-[#64748b]">Bookings are confirmed immediately without manual review</span>
       </div>
 
       {/* Meeting Point */}
-      <div>
-        <label className="block text-sm font-medium text-[#1e293b] mb-2">
-          <span className="flex items-center gap-2">
-            <MapPin size={16} className="text-[#64748b]" />
-            Meeting Point <span className="text-[#dc3545]">*</span>
-          </span>
-        </label>
-        <input
-          type="text"
-          value={bookingRules.meetingPoint}
-          onChange={(e) => updateNested("bookingRules.meetingPoint", e.target.value)}
-          placeholder="e.g., Serengeti National Park Gate, Arusha"
-          className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] ${
-            errors.meetingPoint ? "border-[#dc3545]" : "border-[#eaeaea]"
-          }`}
-        />
-        {errors.meetingPoint && <p className="mt-1 text-xs text-[#dc3545]">{errors.meetingPoint}</p>}
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">
+            <span className="flex items-center gap-2">
+              <MapPin size={16} className="text-[#64748b]" />
+              Meeting Point Name <span className="text-[#dc3545]">*</span>
+            </span>
+          </label>
+          <input
+            type="text"
+            value={bookingRules.meetingPoint}
+            onChange={(e) => updateNested("bookingRules.meetingPoint", e.target.value)}
+            placeholder="e.g., Central Park South & 5th Avenue"
+            className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] ${
+              errors.meetingPoint ? "border-[#dc3545]" : "border-[#eaeaea]"
+            }`}
+          />
+          {errors.meetingPoint && <p className="mt-1 text-xs text-[#dc3545]">{errors.meetingPoint}</p>}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">
+            Meeting Point Address <span className="text-[#dc3545]">*</span>
+          </label>
+          <textarea
+            value={bookingRules.meetingPointAddress}
+            onChange={(e) => updateNested("bookingRules.meetingPointAddress", e.target.value)}
+            rows={3}
+            placeholder="Full street address..."
+            className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] resize-none ${
+              errors.meetingPointAddress ? "border-[#dc3545]" : "border-[#eaeaea]"
+            }`}
+          />
+          {errors.meetingPointAddress && <p className="mt-1 text-xs text-[#dc3545]">{errors.meetingPointAddress}</p>}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-[#1e293b] mb-2">Latitude</label>
+            <input
+              type="number"
+              step="any"
+              value={bookingRules.meetingPointLat ?? ""}
+              onChange={(e) => updateNested("bookingRules.meetingPointLat", e.target.value === "" ? null : Number(e.target.value))}
+              placeholder="e.g., 40.7647"
+              className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#1e293b] mb-2">Longitude</label>
+            <input
+              type="number"
+              step="any"
+              value={bookingRules.meetingPointLng ?? ""}
+              onChange={(e) => updateNested("bookingRules.meetingPointLng", e.target.value === "" ? null : Number(e.target.value))}
+              placeholder="e.g., -73.973"
+              className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Pickup */}

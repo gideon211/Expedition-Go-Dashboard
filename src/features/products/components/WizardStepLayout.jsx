@@ -10,7 +10,7 @@ export default function WizardStepLayout({ children, title, description }) {
       </div>
 
       {/* Step Content */}
-      <div className="bg-white rounded-lg border border-[#eaeaea] overflow-hidden">
+      <div className="bg-white rounded-lg border border-[#eaeaea]">
         {/* Step Header */}
         <div className="px-4 md:px-6 py-3 md:py-4 border-b border-[#eaeaea]">
           <h2 className="text-base md:text-lg font-semibold text-[#1e293b]">{title}</h2>

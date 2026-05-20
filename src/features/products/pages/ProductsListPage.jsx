@@ -53,7 +53,7 @@ export default function ProductsListPage() {
           <p className="text-sm text-[#64748b] mt-1">Manage your tour products and experiences</p>
         </div>
         <button
-          onClick={() => navigate("/products/build/new/basics")}
+          onClick={() => navigate("/products/build/new/type")}
           className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
         >
           <Plus size={16} />
@@ -166,7 +166,7 @@ export default function ProductsListPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => navigate(`/products/build/${product.id}/basics`)}
+                      onClick={() => navigate(`/products/build/${product.id}/type`)}
                       className="p-1.5 text-[#64748b] hover:text-[#044b3b] hover:bg-[#f0fdf4] rounded-md transition-colors"
                       title="Edit"
                     >
@@ -232,7 +232,7 @@ export default function ProductsListPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => navigate(`/products/build/${product.id}/basics`)}
+                          onClick={() => navigate(`/products/build/${product.id}/type`)}
                           className="p-1.5 text-[#64748b] hover:text-[#044b3b] hover:bg-[#f0fdf4] rounded-md transition-colors"
                         >
                           <Edit size={14} />

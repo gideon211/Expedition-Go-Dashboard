@@ -1,5 +1,5 @@
 // API Base URL
-export const API_BASE_URL = "https://expedition-go-backend-v2.onrender.com";
+export const API_BASE_URL = "https://expedition-go-backend-v2.onrender.com/api";
 
 // Booking Statuses (Viator-style)
 export const BOOKING_STATUSES = {

@@ -7,21 +7,47 @@ export default function ProductReviewStep() {
 
   // Validate all previous steps
   const validationResults = steps.map((_, index) => {
-    // Simulate validation (in real app, would check each step)
     const stepErrors = {};
     switch (index) {
       case 0:
+        if (!product.productType) stepErrors.productType = "Product type required";
+        if (product.productType === "tour") {
+          if (!product.tourTransportationModes?.length) stepErrors.tourTransportationModes = "Transportation modes required";
+          if (!product.tourDurationCategory) stepErrors.tourDurationCategory = "Tour duration required";
+        }
+        if (product.productType === "activity") {
+          if (!product.activityCategories?.length) stepErrors.activityCategories = "Activity categories required";
+        }
+        if (product.productType === "transport") {
+          if (!product.transportCategories?.length) stepErrors.transportCategories = "Transportation types required";
+        }
+        break;
+      case 1:
         if (!product.title) stepErrors.title = "Title required";
         if (!product.description) stepErrors.description = "Description required";
+        if (!product.subcategory) stepErrors.subcategory = "Subcategory required";
+        if (!product.activityType) stepErrors.activityType = "Activity type required";
+        if (!product.city) stepErrors.city = "City required";
+        if (!product.country) stepErrors.country = "Country required";
+        if (!product.metaTitle) stepErrors.metaTitle = "Meta title required";
         break;
       case 2:
-        if (product.pricing.basePrice <= 0) stepErrors.price = "Base price required";
-        break;
-      case 3:
-        if (!product.schedule.operatingDays.length) stepErrors.days = "Operating days required";
+        if (!product.content.itinerary?.trim()) stepErrors.itinerary = "Itinerary required";
+        if (!product.content.meetingInstructions?.trim()) stepErrors.meetingInstructions = "Meeting instructions required";
+        if (!product.content.uniqueSellingPoints?.trim()) stepErrors.uniqueSellingPoints = "Unique selling points required";
+        if (!product.content.languages?.length) stepErrors.languages = "Languages required";
         break;
       case 4:
+        if (product.pricing.basePrice <= 0) stepErrors.price = "Base price required";
+        if (!product.pricing.startDate) stepErrors.pricingStartDate = "Pricing start date required";
+        if (!product.pricing.endDate) stepErrors.pricingEndDate = "Pricing end date required";
+        break;
+      case 5:
+        if (!product.schedule.operatingDays.length) stepErrors.days = "Operating days required";
+        break;
+      case 6:
         if (!product.bookingRules.meetingPoint) stepErrors.meeting = "Meeting point required";
+        if (!product.bookingRules.meetingPointAddress) stepErrors.meetingPointAddress = "Meeting point address required";
         break;
       default:
         break;
@@ -98,12 +124,52 @@ export default function ProductReviewStep() {
         <div className="p-4 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div>
+              <span className="text-[#64748b]">Product Type:</span>
+              <span className="ml-2 text-[#1e293b] font-medium capitalize">{product.productType || "—"}</span>
+            </div>
+            {product.productType === "activity" && (
+              <div>
+                <span className="text-[#64748b]">Activities:</span>
+                <span className="ml-2 text-[#1e293b] font-medium">
+                  {product.activityCategories?.length > 0
+                    ? `${product.activityCategories.length} selected`
+                    : "—"}
+                </span>
+              </div>
+            )}
+            {product.productType === "transport" && (
+              <div>
+                <span className="text-[#64748b]">Transport Types:</span>
+                <span className="ml-2 text-[#1e293b] font-medium">
+                  {product.transportCategories?.length > 0
+                    ? `${product.transportCategories.length} selected`
+                    : "—"}
+                </span>
+              </div>
+            )}
+            <div>
               <span className="text-[#64748b]">Title:</span>
               <span className="ml-2 text-[#1e293b] font-medium">{product.title || "—"}</span>
             </div>
             <div>
               <span className="text-[#64748b]">Category:</span>
               <span className="ml-2 text-[#1e293b] font-medium capitalize">{product.category || "—"}</span>
+            </div>
+            <div>
+              <span className="text-[#64748b]">Subcategory:</span>
+              <span className="ml-2 text-[#1e293b] font-medium">{product.subcategory || "—"}</span>
+            </div>
+            <div>
+              <span className="text-[#64748b]">Activity Type:</span>
+              <span className="ml-2 text-[#1e293b] font-medium">{product.activityType || "—"}</span>
+            </div>
+            <div>
+              <span className="text-[#64748b]">City:</span>
+              <span className="ml-2 text-[#1e293b] font-medium">{product.city || "—"}</span>
+            </div>
+            <div>
+              <span className="text-[#64748b]">Country:</span>
+              <span className="ml-2 text-[#1e293b] font-medium">{product.country || "—"}</span>
             </div>
             <div>
               <span className="text-[#64748b]">Duration:</span>
@@ -129,6 +195,44 @@ export default function ProductReviewStep() {
               <span className="text-[#64748b]">Capacity:</span>
               <span className="ml-2 text-[#1e293b] font-medium">
                 {product.schedule.capacityPerSlot} per slot
+              </span>
+            </div>
+            <div>
+              <span className="text-[#64748b]">Pricing Dates:</span>
+              <span className="ml-2 text-[#1e293b] font-medium">
+                {product.pricing.startDate && product.pricing.endDate
+                  ? `${product.pricing.startDate} to ${product.pricing.endDate}`
+                  : "—"}
+              </span>
+            </div>
+            <div>
+              <span className="text-[#64748b]">Meeting Address:</span>
+              <span className="ml-2 text-[#1e293b] font-medium">
+                {product.bookingRules.meetingPointAddress || "—"}
+              </span>
+            </div>
+            <div>
+              <span className="text-[#64748b]">Languages:</span>
+              <span className="ml-2 text-[#1e293b] font-medium">
+                {product.content.languages?.length > 0
+                  ? product.content.languages.join(", ")
+                  : "—"}
+              </span>
+            </div>
+            <div>
+              <span className="text-[#64748b]">Highlights:</span>
+              <span className="ml-2 text-[#1e293b] font-medium">
+                {product.content.highlights?.length > 0
+                  ? `${product.content.highlights.length} items`
+                  : "—"}
+              </span>
+            </div>
+            <div>
+              <span className="text-[#64748b]">What to Bring:</span>
+              <span className="ml-2 text-[#1e293b] font-medium">
+                {product.content.whatToBring?.length > 0
+                  ? `${product.content.whatToBring.length} items`
+                  : "—"}
               </span>
             </div>
           </div>

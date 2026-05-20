@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
 import WizardStepLayout from "@/features/products/components/WizardStepLayout";
+import ProductTypeStep from "@/features/products/components/ProductTypeStep";
 import ProductBasicsStep from "@/features/products/components/ProductBasicsStep";
 import ProductPhotosStep from "@/features/products/components/ProductPhotosStep";
 import ProductPricingStep from "@/features/products/components/ProductPricingStep";
@@ -11,12 +12,13 @@ import ProductContentStep from "@/features/products/components/ProductContentSte
 import ProductReviewStep from "@/features/products/components/ProductReviewStep";
 
 const STEPS = [
-  { id: "basics", label: "Product Basics", description: "Enter the basic information about your tour product.", component: ProductBasicsStep },
-  { id: "photos", label: "Photos & Media", description: "Upload photos and add media to showcase your tour.", component: ProductPhotosStep },
+  { id: "type", label: "Product Type", description: "Choose the type of product you are creating.", component: ProductTypeStep },
+  { id: "basics", label: "Product Basics", description: "Enter the basic information about your product.", component: ProductBasicsStep },
+  { id: "content", label: "Product Content", description: "Add itinerary, highlights, languages, and other content.", component: ProductContentStep },
+  { id: "photos", label: "Photos & Media", description: "Upload photos and add media to showcase your product.", component: ProductPhotosStep },
   { id: "pricing", label: "Pricing & Tickets", description: "Set pricing tiers, taxes, and cancellation policies.", component: ProductPricingStep },
-  { id: "schedule", label: "Schedule & Availability", description: "Define when your tour operates and capacity limits.", component: ProductScheduleStep },
-  { id: "booking", label: "Booking Rules", description: "Configure how customers can book your tour.", component: ProductBookingStep },
-  { id: "content", label: "Content & Details", description: "Add itinerary, highlights, and other content.", component: ProductContentStep },
+  { id: "schedule", label: "Schedule & Availability", description: "Define when your product operates and capacity limits.", component: ProductScheduleStep },
+  { id: "booking", label: "Booking Rules", description: "Configure how customers can book your product.", component: ProductBookingStep },
   { id: "review", label: "Review & Submit", description: "Review all details before submitting your product.", component: ProductReviewStep },
 ];
 
@@ -25,8 +27,9 @@ export default function ProductBuilderPage() {
   const navigate = useNavigate();
   const { currentStep, setStep, reset, loadDraft } = useProductBuilderStore();
 
-  // Map URL step param to step index
-  const stepIndex = STEPS.findIndex((s) => s.id === step) || 0;
+  // Map URL step param to step index (default to 0 if missing or invalid)
+  const foundIndex = STEPS.findIndex((s) => s.id === step);
+  const stepIndex = foundIndex !== -1 ? foundIndex : 0;
 
   // Sync URL with store
   useEffect(() => {

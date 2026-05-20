@@ -12,7 +12,7 @@ dist
 dist-ssr
 *.local
 *.md
-
+/doc
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -28,3 +28,11 @@ dist-ssr
 .env.local
 .env.development
 .env.production
+.env.test
+.env.development.local
+.env.production.local
+.env.test.local
+/test-results
+playwright-report
+playwright.config.js
+test.yml

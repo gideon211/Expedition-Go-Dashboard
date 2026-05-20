@@ -108,6 +108,21 @@
   * {
     box-sizing: border-box;
   }
+
+  /* Ensure all interactive elements show a pointer cursor */
+  button,
+  a,
+  [role="button"],
+  [type="button"],
+  [type="submit"],
+  [type="reset"],
+  label,
+  select,
+  summary,
+  input[type="checkbox"],
+  input[type="radio"] {
+    cursor: pointer;
+  }
 }
 
 /* Scrollbar Styling */

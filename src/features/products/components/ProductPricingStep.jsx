@@ -9,6 +9,12 @@ const CURRENCIES = [
   { value: "KES", label: "KES (KSh)" },
 ];
 
+const PRICING_MODELS = [
+  { value: "perPerson", label: "Per Person" },
+  { value: "perGroup", label: "Per Group" },
+  { value: "flatRate", label: "Flat Rate" },
+];
+
 const CANCELLATION_POLICIES = [
   { value: "flexible", label: "Flexible - Full refund 24h before" },
   { value: "moderate", label: "Moderate - Full refund 72h before" },
@@ -27,7 +33,7 @@ export default function ProductPricingStep() {
   };
 
   const addTier = () => {
-    const newTiers = [...pricing.tiers, { name: "", price: 0, minAge: 0, maxAge: 99 }];
+    const newTiers = [...pricing.tiers, { name: "", price: "", minAge: 0, maxAge: 99 }];
     updateNested("pricing.tiers", newTiers);
   };
 
@@ -52,7 +58,7 @@ export default function ProductPricingStep() {
             <input
               type="number"
               value={pricing.basePrice}
-              onChange={(e) => updateNested("pricing.basePrice", Number(e.target.value))}
+              onChange={(e) => updateNested("pricing.basePrice", e.target.value === "" ? "" : Number(e.target.value))}
               placeholder="0.00"
               min="0"
               step="0.01"
@@ -75,6 +81,51 @@ export default function ProductPricingStep() {
               <option key={c.value} value={c.value}>{c.label}</option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">Pricing Model</label>
+          <select
+            value={pricing.pricingModel}
+            onChange={(e) => updateNested("pricing.pricingModel", e.target.value)}
+            className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] bg-white focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+          >
+            {PRICING_MODELS.map((m) => (
+              <option key={m.value} value={m.value}>{m.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Pricing Schedule Dates */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">
+            Pricing Start Date <span className="text-[#dc3545]">*</span>
+          </label>
+          <input
+            type="date"
+            value={pricing.startDate}
+            onChange={(e) => updateNested("pricing.startDate", e.target.value)}
+            className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] ${
+              errors.pricingStartDate ? "border-[#dc3545]" : "border-[#eaeaea]"
+            }`}
+          />
+          {errors.pricingStartDate && <p className="mt-1 text-xs text-[#dc3545]">{errors.pricingStartDate}</p>}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">
+            Pricing End Date <span className="text-[#dc3545]">*</span>
+          </label>
+          <input
+            type="date"
+            value={pricing.endDate}
+            onChange={(e) => updateNested("pricing.endDate", e.target.value)}
+            className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] ${
+              errors.pricingEndDate ? "border-[#dc3545]" : "border-[#eaeaea]"
+            }`}
+          />
+          {errors.pricingEndDate && <p className="mt-1 text-xs text-[#dc3545]">{errors.pricingEndDate}</p>}
         </div>
       </div>
 
@@ -111,7 +162,7 @@ export default function ProductPricingStep() {
                   <input
                     type="number"
                     value={tier.price}
-                    onChange={(e) => updateTier(index, "price", Number(e.target.value))}
+                    onChange={(e) => updateTier(index, "price", e.target.value === "" ? "" : Number(e.target.value))}
                     min="0"
                     step="0.01"
                     className="w-full pl-7 pr-3 py-2 border border-[#eaeaea] rounded-md text-sm text-[#1e293b] focus:outline-none focus:ring-1 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
@@ -161,7 +212,7 @@ export default function ProductPricingStep() {
             <input
               type="number"
               value={pricing.taxes}
-              onChange={(e) => updateNested("pricing.taxes", Number(e.target.value))}
+              onChange={(e) => updateNested("pricing.taxes", e.target.value === "" ? "" : Number(e.target.value))}
               placeholder="0"
               min="0"
               max="100"
@@ -178,7 +229,7 @@ export default function ProductPricingStep() {
             <input
               type="number"
               value={pricing.fees}
-              onChange={(e) => updateNested("pricing.fees", Number(e.target.value))}
+              onChange={(e) => updateNested("pricing.fees", e.target.value === "" ? "" : Number(e.target.value))}
               placeholder="0.00"
               min="0"
               step="0.01"

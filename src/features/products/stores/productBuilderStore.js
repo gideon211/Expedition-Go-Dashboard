@@ -1,13 +1,14 @@
 import { create } from "zustand";
 
 const STEPS = [
-  { id: "basics", label: "Product Basics", number: 1 },
-  { id: "photos", label: "Photos & Media", number: 2 },
-  { id: "pricing", label: "Pricing & Tickets", number: 3 },
-  { id: "schedule", label: "Schedule & Availability", number: 4 },
-  { id: "booking", label: "Booking Rules", number: 5 },
-  { id: "content", label: "Content & Details", number: 6 },
-  { id: "review", label: "Review & Submit", number: 7 },
+  { id: "type", label: "Product Type", number: 1 },
+  { id: "basics", label: "Product Basics", number: 2 },
+  { id: "content", label: "Product Content", number: 3 },
+  { id: "photos", label: "Photos & Media", number: 4 },
+  { id: "pricing", label: "Pricing & Tickets", number: 5 },
+  { id: "schedule", label: "Schedule & Availability", number: 6 },
+  { id: "booking", label: "Booking Rules", number: 7 },
+  { id: "review", label: "Review & Submit", number: 8 },
 ];
 
 const INITIAL_PRODUCT = {
@@ -15,25 +16,44 @@ const INITIAL_PRODUCT = {
   description: "",
   shortSummary: "",
   category: "",
+  subcategory: "",
   theme: "",
+  primaryTheme: "",
+  secondaryThemes: [],
   tags: [],
   slug: "",
   difficulty: "",
   duration: "",
   durationUnit: "hours",
+  activityType: "Guided Tour",
+  productType: "",
+  tourTransportationModes: [],
+  tourDurationCategory: "",
+  activityCategories: [],
+  transportCategories: [],
+  city: "",
+  country: "",
+  region: "",
+  latitude: null,
+  longitude: null,
+  metaTitle: "",
+  metaDescription: "",
   photos: [],
   heroImage: null,
   videoUrl: "",
   pricing: {
-    basePrice: 0,
+    basePrice: "",
     currency: "USD",
+    pricingModel: "perPerson",
+    startDate: "",
+    endDate: "",
     tiers: [
-      { name: "Adult", price: 0, minAge: 18, maxAge: 64 },
-      { name: "Child", price: 0, minAge: 3, maxAge: 17 },
-      { name: "Senior", price: 0, minAge: 65, maxAge: 99 },
+      { name: "Adult", price: "", minAge: 18, maxAge: 64 },
+      { name: "Child", price: "", minAge: 3, maxAge: 17 },
+      { name: "Senior", price: "", minAge: 65, maxAge: 99 },
     ],
-    taxes: 0,
-    fees: 0,
+    taxes: "",
+    fees: "",
     commissionRate: 15,
   },
   cancellationPolicy: "flexible",
@@ -52,6 +72,11 @@ const INITIAL_PRODUCT = {
     maxGroupSize: 20,
     minGroupSize: 1,
     meetingPoint: "",
+    meetingPointAddress: "",
+    meetingPointLat: null,
+    meetingPointLng: null,
+    instantBooking: false,
+    refundPercentage: 100,
     pickupAvailable: false,
     pickupDetails: "",
     inclusions: [],
@@ -62,11 +87,23 @@ const INITIAL_PRODUCT = {
     highlights: [],
     included: [],
     excluded: [],
+    whatToBring: [],
     meetingInstructions: "",
+    pickupDescription: "",
     additionalInfo: "",
+    uniqueSellingPoints: "",
+    travelerRequirements: "",
     languages: ["English"],
   },
   status: "draft",
+  totalBookings: 0,
+  totalRevenue: 0,
+  averageRating: 0,
+  reviewCount: 0,
+  viewCount: 0,
+  supplier: null,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
 };
 
 export const useProductBuilderStore = create((set, get) => ({
@@ -137,20 +174,47 @@ export const useProductBuilderStore = create((set, get) => ({
     const errors = {};
 
     switch (stepIndex) {
-      case 0: // Basics
+      case 0: // Product Type
+        if (!product.productType) errors.productType = "Please select a product type";
+        if (product.productType === "tour") {
+          if (!product.tourTransportationModes?.length) errors.tourTransportationModes = "Please select at least one transportation mode";
+          if (!product.tourDurationCategory) errors.tourDurationCategory = "Please select a tour duration";
+        }
+        if (product.productType === "activity") {
+          if (!product.activityCategories?.length) errors.activityCategories = "Please select at least one activity category";
+        }
+        if (product.productType === "transport") {
+          if (!product.transportCategories?.length) errors.transportCategories = "Please select at least one transportation type";
+        }
+        break;
+      case 1: // Basics
         if (!product.title?.trim()) errors.title = "Title is required";
         if (!product.description?.trim()) errors.description = "Description is required";
         if (!product.category) errors.category = "Category is required";
+        if (!product.subcategory?.trim()) errors.subcategory = "Subcategory is required";
+        if (!product.activityType) errors.activityType = "Activity type is required";
+        if (!product.city?.trim()) errors.city = "City is required";
+        if (!product.country?.trim()) errors.country = "Country is required";
+        if (!product.metaTitle?.trim()) errors.metaTitle = "Meta title is required";
         if (!product.duration) errors.duration = "Duration is required";
         break;
-      case 2: // Pricing
-        if (product.pricing.basePrice <= 0) errors.basePrice = "Base price must be greater than 0";
+      case 2: // Content
+        if (!product.content.itinerary?.trim()) errors.itinerary = "Itinerary is required";
+        if (!product.content.meetingInstructions?.trim()) errors.meetingInstructions = "Meeting instructions are required";
+        if (!product.content.uniqueSellingPoints?.trim()) errors.uniqueSellingPoints = "Please describe what makes your product unique";
+        if (!product.content.languages?.length) errors.languages = "At least one language is required";
         break;
-      case 3: // Schedule
+      case 4: // Pricing
+        if (!product.pricing.basePrice || Number(product.pricing.basePrice) <= 0) errors.basePrice = "Base price must be greater than 0";
+        if (!product.pricing.startDate) errors.pricingStartDate = "Pricing start date is required";
+        if (!product.pricing.endDate) errors.pricingEndDate = "Pricing end date is required";
+        break;
+      case 5: // Schedule
         if (!product.schedule.operatingDays?.length) errors.operatingDays = "At least one operating day is required";
         break;
-      case 4: // Booking Rules
+      case 6: // Booking Rules
         if (!product.bookingRules.meetingPoint?.trim()) errors.meetingPoint = "Meeting point is required";
+        if (!product.bookingRules.meetingPointAddress?.trim()) errors.meetingPointAddress = "Meeting point address is required";
         break;
       default:
         break;

@@ -28,6 +28,19 @@ const DIFFICULTIES = [
   { value: "extreme", label: "Extreme" },
 ];
 
+const ACTIVITY_TYPES = [
+  "Guided Tour",
+  "Self-Guided Tour",
+  "Private Tour",
+  "Group Tour",
+  "Adventure Tour",
+  "Cultural Experience",
+  "Food & Wine Tour",
+  "Wildlife Safari",
+  "City Tour",
+  "Walking Tour",
+];
+
 export default function ProductBasicsStep() {
   const { product, errors, updateProduct } = useProductBuilderStore();
 
@@ -148,6 +161,166 @@ export default function ProductBasicsStep() {
               <option key={diff.value} value={diff.value}>{diff.label}</option>
             ))}
           </select>
+        </div>
+
+        {/* Subcategory */}
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">
+            Subcategory <span className="text-[#dc3545]">*</span>
+          </label>
+          <input
+            type="text"
+            value={product.subcategory}
+            onChange={(e) => handleChange("subcategory", e.target.value)}
+            placeholder="e.g., Walking Tours"
+            className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] ${
+              errors.subcategory ? "border-[#dc3545]" : "border-[#eaeaea]"
+            }`}
+          />
+          {errors.subcategory && <p className="mt-1 text-xs text-[#dc3545]">{errors.subcategory}</p>}
+        </div>
+
+        {/* Activity Type */}
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">
+            Activity Type <span className="text-[#dc3545]">*</span>
+          </label>
+          <select
+            value={product.activityType}
+            onChange={(e) => handleChange("activityType", e.target.value)}
+            className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] bg-white focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] ${
+              errors.activityType ? "border-[#dc3545]" : "border-[#eaeaea]"
+            }`}
+          >
+            {ACTIVITY_TYPES.map((type) => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
+          {errors.activityType && <p className="mt-1 text-xs text-[#dc3545]">{errors.activityType}</p>}
+        </div>
+
+        {/* Primary Theme */}
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">Primary Theme</label>
+          <input
+            type="text"
+            value={product.primaryTheme}
+            onChange={(e) => handleChange("primaryTheme", e.target.value)}
+            placeholder="e.g., Nature & Parks"
+            className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+          />
+        </div>
+
+        {/* Secondary Themes */}
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">Secondary Themes</label>
+          <input
+            type="text"
+            value={product.secondaryThemes.join(", ")}
+            onChange={(e) => handleChange("secondaryThemes", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))}
+            placeholder="History, Photography (comma separated)"
+            className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+          />
+        </div>
+
+        {/* City */}
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">
+            City <span className="text-[#dc3545]">*</span>
+          </label>
+          <input
+            type="text"
+            value={product.city}
+            onChange={(e) => handleChange("city", e.target.value)}
+            placeholder="e.g., New York"
+            className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] ${
+              errors.city ? "border-[#dc3545]" : "border-[#eaeaea]"
+            }`}
+          />
+          {errors.city && <p className="mt-1 text-xs text-[#dc3545]">{errors.city}</p>}
+        </div>
+
+        {/* Country */}
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">
+            Country <span className="text-[#dc3545]">*</span>
+          </label>
+          <input
+            type="text"
+            value={product.country}
+            onChange={(e) => handleChange("country", e.target.value)}
+            placeholder="e.g., USA"
+            className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] ${
+              errors.country ? "border-[#dc3545]" : "border-[#eaeaea]"
+            }`}
+          />
+          {errors.country && <p className="mt-1 text-xs text-[#dc3545]">{errors.country}</p>}
+        </div>
+
+        {/* Region */}
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">Region</label>
+          <input
+            type="text"
+            value={product.region}
+            onChange={(e) => handleChange("region", e.target.value)}
+            placeholder="e.g., Western Cape"
+            className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+          />
+        </div>
+
+        {/* Latitude / Longitude */}
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">Latitude</label>
+          <input
+            type="number"
+            step="any"
+            value={product.latitude ?? ""}
+            onChange={(e) => handleChange("latitude", e.target.value === "" ? null : Number(e.target.value))}
+            placeholder="e.g., -33.9249"
+            className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">Longitude</label>
+          <input
+            type="number"
+            step="any"
+            value={product.longitude ?? ""}
+            onChange={(e) => handleChange("longitude", e.target.value === "" ? null : Number(e.target.value))}
+            placeholder="e.g., 18.4241"
+            className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+          />
+        </div>
+
+        {/* Meta Title */}
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">
+            Meta Title <span className="text-[#dc3545]">*</span>
+          </label>
+          <input
+            type="text"
+            value={product.metaTitle}
+            onChange={(e) => handleChange("metaTitle", e.target.value)}
+            placeholder="SEO title for search engines"
+            className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] ${
+              errors.metaTitle ? "border-[#dc3545]" : "border-[#eaeaea]"
+            }`}
+          />
+          {errors.metaTitle && <p className="mt-1 text-xs text-[#dc3545]">{errors.metaTitle}</p>}
+        </div>
+
+        {/* Meta Description */}
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">Meta Description</label>
+          <textarea
+            value={product.metaDescription}
+            onChange={(e) => handleChange("metaDescription", e.target.value)}
+            rows={3}
+            placeholder="Short description for SEO and social sharing"
+            className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] resize-none"
+          />
         </div>
       </div>
 
