@@ -96,6 +96,7 @@ describe('Product Creation Flow', () => {
         travelerRequirements: '',
         languages: ['English'],
       },
+      photos: ['https://example.com/photo1.jpg'],
       status: 'draft',
     });
 

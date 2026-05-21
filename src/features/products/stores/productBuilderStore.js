@@ -117,15 +117,12 @@ export const useProductBuilderStore = create((set, get) => ({
   errors: {},
 
   setStep: (step) => {
-    console.log(`📍 Navigating to Step ${step + 1}:`, STEPS[step]?.label);
     set({ currentStep: step });
   },
 
   nextStep: () => {
     const { currentStep, completedSteps } = get();
     const newCompleted = [...new Set([...completedSteps, currentStep])];
-    console.log(`➡️ Moving to Next Step (${currentStep + 1} → ${currentStep + 2})`);
-    console.log("✅ Completed Steps:", newCompleted.map(i => STEPS[i]?.label));
     set({
       currentStep: Math.min(currentStep + 1, STEPS.length - 1),
       completedSteps: newCompleted,
@@ -134,12 +131,10 @@ export const useProductBuilderStore = create((set, get) => ({
 
   prevStep: () => {
     const { currentStep } = get();
-    console.log(`⬅️ Moving to Previous Step (${currentStep + 1} → ${currentStep})`);
     set({ currentStep: Math.max(currentStep - 1, 0) });
   },
 
   goToStep: (step) => {
-    // Only allow going to completed steps or current + 1
     const { completedSteps, currentStep } = get();
     if (step <= currentStep + 1 || completedSteps.includes(step)) {
       set({ currentStep: step });
@@ -176,7 +171,6 @@ export const useProductBuilderStore = create((set, get) => ({
   clearErrors: () => set({ errors: {} }),
 
   validateStep: (stepIndex) => {
-    console.log(`🔍 Validating Step ${stepIndex + 1}:`, STEPS[stepIndex]?.label);
     const { product } = get();
     const errors = {};
 
@@ -194,10 +188,22 @@ export const useProductBuilderStore = create((set, get) => ({
           if (!product.transportCategories?.length) errors.transportCategories = "Please select at least one transportation type";
         }
         break;
+
       case 1: // Basics
-        if (!product.title?.trim()) errors.title = "Title is required";
-        if (!product.description?.trim()) errors.description = "Description is required";
-        if (product.description?.trim().length > 0 && product.description.trim().length < 50) errors.description = "Description must be at least 50 characters";
+        if (!product.title?.trim()) {
+          errors.title = "Title is required";
+        } else if (product.title.length > 200) {
+          errors.title = "Title must be less than 200 characters";
+        }
+
+        if (!product.description?.trim()) {
+          errors.description = "Description is required";
+        } else if (product.description.trim().length < 50) {
+          errors.description = "Description must be at least 50 characters";
+        } else if (product.description.length > 5000) {
+          errors.description = "Description must be less than 5000 characters";
+        }
+
         if (!product.category) errors.category = "Category is required";
         if (!product.subcategory?.trim()) errors.subcategory = "Subcategory is required";
         if (!product.activityType) errors.activityType = "Activity type is required";
@@ -205,48 +211,83 @@ export const useProductBuilderStore = create((set, get) => ({
         if (!product.country?.trim()) errors.country = "Country is required";
         if (!product.metaTitle?.trim()) errors.metaTitle = "Meta title is required";
         if (!product.duration) errors.duration = "Duration is required";
-        if (product.latitude !== null && product.latitude !== undefined && product.latitude !== '') {
-          const lat = Number(product.latitude);
-          if (Number.isNaN(lat) || lat < -90 || lat > 90) errors.latitude = "Latitude must be a number between -90 and 90";
+
+        // Latitude / longitude: both must be present together or neither
+        const hasLat = product.latitude !== null && product.latitude !== undefined && product.latitude !== '';
+        const hasLng = product.longitude !== null && product.longitude !== undefined && product.longitude !== '';
+        if (hasLat !== hasLng) {
+          if (hasLat) errors.longitude = "Both latitude and longitude must be provided together";
+          if (hasLng) errors.latitude = "Both latitude and longitude must be provided together";
         }
-        if (product.longitude !== null && product.longitude !== undefined && product.longitude !== '') {
+        if (hasLat) {
+          const lat = Number(product.latitude);
+          if (Number.isNaN(lat) || lat < -90 || lat > 90) {
+            errors.latitude = "Latitude must be a number between -90 and 90";
+          }
+        }
+        if (hasLng) {
           const lng = Number(product.longitude);
-          if (Number.isNaN(lng) || lng < -180 || lng > 180) errors.longitude = "Longitude must be a number between -180 and 180";
+          if (Number.isNaN(lng) || lng < -180 || lng > 180) {
+            errors.longitude = "Longitude must be a number between -180 and 180";
+          }
         }
         break;
+
       case 2: // Content
         if (!product.content.itinerary?.trim()) errors.itinerary = "Itinerary is required";
         if (!product.content.meetingInstructions?.trim()) errors.meetingInstructions = "Meeting instructions are required";
         if (!product.content.uniqueSellingPoints?.trim()) errors.uniqueSellingPoints = "Please describe what makes your product unique";
         if (!product.content.languages?.length) errors.languages = "At least one language is required";
         break;
+
+      case 3: // Photos & Media
+        if (!product.photos || product.photos.length === 0) {
+          errors.photos = "At least one photo is required";
+        } else if (product.photos.length > 20) {
+          errors.photos = "Maximum 20 photos allowed";
+        }
+        break;
+
       case 4: // Pricing
-        if (!product.pricing.basePrice || Number(product.pricing.basePrice) <= 0) errors.basePrice = "Base price must be greater than 0";
+        if (!product.pricing.basePrice || Number(product.pricing.basePrice) <= 0) {
+          errors.basePrice = "Base price must be greater than 0";
+        }
         if (!product.pricing.startDate) errors.pricingStartDate = "Pricing start date is required";
         if (!product.pricing.endDate) errors.pricingEndDate = "Pricing end date is required";
-        if (!product.pricing.currency || product.pricing.currency.length !== 3) errors.currency = "Valid 3-letter currency code is required (e.g. USD)";
-        if (!product.pricing.tiers || product.pricing.tiers.length === 0) errors.pricingSchedule = "At least one pricing schedule is required";
+        if (!product.pricing.currency || product.pricing.currency.length !== 3) {
+          errors.currency = "Valid 3-letter currency code is required (e.g. USD)";
+        }
+        if (!product.pricing.tiers || product.pricing.tiers.length === 0) {
+          errors.pricingSchedule = "At least one pricing schedule is required";
+        }
         break;
+
       case 5: // Schedule
-        if (!product.schedule.operatingDays?.length) errors.operatingDays = "At least one operating day is required";
+        if (!product.schedule.operatingDays?.length) {
+          errors.operatingDays = "At least one operating day is required";
+        }
         break;
+
       case 6: // Booking Rules
         if (!product.bookingRules.meetingPoint?.trim()) errors.meetingPoint = "Meeting point is required";
         if (!product.bookingRules.meetingPointAddress?.trim()) errors.meetingPointAddress = "Meeting point address is required";
         break;
+
       default:
         break;
     }
 
+    // Global tag validation (applies across all steps)
+    if (product.tags && product.tags.length > 10) {
+      errors.tags = "Maximum 10 tags allowed";
+    }
+
     const isValid = Object.keys(errors).length === 0;
-    console.log(isValid ? "✅ Validation Passed" : "❌ Validation Failed:", errors);
-    
     set({ errors });
     return isValid;
   },
 
   reset: () => {
-    console.log("🔄 Resetting Product Builder");
     set({
       currentStep: 0,
       product: { ...INITIAL_PRODUCT },
@@ -259,7 +300,6 @@ export const useProductBuilderStore = create((set, get) => ({
   },
 
   loadDraft: (draft) => {
-    console.log("📂 Loading Draft:", draft);
     set({
       product: { ...INITIAL_PRODUCT, ...draft },
       isDirty: false,

@@ -1,15 +1,14 @@
 import { Check, AlertTriangle, Eye } from "lucide-react";
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
-import StatusBadge from "@/components/shared/StatusBadge";
 
 export default function ProductReviewStep() {
-  const { product, steps, currentStep, errors, validateStep } = useProductBuilderStore();
+  const { product, steps, currentStep } = useProductBuilderStore();
 
-  // Validate all previous steps
+  // Validate all previous steps — must match backend validateTourData exactly
   const validationResults = steps.map((_, index) => {
     const stepErrors = {};
     switch (index) {
-      case 0:
+      case 0: // Product Type
         if (!product.productType) stepErrors.productType = "Product type required";
         if (product.productType === "tour") {
           if (!product.tourTransportationModes?.length) stepErrors.tourTransportationModes = "Transportation modes required";
@@ -22,47 +21,97 @@ export default function ProductReviewStep() {
           if (!product.transportCategories?.length) stepErrors.transportCategories = "Transportation types required";
         }
         break;
-      case 1:
-        if (!product.title) stepErrors.title = "Title required";
-        if (!product.description) stepErrors.description = "Description required";
-        if (product.description?.trim().length > 0 && product.description.trim().length < 50) stepErrors.description = "Description must be at least 50 characters";
-        if (!product.subcategory) stepErrors.subcategory = "Subcategory required";
-        if (!product.activityType) stepErrors.activityType = "Activity type required";
-        if (!product.city) stepErrors.city = "City required";
-        if (!product.country) stepErrors.country = "Country required";
-        if (!product.metaTitle) stepErrors.metaTitle = "Meta title required";
-        if (product.latitude !== null && product.latitude !== undefined && product.latitude !== '') {
-          const lat = Number(product.latitude);
-          if (Number.isNaN(lat) || lat < -90 || lat > 90) stepErrors.latitude = "Latitude must be between -90 and 90";
+
+      case 1: // Basics
+        if (!product.title?.trim()) {
+          stepErrors.title = "Title required";
+        } else if (product.title.length > 200) {
+          stepErrors.title = "Title must be less than 200 characters";
         }
-        if (product.longitude !== null && product.longitude !== undefined && product.longitude !== '') {
+
+        if (!product.description?.trim()) {
+          stepErrors.description = "Description required";
+        } else if (product.description.trim().length < 50) {
+          stepErrors.description = "Description must be at least 50 characters";
+        } else if (product.description.length > 5000) {
+          stepErrors.description = "Description must be less than 5000 characters";
+        }
+
+        if (!product.subcategory?.trim()) stepErrors.subcategory = "Subcategory required";
+        if (!product.activityType) stepErrors.activityType = "Activity type required";
+        if (!product.city?.trim()) stepErrors.city = "City required";
+        if (!product.country?.trim()) stepErrors.country = "Country required";
+        if (!product.metaTitle?.trim()) stepErrors.metaTitle = "Meta title required";
+        if (!product.duration) stepErrors.duration = "Duration required";
+
+        // Lat/lng both or neither
+        const hasLat = product.latitude !== null && product.latitude !== undefined && product.latitude !== '';
+        const hasLng = product.longitude !== null && product.longitude !== undefined && product.longitude !== '';
+        if (hasLat !== hasLng) {
+          if (hasLat) stepErrors.longitude = "Both latitude and longitude must be provided together";
+          if (hasLng) stepErrors.latitude = "Both latitude and longitude must be provided together";
+        }
+        if (hasLat) {
+          const lat = Number(product.latitude);
+          if (Number.isNaN(lat) || lat < -90 || lat > 90) {
+            stepErrors.latitude = "Latitude must be between -90 and 90";
+          }
+        }
+        if (hasLng) {
           const lng = Number(product.longitude);
-          if (Number.isNaN(lng) || lng < -180 || lng > 180) stepErrors.longitude = "Longitude must be between -180 and 180";
+          if (Number.isNaN(lng) || lng < -180 || lng > 180) {
+            stepErrors.longitude = "Longitude must be between -180 and 180";
+          }
         }
         break;
-      case 2:
+
+      case 2: // Content
         if (!product.content.itinerary?.trim()) stepErrors.itinerary = "Itinerary required";
         if (!product.content.meetingInstructions?.trim()) stepErrors.meetingInstructions = "Meeting instructions required";
         if (!product.content.uniqueSellingPoints?.trim()) stepErrors.uniqueSellingPoints = "Unique selling points required";
         if (!product.content.languages?.length) stepErrors.languages = "Languages required";
         break;
-      case 4:
-        if (product.pricing.basePrice <= 0) stepErrors.price = "Base price required";
+
+      case 3: // Photos
+        if (!product.photos || product.photos.length === 0) {
+          stepErrors.photos = "At least one photo is required";
+        } else if (product.photos.length > 20) {
+          stepErrors.photos = "Maximum 20 photos allowed";
+        }
+        break;
+
+      case 4: // Pricing
+        if (!product.pricing.basePrice || Number(product.pricing.basePrice) <= 0) {
+          stepErrors.price = "Base price must be greater than 0";
+        }
         if (!product.pricing.startDate) stepErrors.pricingStartDate = "Pricing start date required";
         if (!product.pricing.endDate) stepErrors.pricingEndDate = "Pricing end date required";
-        if (!product.pricing.currency || product.pricing.currency.length !== 3) stepErrors.currency = "Valid 3-letter currency code required";
-        if (!product.pricing.tiers || product.pricing.tiers.length === 0) stepErrors.pricingSchedule = "At least one pricing schedule required";
+        if (!product.pricing.currency || product.pricing.currency.length !== 3) {
+          stepErrors.currency = "Valid 3-letter currency code required";
+        }
+        if (!product.pricing.tiers || product.pricing.tiers.length === 0) {
+          stepErrors.pricingSchedule = "At least one pricing schedule required";
+        }
         break;
-      case 5:
-        if (!product.schedule.operatingDays.length) stepErrors.days = "Operating days required";
+
+      case 5: // Schedule
+        if (!product.schedule.operatingDays?.length) stepErrors.days = "Operating days required";
         break;
-      case 6:
-        if (!product.bookingRules.meetingPoint) stepErrors.meeting = "Meeting point required";
-        if (!product.bookingRules.meetingPointAddress) stepErrors.meetingPointAddress = "Meeting point address required";
+
+      case 6: // Booking Rules
+        if (!product.bookingRules.meetingPoint?.trim()) stepErrors.meeting = "Meeting point required";
+        if (!product.bookingRules.meetingPointAddress?.trim()) stepErrors.meetingPointAddress = "Meeting point address required";
         break;
+
       default:
         break;
     }
+
+    // Global tag limit
+    if (product.tags && product.tags.length > 10) {
+      stepErrors.tags = "Maximum 10 tags allowed";
+    }
+
     return { step: index, isValid: Object.keys(stepErrors).length === 0, errors: stepErrors };
   });
 
@@ -127,10 +176,6 @@ export default function ProductReviewStep() {
       <div className="border border-[#eaeaea] rounded-lg overflow-hidden">
         <div className="px-4 py-3 bg-[#f8fafc] border-b border-[#eaeaea] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <h3 className="text-sm font-semibold text-[#1e293b]">Product Preview</h3>
-          <button className="flex items-center gap-1 text-xs text-[#044b3b] hover:underline">
-            <Eye size={14} />
-            Full Preview
-          </button>
         </div>
         <div className="p-4 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -231,19 +276,15 @@ export default function ProductReviewStep() {
               </span>
             </div>
             <div>
-              <span className="text-[#64748b]">Highlights:</span>
+              <span className="text-[#64748b]">Photos:</span>
               <span className="ml-2 text-[#1e293b] font-medium">
-                {product.content.highlights?.length > 0
-                  ? `${product.content.highlights.length} items`
-                  : "—"}
+                {product.photos?.length > 0 ? `${product.photos.length} uploaded` : "—"}
               </span>
             </div>
             <div>
-              <span className="text-[#64748b]">What to Bring:</span>
+              <span className="text-[#64748b]">Tags:</span>
               <span className="ml-2 text-[#1e293b] font-medium">
-                {product.content.whatToBring?.length > 0
-                  ? `${product.content.whatToBring.length} items`
-                  : "—"}
+                {product.tags?.length > 0 ? product.tags.join(", ") : "—"}
               </span>
             </div>
           </div>
@@ -256,7 +297,6 @@ export default function ProductReviewStep() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { value: "draft", label: "Draft", desc: "Save but don't publish" },
-            { value: "pending_approval", label: "Pending Approval", desc: "Submit for admin review" },
             { value: "active", label: "Active", desc: "Publish immediately" },
           ].map((status) => (
               <button
