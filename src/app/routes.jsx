@@ -14,10 +14,23 @@ import NotificationsPage from "@/features/notifications/pages/NotificationsPage"
 import UsersPage from "@/features/users/pages/UsersPage";
 import SettingsPage from "@/features/settings/pages/SettingsPage";
 
+// Error Pages
+import NotFoundPage from "@/pages/errors/NotFoundPage";
+import ServerErrorPage from "@/pages/errors/ServerErrorPage";
+import ForbiddenPage from "@/pages/errors/ForbiddenPage";
+import NetworkErrorPage from "@/pages/errors/NetworkErrorPage";
+
 export default function AppRoutes() {
   return (
-    <AppShell>
-      <Routes>
+    <Routes>
+      {/* Error Pages (without AppShell) */}
+      <Route path="/error/404" element={<NotFoundPage />} />
+      <Route path="/error/500" element={<ServerErrorPage />} />
+      <Route path="/error/403" element={<ForbiddenPage />} />
+      <Route path="/error/network" element={<NetworkErrorPage />} />
+
+      {/* Main App Routes (with AppShell) */}
+      <Route element={<AppShell />}>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/bookings" element={<BookingsPage />} />
         <Route path="/products" element={<ProductsListPage />} />
@@ -29,7 +42,10 @@ export default function AppRoutes() {
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/users" element={<UsersPage />} />
         <Route path="/settings" element={<SettingsPage />} />
-      </Routes>
-    </AppShell>
+        
+        {/* Catch-all route for 404 */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
   );
 }

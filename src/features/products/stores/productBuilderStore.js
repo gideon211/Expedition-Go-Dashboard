@@ -116,11 +116,16 @@ export const useProductBuilderStore = create((set, get) => ({
   lastSaved: null,
   errors: {},
 
-  setStep: (step) => set({ currentStep: step }),
+  setStep: (step) => {
+    console.log(`📍 Navigating to Step ${step + 1}:`, STEPS[step]?.label);
+    set({ currentStep: step });
+  },
 
   nextStep: () => {
     const { currentStep, completedSteps } = get();
     const newCompleted = [...new Set([...completedSteps, currentStep])];
+    console.log(`➡️ Moving to Next Step (${currentStep + 1} → ${currentStep + 2})`);
+    console.log("✅ Completed Steps:", newCompleted.map(i => STEPS[i]?.label));
     set({
       currentStep: Math.min(currentStep + 1, STEPS.length - 1),
       completedSteps: newCompleted,
@@ -129,6 +134,7 @@ export const useProductBuilderStore = create((set, get) => ({
 
   prevStep: () => {
     const { currentStep } = get();
+    console.log(`⬅️ Moving to Previous Step (${currentStep + 1} → ${currentStep})`);
     set({ currentStep: Math.max(currentStep - 1, 0) });
   },
 
@@ -170,6 +176,7 @@ export const useProductBuilderStore = create((set, get) => ({
   clearErrors: () => set({ errors: {} }),
 
   validateStep: (stepIndex) => {
+    console.log(`🔍 Validating Step ${stepIndex + 1}:`, STEPS[stepIndex]?.label);
     const { product } = get();
     const errors = {};
 
@@ -220,11 +227,15 @@ export const useProductBuilderStore = create((set, get) => ({
         break;
     }
 
+    const isValid = Object.keys(errors).length === 0;
+    console.log(isValid ? "✅ Validation Passed" : "❌ Validation Failed:", errors);
+    
     set({ errors });
-    return Object.keys(errors).length === 0;
+    return isValid;
   },
 
   reset: () => {
+    console.log("🔄 Resetting Product Builder");
     set({
       currentStep: 0,
       product: { ...INITIAL_PRODUCT },
@@ -237,6 +248,7 @@ export const useProductBuilderStore = create((set, get) => ({
   },
 
   loadDraft: (draft) => {
+    console.log("📂 Loading Draft:", draft);
     set({
       product: { ...INITIAL_PRODUCT, ...draft },
       isDirty: false,

@@ -1,8 +1,9 @@
+import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import { useSidebarStore } from "@/stores/sidebarStore";
 
-export default function AppShell({ children }) {
+export default function AppShell() {
   const { isCollapsed, isMobileOpen } = useSidebarStore();
 
   return (
@@ -22,7 +23,7 @@ export default function AppShell({ children }) {
         }`}
       >
         <div className="bg-white min-h-[calc(100vh-64px)]">
-          {children}
+          <Outlet />
         </div>
       </main>
     </div>

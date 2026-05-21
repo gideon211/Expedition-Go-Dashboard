@@ -1,8 +1,22 @@
-import { Search, Bell, ChevronDown } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Search, Bell, ChevronDown, Store } from "lucide-react";
 import { useSidebarStore } from "@/stores/sidebarStore";
 
 export default function Header() {
   const { isCollapsed } = useSidebarStore();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header
@@ -32,16 +46,52 @@ export default function Header() {
           </span>
         </button>
 
-        {/* User Profile */}
-        <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-[#eaeaea]">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium text-[#1e293b]">Admin User</p>
-            <p className="text-xs text-[#64748b]">Administrator</p>
-          </div>
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#044b3b] flex items-center justify-center text-white font-medium text-sm cursor-pointer">
-            A
-          </div>
-          <ChevronDown size={14} className="text-[#9e9e9e] hidden sm:block" />
+        {/* User Profile with Dropdown */}
+        <div ref={dropdownRef} className="relative">
+          <button
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-[#eaeaea] focus:outline-none"
+          >
+            <div className="text-right hidden sm:block">
+              <p className="text-sm font-medium text-[#1e293b]">Admin User</p>
+              <p className="text-xs text-[#64748b]">Administrator</p>
+            </div>
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#044b3b] flex items-center justify-center text-white font-medium text-sm">
+              A
+            </div>
+            <ChevronDown
+              size={14}
+              className={`text-[#9e9e9e] hidden sm:block transition-transform ${
+                dropdownOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {/* Dropdown Menu */}
+          {dropdownOpen && (
+            <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg border border-[#eaeaea] shadow-lg py-1 z-50">
+              <div className="px-4 py-3 border-b border-[#eaeaea]">
+                <p className="text-sm font-medium text-[#1e293b]">Admin User</p>
+                <p className="text-xs text-[#64748b]">admin@travioafrica.com</p>
+              </div>
+
+              <a
+                href="https://supplier.travioafrica.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#1e293b] hover:bg-[#f8fafc] transition-colors"
+              >
+                <Store size={16} className="text-[#044b3b]" />
+                <span>Become a supplier</span>
+              </a>
+
+              <div className="border-t border-[#eaeaea] my-1" />
+
+              <button className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-[#dc3545] hover:bg-[#fef2f2] transition-colors">
+                <span>Sign out</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>
