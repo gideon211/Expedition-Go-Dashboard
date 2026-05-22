@@ -7,9 +7,6 @@ const api = axios.create({
   baseURL: config.api.baseURL,
   timeout: config.api.timeout,
   withCredentials: true, // Required: send & accept cookies on every request
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
 // Request interceptor to attach JWT token

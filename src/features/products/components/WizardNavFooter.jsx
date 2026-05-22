@@ -3,8 +3,162 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Save, X, Loader2, CheckCircle2, AlertCircle, ArrowRight, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
-import { buildProductPayload } from "@/features/products/utils/buildProductPayload";
 import { createProduct, updateProduct } from "@/features/products/api";
+
+function buildFormData(product) {
+  const formData = new FormData();
+
+  // Flat fields
+  formData.append("title", product.title || "");
+  formData.append("description", product.description || "");
+  formData.append("metaTitle", product.metaTitle || product.title || "");
+  formData.append("metaDescription", product.metaDescription || product.description?.substring(0, 160) || "");
+  formData.append("status", (product.status || "draft").toUpperCase());
+  formData.append("latitude", product.latitude ?? "");
+  formData.append("longitude", product.longitude ?? "");
+
+  if (product.tags?.length) {
+    formData.append("tags", JSON.stringify(product.tags));
+  }
+
+  // Build duration
+  let durationValue = 0;
+  if (product.durationUnit === "hours") {
+    durationValue = Number(product.duration) || 0;
+  } else if (product.durationUnit === "days") {
+    durationValue = (Number(product.duration) || 0);
+  } else if (product.durationUnit === "weeks") {
+    durationValue = (Number(product.duration) || 0) * 7;
+  }
+
+  // Build transport mode
+  const transportMode = {};
+  if (product.tourTransportationModes?.length) {
+    transportMode.land = product.tourTransportationModes.filter((m) =>
+      ["4WD", "ATV", "Bus", "Car", "Funicular", "Horse", "Minivan", "Motorcycle", "Rickshaw", "Segway", "Subway", "Train", "Tram", "Trolley", "Walking"].includes(m),
+    );
+    transportMode.air = product.tourTransportationModes.filter((m) =>
+      ["Plane", "Helicopter"].includes(m),
+    );
+  }
+
+  // Age groups from pricing tiers
+  const ageGroups = (product.pricing?.tiers || []).map((tier) => ({
+    label: tier.name,
+    minAge: tier.minAge,
+    maxAge: tier.maxAge,
+  }));
+
+  // Prices for pricing schedule
+  const prices = (product.pricing?.tiers || []).map((tier) => ({
+    ageGroup: tier.name,
+    retailPrice: Number(tier.price) || 0,
+  }));
+
+  // categorization (JSON string)
+  const categorization = {
+    category: product.category || "",
+    subcategory: product.subcategory || "",
+    activityType: product.activityType || "Guided Tour",
+    difficulty: product.difficulty || "Easy",
+    duration: { hours: product.durationUnit === "hours" ? durationValue : 0, days: product.durationUnit === "days" ? durationValue : 0 },
+    groupSize: {
+      min: product.bookingRules?.minGroupSize ?? 1,
+      max: product.bookingRules?.maxGroupSize ?? 20,
+    },
+    transportMode,
+  };
+  formData.append("categorization", JSON.stringify(categorization));
+
+  // theme (JSON string)
+  const theme = {
+    primary: product.primaryTheme || product.theme || "",
+    secondary: product.secondaryThemes || [],
+    tags: product.tags || [],
+  };
+  formData.append("theme", JSON.stringify(theme));
+
+  // productContent (JSON string)
+  const productContent = {
+    highlights: product.content?.highlights || [],
+    included: product.content?.included || [],
+    excluded: product.content?.excluded || [],
+    whatToBring: product.content?.whatToBring || [],
+    itinerary: product.content?.itinerary || "",
+    meetingInstructions: product.content?.meetingInstructions || "",
+    additionalInfo: product.content?.additionalInfo || "",
+    uniqueSellingPoints: product.content?.uniqueSellingPoints || "",
+    travelerRequirements: product.content?.travelerRequirements || "",
+    languages: product.content?.languages || ["English"],
+    location: {
+      city: product.city || "",
+      country: product.country || "",
+      region: product.region || "",
+    },
+  };
+  formData.append("productContent", JSON.stringify(productContent));
+
+  // schedulesAndPricing (JSON string)
+  const schedulesAndPricing = {
+    travelerDetails: {
+      pricingModel: product.pricing?.pricingModel || "perPerson",
+      maxTravelersPerBooking: product.bookingRules?.maxGroupSize ?? 20,
+      ageGroups,
+    },
+    pricingSchedules: {
+      currency: product.pricing?.currency || "USD",
+      schedules: [
+        {
+          startDate: product.pricing?.startDate || new Date().toISOString().split("T")[0],
+          endDate: product.pricing?.endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+          prices,
+        },
+      ],
+    },
+    operatingDays: product.schedule?.operatingDays || [],
+    timeSlots: product.schedule?.timeSlots || [],
+    capacityPerSlot: product.schedule?.capacityPerSlot ?? 20,
+  };
+  formData.append("schedulesAndPricing", JSON.stringify(schedulesAndPricing));
+
+  // bookingAndTickets (JSON string)
+  const bookingAndTickets = {
+    instantBooking: product.bookingRules?.instantBooking ?? false,
+    minAdvanceBookingHours: product.bookingRules?.minAdvanceBookingHours ?? 48,
+    cancellationPolicy: {
+      type: product.cancellationPolicy || "flexible",
+      cutoffHours: product.schedule?.bookingCutoffHours ?? 24,
+      refundPercentage: product.bookingRules?.refundPercentage ?? 100,
+    },
+    meetingPoint: {
+      name: product.bookingRules?.meetingPoint || "",
+      address: product.bookingRules?.meetingPointAddress || "",
+      coordinates: {
+        lat: product.bookingRules?.meetingPointLat || null,
+        lng: product.bookingRules?.meetingPointLng || null,
+      },
+    },
+    pickupAvailable: product.bookingRules?.pickupAvailable ?? false,
+    pickupDetails: product.bookingRules?.pickupDetails || "",
+    refundRules: product.refundRules || "",
+  };
+  formData.append("bookingAndTickets", JSON.stringify(bookingAndTickets));
+
+  // Photos as file objects
+  (product.photos || []).forEach((photo) => {
+    if (photo.file) {
+      formData.append("photos", photo.file);
+    }
+  });
+
+  // Cover photo: send index so backend knows which uploaded file is the hero
+  const heroIndex = product.photos?.findIndex((p) => p.id === product.heroImage);
+  if (heroIndex >= 0) {
+    formData.append("coverPhotoIndex", String(heroIndex));
+  }
+
+  return formData;
+}
 
 export default function WizardNavFooter() {
   const { id } = useParams();
@@ -13,7 +167,6 @@ export default function WizardNavFooter() {
   const isFirst = currentStep === 0;
   const isLast = currentStep === steps.length - 1;
 
-  // Track submission result for display in UI
   const [submitResult, setSubmitResult] = useState(null);
 
   const handleNext = () => {
@@ -24,7 +177,6 @@ export default function WizardNavFooter() {
   };
 
   const handleSave = () => {
-    // Auto-save logic would go here
     useProductBuilderStore.getState().markSaved();
     toast.success("Draft saved locally");
   };
@@ -36,10 +188,8 @@ export default function WizardNavFooter() {
   };
 
   const handleSubmit = async () => {
-    // Reset any previous result
     setSubmitResult(null);
 
-    // Validate ALL steps before submitting
     const allStepsValid = steps.every((_, index) => validateStep(index));
     if (!allStepsValid) {
       toast.error("Please complete all required fields before submitting.");
@@ -48,35 +198,16 @@ export default function WizardNavFooter() {
 
     setSaving(true);
     console.log("🚀 [WizardNavFooter] Starting product submission...");
-    console.log("📝 [WizardNavFooter] Product state:", product);
 
     try {
-      let payload;
-      try {
-        payload = buildProductPayload(product);
-        console.log("📦 [WizardNavFooter] Payload built successfully:", payload);
-      } catch (buildErr) {
-        console.error("💥 [WizardNavFooter] Failed to build payload:", buildErr);
-        setSubmitResult({
-          type: "error",
-          status: null,
-          title: "Payload Error",
-          message: buildErr.message || "Failed to build product payload.",
-          data: null,
-        });
-        toast.error("Failed to build product payload. Check console for details.");
-        return;
-      }
-
-      console.log("🌐 [WizardNavFooter] Sending API request...");
-      console.log("   Endpoint:", id && id !== "new" ? `PATCH /tours/${id}` : "POST /tours");
-      console.log("   Payload keys:", Object.keys(payload));
+      const formData = buildFormData(product);
+      console.log("📦 [WizardNavFooter] FormData built, photos:", (product.photos || []).filter((p) => p.file).length);
 
       let response;
       if (id && id !== "new") {
-        response = await updateProduct(id, payload);
+        response = await updateProduct(id, formData);
       } else {
-        response = await createProduct(payload);
+        response = await createProduct(formData);
       }
 
       console.log("✅ [WizardNavFooter] API call succeeded!");
@@ -93,13 +224,9 @@ export default function WizardNavFooter() {
 
       toast.success(id && id !== "new" ? "Product updated successfully!" : "Product created successfully!");
       useProductBuilderStore.getState().markSaved();
-      // Clear the saved draft so it doesn't reappear on next visit
       localStorage.removeItem("product-builder-draft");
     } catch (err) {
       console.error("❌ [WizardNavFooter] API call failed:", err);
-      console.error("   Error name:", err.name);
-      console.error("   Error message:", err.message);
-      console.error("   Error response:", err.response);
       console.error("   Error response data:", err.response?.data);
 
       const status = err.response?.status;

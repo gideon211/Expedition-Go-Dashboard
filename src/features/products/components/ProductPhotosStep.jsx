@@ -10,6 +10,7 @@ export default function ProductPhotosStep() {
       id: Math.random().toString(36).substr(2, 9),
       name: file.name,
       url: URL.createObjectURL(file),
+      file,
       alt: "",
     }));
     updateProduct({ photos: [...product.photos, ...newPhotos] });

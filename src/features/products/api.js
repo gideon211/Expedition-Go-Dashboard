@@ -2,15 +2,17 @@ import api from "@/lib/axios";
 
 /**
  * Create a new product/tour
- * @param {Object} payload - The product payload from buildProductPayload()
+ * Accepts either a plain JSON object (legacy) or a FormData (multipart with files).
+ * @param {Object|FormData} payload
  * @returns {Promise} Axios response
  */
 export const createProduct = (payload) => api.post("/tours", payload);
 
 /**
  * Update an existing product/tour
+ * Accepts either a plain JSON object (legacy) or a FormData (multipart with files).
  * @param {string} id - Product ID
- * @param {Object} payload - The product payload from buildProductPayload()
+ * @param {Object|FormData} payload
  * @returns {Promise} Axios response
  */
 export const updateProduct = (id, payload) => api.patch(`/tours/${id}`, payload);
