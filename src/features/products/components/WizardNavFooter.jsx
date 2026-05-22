@@ -8,25 +8,12 @@ import { createProduct, updateProduct } from "@/features/products/api";
 function buildFormData(product) {
   const formData = new FormData();
 
-  // Flat fields
-  formData.append("title", product.title || "");
-  formData.append("description", product.description || "");
-  formData.append("metaTitle", product.metaTitle || product.title || "");
-  formData.append("metaDescription", product.metaDescription || product.description?.substring(0, 160) || "");
-  formData.append("status", (product.status || "draft").toUpperCase());
-  formData.append("latitude", product.latitude ?? "");
-  formData.append("longitude", product.longitude ?? "");
-
-  if (product.tags?.length) {
-    formData.append("tags", JSON.stringify(product.tags));
-  }
-
   // Build duration
   let durationValue = 0;
   if (product.durationUnit === "hours") {
     durationValue = Number(product.duration) || 0;
   } else if (product.durationUnit === "days") {
-    durationValue = (Number(product.duration) || 0);
+    durationValue = Number(product.duration) || 0;
   } else if (product.durationUnit === "weeks") {
     durationValue = (Number(product.duration) || 0) * 7;
   }
@@ -55,7 +42,7 @@ function buildFormData(product) {
     retailPrice: Number(tier.price) || 0,
   }));
 
-  // categorization (JSON string)
+  // categorization (JSON string - backend parses it)
   const categorization = {
     category: product.category || "",
     subcategory: product.subcategory || "",
@@ -70,7 +57,7 @@ function buildFormData(product) {
   };
   formData.append("categorization", JSON.stringify(categorization));
 
-  // theme (JSON string)
+  // theme (JSON string - backend parses it)
   const theme = {
     primary: product.primaryTheme || product.theme || "",
     secondary: product.secondaryThemes || [],
@@ -144,6 +131,29 @@ function buildFormData(product) {
   };
   formData.append("bookingAndTickets", JSON.stringify(bookingAndTickets));
 
+  // Flat fields
+  formData.append("title", product.title || "");
+  formData.append("description", product.description || "");
+  formData.append("metaTitle", product.metaTitle || product.title || "");
+  formData.append("metaDescription", product.metaDescription || product.description?.substring(0, 160) || "");
+  formData.append("status", (product.status || "draft").toUpperCase());
+
+  // Latitude / Longitude: only append when they have real numeric values
+  // Empty/null values are omitted so the backend doesn't receive them at all,
+  // avoiding the "must be a number" validation error
+  if (product.latitude != null && product.latitude !== "") {
+    formData.append("latitude", String(product.latitude));
+  }
+  if (product.longitude != null && product.longitude !== "") {
+    formData.append("longitude", String(product.longitude));
+  }
+
+  // Tags: send as multiple form entries (multer builds an array, avoiding "must be an array" error)
+  if (product.tags?.length > 0) {
+    const validTags = product.tags.slice(0, 10);
+    validTags.forEach((tag) => formData.append("tags", tag));
+  }
+
   // Photos as file objects (newly selected files only)
   (product.photos || []).forEach((photo) => {
     if (photo.file) {
@@ -151,7 +161,7 @@ function buildFormData(product) {
     }
   });
 
-  // Existing photo URLs that should be kept (avoids re-sending full URLs as files)
+  // Existing photo URLs that should be kept
   const existingUrls = (product.photos || [])
     .filter((p) => !p.file && p.url && !p.url.startsWith("blob:"))
     .map((p) => p.url);
