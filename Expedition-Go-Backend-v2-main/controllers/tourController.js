@@ -770,12 +770,21 @@ exports.getMyTours = catchAsync(async (req, res, next) => {
     prisma.tour.count({ where })
   ]);
 
+  // Normalize photo URLs so public IDs are converted to full Cloudinary URLs
+  const normalized = tours.map((t) => ({
+    ...t,
+    photos: Array.isArray(t.photos)
+      ? t.photos.map((url) => cloudinaryUrl(url, 800))
+      : t.photos,
+    coverPhoto: t.coverPhoto ? cloudinaryUrl(t.coverPhoto, 800) : null,
+  }));
+
   const totalPages = Math.ceil(totalCount / parseInt(limit));
 
   res.status(200).json({
     status: 'success',
     data: {
-      tours,
+      tours: normalized,
       pagination: {
         currentPage: parseInt(page),
         totalPages,

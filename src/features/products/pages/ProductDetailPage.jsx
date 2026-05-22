@@ -149,7 +149,10 @@ export default function ProductDetailPage() {
                   style={{ minHeight: i === 0 ? "300px" : "145px" }}
                   onError={(e) => {
                     e.target.style.display = "none";
-                    e.target.parentElement.innerHTML = `<div class="flex items-center justify-center h-full min-h-[145px]"><Camera size={32} class="text-[#9e9e9e]" /></div>`;
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'flex items-center justify-center h-full min-h-[145px] text-[#9e9e9e]';
+                    placeholder.textContent = '📷';
+                    e.target.parentElement.appendChild(placeholder);
                   }}
                 />
               </div>
