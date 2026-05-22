@@ -1,5 +1,50 @@
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
 import LocationAutocomplete from "@/components/shared/LocationAutocomplete";
+import MultiSelect from "@/components/shared/MultiSelect";
+
+const TAG_OPTIONS = [
+  { value: "adventure", label: "Adventure" },
+  { value: "beach", label: "Beach & Island" },
+  { value: "cultural", label: "Cultural" },
+  { value: "safari", label: "Safari" },
+  { value: "wildlife", label: "Wildlife" },
+  { value: "nature", label: "Nature" },
+  { value: "hiking", label: "Hiking" },
+  { value: "city", label: "City Tour" },
+  { value: "food", label: "Food & Drink" },
+  { value: "photography", label: "Photography" },
+  { value: "luxury", label: "Luxury" },
+  { value: "budget", label: "Budget Friendly" },
+  { value: "family-friendly", label: "Family Friendly" },
+  { value: "romantic", label: "Romantic" },
+  { value: "solo", label: "Solo Traveler" },
+  { value: "group", label: "Group Tour" },
+  { value: "eco-friendly", label: "Eco Friendly" },
+  { value: "historical", label: "Historical" },
+  { value: "religious", label: "Religious" },
+  { value: "shopping", label: "Shopping" },
+  { value: "nightlife", label: "Nightlife" },
+  { value: "sports", label: "Sports" },
+  { value: "wellness", label: "Wellness" },
+  { value: "cruise", label: "Cruise" },
+  { value: "skiing", label: "Skiing" },
+  { value: "diving", label: "Diving & Snorkeling" },
+  { value: "yoga", label: "Yoga & Meditation" },
+  { value: "cooking", label: "Cooking Class" },
+  { value: "wine", label: "Wine & Vineyard" },
+  { value: "art", label: "Art & Museum" },
+  { value: "music", label: "Music & Festival" },
+  { value: "camping", label: "Camping" },
+  { value: "road-trip", label: "Road Trip" },
+  { value: "backpacking", label: "Backpacking" },
+  { value: "kayaking", label: "Kayaking & Canoeing" },
+  { value: "horseback", label: "Horseback Riding" },
+  { value: "fishing", label: "Fishing" },
+  { value: "cycling", label: "Cycling" },
+  { value: "climbing", label: "Rock Climbing" },
+  { value: "spiritual", label: "Spiritual Retreat" },
+  { value: "volunteer", label: "Volunteer Tourism" },
+];
 
 const CATEGORIES = [
   { value: "safari", label: "Safari" },
@@ -328,16 +373,16 @@ export default function ProductBasicsStep() {
       </div>
 
       {/* Tags */}
-      <div>
-        <label className="block text-sm font-medium text-[#1e293b] mb-2">Tags</label>
-        <input
-          type="text"
-          value={product.tags.join(", ")}
-          onChange={(e) => handleChange("tags", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))}
-          placeholder="wildlife, luxury, family-friendly (comma separated)"
-          className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
-        />
-      </div>
+      <MultiSelect
+        label="Tags"
+        options={TAG_OPTIONS}
+        value={product.tags}
+        onChange={(tags) => handleChange("tags", tags)}
+        placeholder="Select tags..."
+        searchPlaceholder="Search tags..."
+        max={10}
+        error={errors.tags}
+      />
 
       {/* Full Description */}
       <div>
