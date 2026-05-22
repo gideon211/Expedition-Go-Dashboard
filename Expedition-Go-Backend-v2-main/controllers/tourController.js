@@ -456,7 +456,7 @@ exports.createTour = catchAsync(async (req, res, next) => {
   const parsedExistingPhotos = req.body.existingPhotos
     ? (typeof req.body.existingPhotos === 'string' ? JSON.parse(req.body.existingPhotos) : req.body.existingPhotos)
     : [];
-  const uploadedPhotoUrls = (req.files || []).map(f => f.path || f.url);
+  const uploadedPhotoUrls = (req.files || []).map(f => f.secure_url || f.url || f.path);
   const photos = [...parsedExistingPhotos, ...uploadedPhotoUrls];
 
   // Resolve coverPhoto: if coverPhotoIndex was sent, map it to the actual uploaded URL
@@ -582,7 +582,7 @@ exports.updateTour = catchAsync(async (req, res, next) => {
   const parsedExistingPhotos = req.body.existingPhotos
     ? (typeof req.body.existingPhotos === 'string' ? JSON.parse(req.body.existingPhotos) : req.body.existingPhotos)
     : [];
-  const uploadedPhotoUrls = (req.files || []).map(f => f.path || f.url);
+  const uploadedPhotoUrls = (req.files || []).map(f => f.secure_url || f.url || f.path);
   updateData.photos = [...parsedExistingPhotos, ...uploadedPhotoUrls];
 
   // Resolve coverPhoto: if coverPhotoIndex was sent, map it to the actual uploaded URL
