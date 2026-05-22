@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Save, X, Loader2, CheckCircle2, AlertCircle, ArrowRight, Eye } from "lucide-react";
+import { ChevronLeft, ChevronRight, Save, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
 import { createProduct, updateProduct } from "@/features/products/api";
@@ -193,7 +192,7 @@ export default function WizardNavFooter() {
   const isFirst = currentStep === 0;
   const isLast = currentStep === steps.length - 1;
 
-  const [submitResult, setSubmitResult] = useState(null);
+  const isEditing = id && id !== "new";
 
   const handleNext = () => {
     const isValid = validateStep(currentStep);
@@ -214,8 +213,6 @@ export default function WizardNavFooter() {
   };
 
   const handleSubmit = async () => {
-    setSubmitResult(null);
-
     const allStepsValid = steps.every((_, index) => validateStep(index));
     if (!allStepsValid) {
       toast.error("Please complete all required fields before submitting.");
@@ -223,61 +220,31 @@ export default function WizardNavFooter() {
     }
 
     setSaving(true);
-    console.log("🚀 [WizardNavFooter] Starting product submission...");
 
     try {
       const formData = buildFormData(product);
-      console.log("📦 [WizardNavFooter] FormData built, photos:", (product.photos || []).filter((p) => p.file).length);
 
-      let response;
-      if (id && id !== "new") {
-        response = await updateProduct(id, formData);
+      if (isEditing) {
+        await updateProduct(id, formData);
+        toast.success("Tour updated successfully!");
       } else {
-        response = await createProduct(formData);
+        await createProduct(formData);
+        toast.success("Tour created successfully!");
       }
 
-      console.log("✅ [WizardNavFooter] API call succeeded!");
-      console.log("   Status:", response.status);
-      console.log("   Response data:", response.data);
-
-      setSubmitResult({
-        type: "success",
-        status: response.status,
-        title: id && id !== "new" ? "Product Updated" : "Product Created",
-        message: `Successfully saved to the database (HTTP ${response.status}).`,
-        data: response.data,
-      });
-
-      toast.success(id && id !== "new" ? "Product updated successfully!" : "Product created successfully!");
       useProductBuilderStore.getState().markSaved();
       localStorage.removeItem("product-builder-draft");
+      navigate("/products");
     } catch (err) {
-      console.error("❌ [WizardNavFooter] API call failed:", err);
-      console.error("   Error response data:", err.response?.data);
-
       const status = err.response?.status;
-      const isAuthError = status === 401;
-      const message = isAuthError
+      const message = status === 401
         ? "Authentication failed. You need to log in before creating a product."
         : err.response?.data?.message || err.response?.data?.error || err.message || "Failed to save product. Please try again.";
-
-      setSubmitResult({
-        type: "error",
-        status: status || null,
-        title: isAuthError ? "Authentication Required" : "Submission Failed",
-        message,
-        data: err.response?.data || null,
-      });
 
       toast.error(message);
     } finally {
       setSaving(false);
-      console.log("🏁 [WizardNavFooter] Submission attempt finished.");
     }
-  };
-
-  const handleContinue = () => {
-    navigate("/products");
   };
 
   return (
@@ -328,7 +295,7 @@ export default function WizardNavFooter() {
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>Submit for Review</span>
+              <span>{isEditing ? "Update Tour" : "Create Tour"}</span>
             </button>
           ) : (
             <button
@@ -342,94 +309,6 @@ export default function WizardNavFooter() {
           )}
         </div>
       </div>
-
-      {/* Submission Result Panel */}
-      {submitResult && (
-        <div
-          className={`rounded-lg border p-4 space-y-3 ${
-            submitResult.type === "success"
-              ? "bg-[#f0fdf4] border-[#86efac]"
-              : "bg-[#fef2f2] border-[#fca5a5]"
-          }`}
-        >
-          {/* Header */}
-          <div className="flex items-start gap-3">
-            {submitResult.type === "success" ? (
-              <CheckCircle2 size={20} className="text-[#16a34a] mt-0.5 flex-shrink-0" />
-            ) : (
-              <AlertCircle size={20} className="text-[#dc2626] mt-0.5 flex-shrink-0" />
-            )}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <h4
-                  className={`text-sm font-semibold ${
-                    submitResult.type === "success" ? "text-[#166534]" : "text-[#991b1b]"
-                  }`}
-                >
-                  {submitResult.title}
-                </h4>
-                {submitResult.status && (
-                  <span
-                    className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                      submitResult.type === "success"
-                        ? "bg-[#dcfce7] text-[#166534]"
-                        : "bg-[#fee2e2] text-[#991b1b]"
-                    }`}
-                  >
-                    HTTP {submitResult.status}
-                  </span>
-                )}
-              </div>
-              <p
-                className={`text-sm mt-0.5 ${
-                  submitResult.type === "success" ? "text-[#15803d]" : "text-[#b91c1c]"
-                }`}
-              >
-                {submitResult.message}
-              </p>
-            </div>
-          </div>
-
-          {/* Response Data Preview */}
-          {submitResult.data && (
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <Eye size={14} className="text-[#64748b]" />
-                <span className="text-xs font-medium text-[#64748b]">Response Data</span>
-              </div>
-              <div className="bg-white/80 rounded-md border border-black/5 p-3 overflow-x-auto">
-                <pre className="text-xs text-[#1e293b] font-mono whitespace-pre-wrap break-all">
-                  {JSON.stringify(submitResult.data, null, 2)}
-                </pre>
-              </div>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3 pt-1">
-            {submitResult.type === "success" && (
-              <button
-                onClick={handleContinue}
-                className="flex items-center gap-2 px-4 py-2 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
-              >
-                <span>Continue to Products</span>
-                <ArrowRight size={16} />
-              </button>
-            )}
-            <button
-              onClick={() => setSubmitResult(null)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                submitResult.type === "success"
-                  ? "border border-[#86efac] text-[#166534] hover:bg-[#dcfce7]"
-                  : "border border-[#fca5a5] text-[#991b1b] hover:bg-[#fee2e2]"
-              }`}
-            >
-              <X size={16} />
-              <span>Dismiss</span>
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
