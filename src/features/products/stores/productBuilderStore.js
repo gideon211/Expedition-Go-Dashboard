@@ -328,6 +328,12 @@ export const useProductBuilderStore = create(
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.hasHydrated = true;
+          // Strip invalid blob URLs from persisted photos
+          if (state.product?.photos) {
+            state.product.photos = state.product.photos.filter(
+              (p) => !p.url?.startsWith?.('blob:'),
+            );
+          }
         }
       },
     },

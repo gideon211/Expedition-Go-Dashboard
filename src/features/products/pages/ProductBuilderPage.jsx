@@ -101,13 +101,17 @@ function tourToProduct(tour) {
     longitude: tour.longitude,
     metaTitle: tour.metaTitle || tour.title || "",
     metaDescription: tour.metaDescription || "",
-    photos: (tour.photos || []).map((url) => ({
-      id: url,
+    photos: (tour.photos || []).map((url, i) => ({
+      id: `photo_${i}_${url}`,
       url,
       file: null,
       alt: '',
     })),
-    heroImage: null,
+    heroImage: (() => {
+      if (!tour.coverPhoto) return null;
+      const idx = (tour.photos || []).findIndex((url) => url === tour.coverPhoto);
+      return idx >= 0 ? `photo_${idx}_${tour.coverPhoto}` : null;
+    })(),
     videoUrl: "",
     pricing: {
       basePrice: tierData[0]?.retailPrice ?? "", 
