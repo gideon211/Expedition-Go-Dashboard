@@ -39,6 +39,39 @@ async function createSlug(title, attempt = 0) {
 function validateTourData(data, isPartial = false) {
   const errors = [];
 
+  // ── Preprocess multipart form data ──────────────────────────────────
+  // Multer puts all non-file fields as strings. Parse JSON-stringified
+  // objects back into proper types so validation checks work correctly.
+  ['categorization', 'theme', 'productContent', 'schedulesAndPricing', 'bookingAndTickets'].forEach((field) => {
+    if (data[field] && typeof data[field] === 'string') {
+      try {
+        data[field] = JSON.parse(data[field]);
+      } catch {
+        // leave as-is; validation below will catch the malformed value
+      }
+    }
+  });
+
+  // Convert lat/lng from strings to numbers
+  if (data.latitude !== undefined && typeof data.latitude === 'string') {
+    const num = Number(data.latitude);
+    if (!isNaN(num)) data.latitude = num;
+  }
+  if (data.longitude !== undefined && typeof data.longitude === 'string') {
+    const num = Number(data.longitude);
+    if (!isNaN(num)) data.longitude = num;
+  }
+
+  // Parse tags if sent as a JSON string (frontend fallback)
+  if (data.tags && typeof data.tags === 'string') {
+    try {
+      data.tags = JSON.parse(data.tags);
+    } catch {
+      // leave as-is
+    }
+  }
+  // ── End of preprocessing ────────────────────────────────────────────
+
   if (!isPartial) {
     // Required fields for new tours
     if (!data.title || data.title.trim().length === 0) {

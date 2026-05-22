@@ -444,13 +444,29 @@ exports.createTour = catchAsync(async (req, res, next) => {
     productContent,
     schedulesAndPricing,
     bookingAndTickets,
-    photos = [],
     coverPhoto,
     tags = [],
     status = 'DRAFT',
     latitude,
     longitude
   } = req.body;
+
+  // ── Resolve photos & cover photo ────────────────────────────────────
+  // Combine existing Cloudinary URLs from frontend with newly uploaded files
+  const parsedExistingPhotos = req.body.existingPhotos
+    ? (typeof req.body.existingPhotos === 'string' ? JSON.parse(req.body.existingPhotos) : req.body.existingPhotos)
+    : [];
+  const uploadedPhotoUrls = (req.files || []).map(f => f.path || f.url);
+  const photos = [...parsedExistingPhotos, ...uploadedPhotoUrls];
+
+  // Resolve coverPhoto: if coverPhotoIndex was sent, map it to the actual uploaded URL
+  let resolvedCoverPhoto = coverPhoto;
+  if (req.body.coverPhotoIndex !== undefined && uploadedPhotoUrls[req.body.coverPhotoIndex]) {
+    resolvedCoverPhoto = uploadedPhotoUrls[req.body.coverPhotoIndex];
+  } else if (!resolvedCoverPhoto && photos.length > 0) {
+    resolvedCoverPhoto = photos[0];
+  }
+  // ────────────────────────────────────────────────────────────────────
 
   const slug = await createSlug(title);
 
@@ -471,7 +487,7 @@ exports.createTour = catchAsync(async (req, res, next) => {
       metaTitle,
       metaDescription,
       photos,
-      coverPhoto: coverPhoto || (photos.length > 0 ? photos[0] : null),
+      coverPhoto: resolvedCoverPhoto,
       tags,
       status,
       latitude,
@@ -559,7 +575,27 @@ exports.updateTour = catchAsync(async (req, res, next) => {
     return next(new AppError(`Validation failed: ${validationResult.errors.join(', ')}`, 400));
   }
 
-  const updateData = { ...req.body };
+  let updateData = { ...req.body };
+
+  // ── Resolve photos & cover photo for multipart form data ────────────
+  // Combine existing Cloudinary URLs with newly uploaded files
+  const parsedExistingPhotos = req.body.existingPhotos
+    ? (typeof req.body.existingPhotos === 'string' ? JSON.parse(req.body.existingPhotos) : req.body.existingPhotos)
+    : [];
+  const uploadedPhotoUrls = (req.files || []).map(f => f.path || f.url);
+  updateData.photos = [...parsedExistingPhotos, ...uploadedPhotoUrls];
+
+  // Resolve coverPhoto: if coverPhotoIndex was sent, map it to the actual uploaded URL
+  if (req.body.coverPhotoIndex !== undefined && uploadedPhotoUrls[req.body.coverPhotoIndex]) {
+    updateData.coverPhoto = uploadedPhotoUrls[req.body.coverPhotoIndex];
+  } else if (!req.body.coverPhoto && updateData.photos.length > 0) {
+    updateData.coverPhoto = updateData.photos[0];
+  }
+
+  // Remove fields that are not part of the Tour Prisma model
+  delete updateData.existingPhotos;
+  delete updateData.coverPhotoIndex;
+  // ────────────────────────────────────────────────────────────────────
 
   // Update slug if title changed
   if (req.body.title && req.body.title !== existingTour.title) {
