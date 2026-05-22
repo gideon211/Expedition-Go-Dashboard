@@ -5,6 +5,7 @@ import AppShell from "@/components/layout/AppShell";
 import DashboardPage from "@/features/dashboard/pages/DashboardPage";
 import BookingsPage from "@/features/bookings/pages/BookingsPage";
 import ProductsListPage from "@/features/products/pages/ProductsListPage";
+import ProductDetailPage from "@/features/products/pages/ProductDetailPage";
 import ProductBuilderPage from "@/features/products/pages/ProductBuilderPage";
 import AvailabilityPage from "@/features/availability/pages/AvailabilityPage";
 import PerformancePage from "@/features/performance/pages/PerformancePage";
@@ -40,6 +41,7 @@ export default function AppRoutes() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/bookings" element={<BookingsPage />} />
         <Route path="/products" element={<ProductsListPage />} />
+        <Route path="/products/:id" element={<ProductDetailPage />} />
         <Route path="/products/build/:id?/:step?" element={<ProductBuilderPage />} />
         <Route path="/availability" element={<AvailabilityPage />} />
         <Route path="/performance" element={<PerformancePage />} />

@@ -1,45 +1,127 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Filter, Grid3X3, List, Plus, Eye, Edit, Trash2 } from "lucide-react";
+import { Search, Filter, Grid3X3, List, Plus, Eye, Edit, Trash2, Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { PRODUCT_STATUSES } from "@/lib/constants";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { listMyProducts, listProducts, deleteProduct } from "@/features/products/api";
+import EmptyState from "@/components/shared/EmptyState";
+import { useAuthStore } from "@/stores/authStore";
 
-// Mock products data
-const MOCK_PRODUCTS = [
-  { id: "1", title: "Serengeti Safari Adventure", category: "safari", status: "ACTIVE", supplier: "Serengeti Tours Ltd.", basePrice: 600, currency: "USD", totalBookings: 142, rating: 4.8, lastUpdated: "2026-05-15", image: null },
-  { id: "2", title: "Zanzibar Beach Escape", category: "beach", status: "ACTIVE", supplier: "Zanzibar Adventures", basePrice: 450, currency: "USD", totalBookings: 89, rating: 4.6, lastUpdated: "2026-05-12", image: null },
-  { id: "3", title: "Kilimanjaro Trek - 7 Days", category: "trekking", status: "ACTIVE", supplier: "Kili Expeditions", basePrice: 3200, currency: "USD", totalBookings: 56, rating: 4.9, lastUpdated: "2026-05-10", image: null },
-  { id: "4", title: "Masai Mara Wildlife Tour", category: "wildlife", status: "PENDING_APPROVAL", supplier: "Mara Safaris", basePrice: 650, currency: "USD", totalBookings: 0, rating: 0, lastUpdated: "2026-05-18", image: null },
-  { id: "5", title: "Victoria Falls Expedition", category: "adventure", status: "ACTIVE", supplier: "Victoria Tours", basePrice: 700, currency: "USD", totalBookings: 203, rating: 4.7, lastUpdated: "2026-05-08", image: null },
-  { id: "6", title: "Ngorongoro Crater Day Trip", category: "safari", status: "DRAFT", supplier: "Crater Views", basePrice: 400, currency: "USD", totalBookings: 0, rating: 0, lastUpdated: "2026-05-17", image: null },
-  { id: "7", title: "Okavango Delta Safari", category: "safari", status: "ACTIVE", supplier: "Delta Expeditions", basePrice: 2100, currency: "USD", totalBookings: 67, rating: 4.8, lastUpdated: "2026-05-05", image: null },
-  { id: "8", title: "Cape Town City & Winelands", category: "city", status: "INACTIVE", supplier: "Cape Experiences", basePrice: 350, currency: "USD", totalBookings: 45, rating: 4.5, lastUpdated: "2026-04-28", image: null },
-];
+function extractPrice(tour) {
+  try {
+    const prices = tour?.schedulesAndPricing?.pricingSchedules?.schedules?.[0]?.prices;
+    if (prices?.length > 0) {
+      const minPrice = Math.min(...prices.map((p) => p.retailPrice || Infinity));
+      return minPrice !== Infinity ? minPrice : null;
+    }
+  } catch {}
+  return null;
+}
+
+function extractCurrency(tour) {
+  try {
+    return tour?.schedulesAndPricing?.pricingSchedules?.currency || "USD";
+  } catch {
+    return "USD";
+  }
+}
+
+function extractCategory(tour) {
+  try {
+    return tour?.categorization?.category || tour?.category || "";
+  } catch {
+    return "";
+  }
+}
+
+function extractSupplierName(tour) {
+  try {
+    return tour?.supplier?.name || tour?.supplier?.supplierProfile?.businessInfo?.businessName || "";
+  } catch {
+    return "";
+  }
+}
 
 const CATEGORIES = [
   { value: "", label: "All Categories" },
-  { value: "safari", label: "Safari" },
-  { value: "beach", label: "Beach & Island" },
-  { value: "adventure", label: "Adventure" },
-  { value: "cultural", label: "Cultural" },
-  { value: "city", label: "City Tour" },
-  { value: "wildlife", label: "Wildlife" },
-  { value: "trekking", label: "Trekking & Hiking" },
+  { value: "Cultural", label: "Cultural" },
+  { value: "Adventure", label: "Adventure" },
+  { value: "Nature", label: "Nature" },
+  { value: "Food & Drink", label: "Food & Drink" },
+  { value: "City Tour", label: "City Tour" },
+  { value: "Wildlife", label: "Wildlife" },
+  { value: "Trekking", label: "Trekking" },
 ];
 
 export default function ProductsListPage() {
   const navigate = useNavigate();
-  const [viewMode, setViewMode] = useState("grid"); // "grid" or "table"
+  const [viewMode, setViewMode] = useState("grid");
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
-  const filteredProducts = MOCK_PRODUCTS.filter((product) => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [usingSupplierEndpoint, setUsingSupplierEndpoint] = useState(false);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
+  const fetchProducts = () => {
+    setLoading(true);
+    setError(null);
+
+    const attempt = (useSupplier) => {
+      const apiCall = useSupplier ? listMyProducts({ limit: 100 }) : listProducts({ limit: 100 });
+
+      return apiCall
+        .then((res) => {
+          const tours = res.data?.data?.tours || [];
+          setProducts(tours);
+          setUsingSupplierEndpoint(useSupplier);
+        })
+        .catch((err) => {
+          const status = err.response?.status;
+          if (useSupplier && (status === 401 || status === 403)) {
+            return attempt(false);
+          }
+          throw err;
+        });
+    };
+
+    attempt(isAuthenticated)
+      .catch((err) => {
+        setError(err.response?.data?.message || err.message || "Failed to load products");
+      })
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, [isAuthenticated]);
+
+  const handleDelete = (id, title) => {
+    if (!window.confirm(`Are you sure you want to delete "${title || "this product"}"? This action cannot be undone.`)) return;
+
+    setDeletingId(id);
+    deleteProduct(id)
+      .then(() => {
+        toast.success("Product deleted successfully");
+        setProducts((prev) => prev.filter((p) => p.id !== id));
+      })
+      .catch((err) => {
+        toast.error(err.response?.data?.message || err.message || "Failed to delete product");
+      })
+      .finally(() => setDeletingId(null));
+  };
+
+  const filteredProducts = products.filter((product) => {
     const matchesSearch = !search ||
-      product.title.toLowerCase().includes(search.toLowerCase()) ||
-      product.supplier.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = !categoryFilter || product.category === categoryFilter;
+      product.title?.toLowerCase().includes(search.toLowerCase()) ||
+      extractSupplierName(product).toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = !categoryFilter || extractCategory(product) === categoryFilter;
     const matchesStatus = !statusFilter || product.status === statusFilter;
     return matchesSearch && matchesCategory && matchesStatus;
   });
@@ -52,19 +134,28 @@ export default function ProductsListPage() {
           <h1 className="text-xl md:text-2xl font-bold text-[#1e293b]">Products</h1>
           <p className="text-sm text-[#64748b] mt-1">Manage your tour products and experiences</p>
         </div>
-        <button
-          onClick={() => navigate("/products/build/new/type")}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
-        >
-          <Plus size={16} />
-          Create Product
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={fetchProducts}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm font-medium text-[#64748b] hover:bg-[#f8fafc] transition-colors"
+          >
+            <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+            Refresh
+          </button>
+          <button
+            onClick={() => navigate("/products/build/new/type")}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
+          >
+            <Plus size={16} />
+            Create Product
+          </button>
+        </div>
       </div>
 
       {/* Filters & View Toggle */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-1">
-          {/* Search */}
           <div className="relative flex-1 w-full sm:max-w-md">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9e9e9e]" />
             <input
@@ -76,7 +167,6 @@ export default function ProductsListPage() {
             />
           </div>
 
-          {/* Category Filter */}
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
@@ -87,7 +177,6 @@ export default function ProductsListPage() {
             ))}
           </select>
 
-          {/* Status Filter */}
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -98,10 +187,11 @@ export default function ProductsListPage() {
             <option value="DRAFT">Draft</option>
             <option value="PENDING_APPROVAL">Pending Approval</option>
             <option value="INACTIVE">Inactive</option>
+            <option value="PAUSED">Paused</option>
+            <option value="ARCHIVED">Archived</option>
           </select>
         </div>
 
-        {/* View Toggle */}
         <div className="flex items-center border border-[#eaeaea] rounded-lg overflow-hidden">
           <button
             onClick={() => setViewMode("grid")}
@@ -118,63 +208,142 @@ export default function ProductsListPage() {
         </div>
       </div>
 
+      {/* Loading State */}
+      {loading && products.length === 0 && (
+        <div className="flex items-center justify-center min-h-[300px]">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 size={32} className="animate-spin text-[#044b3b]" />
+            <p className="text-sm text-[#64748b]">Loading products...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && !loading && (
+        <div className="bg-[#fef2f2] border border-[#fca5a5] rounded-lg p-6 text-center">
+          <AlertCircle size={40} className="text-[#dc2626] mx-auto mb-3" />
+          <h2 className="text-lg font-semibold text-[#991b1b] mb-2">Failed to Load Products</h2>
+          <p className="text-sm text-[#b91c1c] mb-4">{error}</p>
+          <button
+            onClick={fetchProducts}
+            className="px-4 py-2 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+
+      {/* Auth Mode Banner */}
+      {!loading && !error && !usingSupplierEndpoint && (
+        <div className="mb-4 p-3 bg-[#fffbeb] border border-[#fcd34d] rounded-lg flex items-start gap-3">
+          <AlertCircle size={18} className="text-[#b45309] mt-0.5 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-[#1e293b]">Browsing public tours</p>
+            <p className="text-xs text-[#64748b] mt-0.5">
+              Sign in as a supplier to view and manage your own products, including drafts.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Results Count */}
-      <p className="text-sm text-[#64748b] mb-4">
-        Showing {filteredProducts.length} of {MOCK_PRODUCTS.length} products
-      </p>
+      {!loading && !error && (
+        <p className="text-sm text-[#64748b] mb-4">
+          Showing {filteredProducts.length} of {products.length} product{products.length !== 1 ? "s" : ""}
+        </p>
+      )}
 
       {/* Grid View */}
-      {viewMode === "grid" && (
+      {!loading && !error && viewMode === "grid" && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredProducts.map((product) => (
             <div
               key={product.id}
               className="bg-white rounded-lg border border-[#eaeaea] overflow-hidden hover:shadow-md transition-shadow"
             >
-              {/* Image Placeholder */}
-              <div className="aspect-[16/9] bg-[#f8fafc] flex items-center justify-center relative">
-                <div className="w-12 h-12 rounded-full bg-[#eaeaea] flex items-center justify-center">
-                  <span className="text-2xl text-[#9e9e9e]">🏞️</span>
-                </div>
+              <div
+                className="aspect-[16/9] bg-[#f8fafc] flex items-center justify-center relative cursor-pointer"
+                onClick={() => navigate(`/products/${product.id}`)}
+              >
+                {product.coverPhoto ? (
+                  <img
+                    src={product.coverPhoto}
+                    alt={product.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                      e.target.parentElement.innerHTML = `<div class="w-12 h-12 rounded-full bg-[#eaeaea] flex items-center justify-center"><span class="text-2xl text-[#9e9e9e]">🏞️</span></div>`;
+                    }}
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-[#eaeaea] flex items-center justify-center">
+                    <span className="text-2xl text-[#9e9e9e]">🏞️</span>
+                  </div>
+                )}
                 <div className="absolute top-3 left-3">
                   <StatusBadge status={product.status} label={PRODUCT_STATUSES[product.status]?.label} size="sm" />
                 </div>
               </div>
 
-              {/* Content */}
               <div className="p-4">
-                <h3 className="text-sm font-semibold text-[#1e293b] line-clamp-1" title={product.title}>
+                <h3
+                  className="text-sm font-semibold text-[#1e293b] line-clamp-1 cursor-pointer hover:text-[#044b3b]"
+                  title={product.title}
+                  onClick={() => navigate(`/products/${product.id}`)}
+                >
                   {product.title}
                 </h3>
-                <p className="text-xs text-[#64748b] mt-1">{product.supplier}</p>
+                <p className="text-xs text-[#64748b] mt-1">{extractSupplierName(product) || "No supplier"}</p>
 
                 <div className="flex items-center gap-2 mt-3">
-                  <span className="text-lg font-bold text-[#044b3b]">
-                    {formatCurrency(product.basePrice, product.currency)}
-                  </span>
-                  <span className="text-xs text-[#64748b]">/ person</span>
+                  {extractPrice(product) !== null ? (
+                    <>
+                      <span className="text-lg font-bold text-[#044b3b]">
+                        {formatCurrency(extractPrice(product), extractCurrency(product))}
+                      </span>
+                      <span className="text-xs text-[#64748b]">/ person</span>
+                    </>
+                  ) : (
+                    <span className="text-sm text-[#9e9e9e]">Price not set</span>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#eaeaea]">
                   <div className="flex items-center gap-3 text-xs text-[#64748b]">
-                    <span>{product.totalBookings} bookings</span>
-                    {product.rating > 0 && (
+                    <span>{product._count?.bookings ?? 0} bookings</span>
+                    {product.averageRating > 0 && (
                       <span className="flex items-center gap-0.5">
-                        ⭐ {product.rating}
+                        ⭐ {product.averageRating}
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => navigate(`/products/build/${product.id}/type`)}
-                      className="p-1.5 text-[#64748b] hover:text-[#044b3b] hover:bg-[#f0fdf4] rounded-md transition-colors"
-                      title="Edit"
+                      onClick={() => navigate(`/products/${product.id}`)}
+                      className="p-1.5 text-[#64748b] hover:text-[#0284c7] hover:bg-[#f0f9ff] rounded-md transition-colors"
+                      title="View"
                     >
-                      <Edit size={14} />
+                      <Eye size={14} />
                     </button>
-                    <button className="p-1.5 text-[#64748b] hover:text-[#dc3545] hover:bg-[#ffebeb] rounded-md transition-colors" title="Delete">
-                      <Trash2 size={14} />
-                    </button>
+                    {usingSupplierEndpoint && (
+                      <>
+                        <button
+                          onClick={() => navigate(`/products/build/${product.id}/type`)}
+                          className="p-1.5 text-[#64748b] hover:text-[#044b3b] hover:bg-[#f0fdf4] rounded-md transition-colors"
+                          title="Edit"
+                        >
+                          <Edit size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(product.id, product.title)}
+                          disabled={deletingId === product.id}
+                          className="p-1.5 text-[#64748b] hover:text-[#dc3545] hover:bg-[#ffebeb] rounded-md transition-colors disabled:opacity-40"
+                          title="Delete"
+                        >
+                          {deletingId === product.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -184,7 +353,7 @@ export default function ProductsListPage() {
       )}
 
       {/* Table View */}
-      {viewMode === "table" && (
+      {!loading && !error && viewMode === "table" && (
         <div className="bg-white rounded-lg border border-[#eaeaea] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -205,41 +374,65 @@ export default function ProductsListPage() {
                   <tr key={product.id} className="border-b border-[#eaeaea] hover:bg-[#f8fafc] transition-colors">
                     <td className="px-4 py-3">
                       <div>
-                        <p className="font-medium text-[#1e293b]">{product.title}</p>
-                        <p className="text-xs text-[#64748b]">{product.supplier}</p>
+                        <p
+                          className="font-medium text-[#1e293b] cursor-pointer hover:text-[#044b3b]"
+                          onClick={() => navigate(`/products/${product.id}`)}
+                        >
+                          {product.title}
+                        </p>
+                        <p className="text-xs text-[#64748b]">{extractSupplierName(product) || "No supplier"}</p>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="capitalize text-[#64748b]">{product.category}</span>
+                      <span className="capitalize text-[#64748b]">{extractCategory(product) || "—"}</span>
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge status={product.status} label={PRODUCT_STATUSES[product.status]?.label} size="sm" />
                     </td>
                     <td className="px-4 py-3 font-medium text-[#1e293b]">
-                      {formatCurrency(product.basePrice, product.currency)}
+                      {extractPrice(product) !== null
+                        ? formatCurrency(extractPrice(product), extractCurrency(product))
+                        : <span className="text-[#9e9e9e]">—</span>}
                     </td>
-                    <td className="px-4 py-3 text-[#1e293b]">{product.totalBookings}</td>
+                    <td className="px-4 py-3 text-[#1e293b]">{product._count?.bookings ?? 0}</td>
                     <td className="px-4 py-3">
-                      {product.rating > 0 ? (
+                      {product.averageRating > 0 ? (
                         <span className="flex items-center gap-1 text-[#1e293b]">
-                          ⭐ {product.rating}
+                          ⭐ {product.averageRating}
                         </span>
                       ) : (
                         <span className="text-[#9e9e9e]">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-[#64748b]">{formatDate(product.lastUpdated)}</td>
+                    <td className="px-4 py-3 text-[#64748b]">{formatDate(product.updatedAt)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => navigate(`/products/build/${product.id}/type`)}
-                          className="p-1.5 text-[#64748b] hover:text-[#044b3b] hover:bg-[#f0fdf4] rounded-md transition-colors"
+                          onClick={() => navigate(`/products/${product.id}`)}
+                          className="p-1.5 text-[#64748b] hover:text-[#0284c7] hover:bg-[#f0f9ff] rounded-md transition-colors"
+                          title="View"
                         >
-                          <Edit size={14} />
+                          <Eye size={14} />
                         </button>
-                        <button className="p-1.5 text-[#64748b] hover:text-[#dc3545] hover:bg-[#ffebeb] rounded-md transition-colors">
-                          <Trash2 size={14} />
-                        </button>
+                        {usingSupplierEndpoint && (
+                          <>
+                            <button
+                              onClick={() => navigate(`/products/build/${product.id}/type`)}
+                              className="p-1.5 text-[#64748b] hover:text-[#044b3b] hover:bg-[#f0fdf4] rounded-md transition-colors"
+                              title="Edit"
+                            >
+                              <Edit size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(product.id, product.title)}
+                              disabled={deletingId === product.id}
+                              className="p-1.5 text-[#64748b] hover:text-[#dc3545] hover:bg-[#ffebeb] rounded-md transition-colors disabled:opacity-40"
+                              title="Delete"
+                            >
+                              {deletingId === product.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -250,19 +443,31 @@ export default function ProductsListPage() {
         </div>
       )}
 
-      {filteredProducts.length === 0 && (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 rounded-full bg-[#f8fafc] flex items-center justify-center mx-auto mb-4">
-            <Search size={24} className="text-[#9e9e9e]" />
-          </div>
-          <p className="text-sm text-[#64748b]">No products match your filters.</p>
-          <button
-            onClick={() => { setSearch(""); setCategoryFilter(""); setStatusFilter(""); }}
-            className="mt-2 text-sm text-[#044b3b] hover:underline"
-          >
-            Clear all filters
-          </button>
-        </div>
+      {/* Empty State */}
+      {!loading && !error && filteredProducts.length === 0 && (
+        <EmptyState
+          icon="products"
+          title={products.length === 0 ? "No products yet" : "No products match your filters"}
+          description={products.length === 0 ? "Create your first product to start selling tours." : "Try adjusting your search or filters."}
+          action={
+            products.length === 0 ? (
+              <button
+                onClick={() => navigate("/products/build/new/type")}
+                className="flex items-center gap-2 px-4 py-2 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
+              >
+                <Plus size={16} />
+                Create Product
+              </button>
+            ) : (
+              <button
+                onClick={() => { setSearch(""); setCategoryFilter(""); setStatusFilter(""); }}
+                className="text-sm text-[#044b3b] hover:underline"
+              >
+                Clear all filters
+              </button>
+            )
+          }
+        />
       )}
     </div>
   );
