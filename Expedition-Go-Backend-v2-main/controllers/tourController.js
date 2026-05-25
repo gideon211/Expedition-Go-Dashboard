@@ -31,6 +31,7 @@ const { getPopularByCategory } = require('../utils/popularityScorer');
 const { rankTourIdsBySearch } = require('../utils/fullTextSearch');
 const cache = require('../utils/cacheHelper');
 const crypto = require('crypto');
+const axios = require('axios');
 const event = require('../utils/eventEmitter');
 
 // ================================
@@ -398,6 +399,43 @@ exports.getTour = catchAsync(async (req, res, next) => {
     data: { tour: result }
   });
 });
+
+/**
+ * Proxy a tour's cover photo (or first photo) as a same-origin image.
+ * Avoids CSP, CORS, and broken-URL issues from external CDNs.
+ */
+exports.getTourPhoto = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+
+  const tour = await prisma.tour.findUnique({
+    where: { id },
+    select: { coverPhoto: true, photos: true }
+  });
+
+  if (!tour) {
+    return next(new AppError('Tour not found', 404));
+  }
+
+  const rawUrl = tour.coverPhoto || tour.photos?.[0];
+  if (!rawUrl) {
+    return next(new AppError('No photo available for this tour', 404));
+  }
+
+  const photoUrl = cloudinaryUrl(rawUrl, 640);
+
+  try {
+    const response = await axios.get(photoUrl, { responseType: 'stream' });
+    if (response.headers['content-type']) {
+      res.set('Content-Type', response.headers['content-type']);
+    }
+    res.set('Cache-Control', 'public, max-age=86400');
+    response.data.pipe(res);
+  } catch {
+    res.redirect(photoUrl);
+  }
+});
+
+/**
 
 // ================================
 // SUPPLIER TOUR MANAGEMENT

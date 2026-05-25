@@ -8,6 +8,7 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import { listMyProducts, listProducts, deleteProduct } from "@/features/products/api";
 import EmptyState from "@/components/shared/EmptyState";
 import { useAuthStore } from "@/stores/authStore";
+import config from "@/config";
 
 function extractPrice(tour) {
   try {
@@ -267,7 +268,7 @@ export default function ProductsListPage() {
               >
                 {(product.coverPhoto || product.photos?.[0]) ? (
                   <img
-                    src={product.coverPhoto || product.photos[0]}
+                    src={`${config.api.baseURL}/tours/${product.id}/photo`}
                     alt={product.title}
                     className="w-full h-full object-cover block"
                     loading="eager"

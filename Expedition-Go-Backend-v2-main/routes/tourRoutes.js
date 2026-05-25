@@ -485,6 +485,9 @@ router.get('/popular/by-category', tourController.getPopularByCategory);
  */
 router.get('/:id', tourController.getTour);
 
+// Proxy tour cover photo — public, same-origin (avoids CSP / CDN issues)
+router.get('/:id/photo', tourController.getTourPhoto);
+
 // ================================
 // SUPPLIER TOUR MANAGEMENT
 // ================================
