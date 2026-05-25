@@ -262,21 +262,29 @@ export default function ProductsListPage() {
               className="bg-white rounded-lg border border-[#eaeaea] overflow-hidden hover:shadow-md transition-shadow"
             >
               <div
-                className="aspect-[16/9] bg-[#f8fafc] flex items-center justify-center relative cursor-pointer overflow-hidden"
+                className="aspect-[16/9] bg-[#f8fafc] relative cursor-pointer overflow-hidden"
                 onClick={() => navigate(`/products/${product.id}`)}
               >
-                {(product.coverPhoto || product.photos?.[0]) ? (
-                  <img
-                    src={product.coverPhoto || product.photos[0]}
-                    alt={product.title}
-                    className="w-full h-full object-cover"
-                    onError={(e) => { e.target.style.display = "none"; }}
-                  />
-                ) : (
+                {/* Placeholder — always rendered so it shows if image fails */}
+                <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-12 h-12 rounded-full bg-[#eaeaea] flex items-center justify-center">
                     <span className="text-2xl text-[#9e9e9e]">🏞️</span>
                   </div>
+                </div>
+
+                {/* Image overlays placeholder */}
+                {(product.coverPhoto || product.photos?.[0]) && (
+                  <img
+                    src={product.coverPhoto || product.photos[0]}
+                    alt={product.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null; // prevent infinite loop
+                      e.target.style.display = "none";
+                    }}
+                  />
                 )}
+
                 <div className="absolute top-3 left-3">
                   <StatusBadge status={product.status} label={PRODUCT_STATUSES[product.status]?.label} size="sm" />
                 </div>
