@@ -8,7 +8,6 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import { listMyProducts, listProducts, deleteProduct } from "@/features/products/api";
 import EmptyState from "@/components/shared/EmptyState";
 import { useAuthStore } from "@/stores/authStore";
-import config from "@/config";
 
 function extractPrice(tour) {
   try {
@@ -262,32 +261,35 @@ export default function ProductsListPage() {
               key={product.id}
               className="bg-white rounded-lg border border-[#eaeaea] overflow-hidden hover:shadow-md transition-shadow"
             >
-              <div
-                className="h-48 bg-[#f8fafc] relative cursor-pointer overflow-hidden"
-                onClick={() => navigate(`/products/${product.id}`)}
-              >
-                {(product.coverPhoto || product.photos?.[0]) ? (
-                  <img
-                    src={`${config.api.baseURL}/tours/${product.id}/photo`}
-                    alt={product.title}
-                    className="w-full h-full object-cover block"
-                    loading="eager"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.style.display = "none";
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full bg-[#eaeaea] flex items-center justify-center">
-                      <span className="text-2xl text-[#9e9e9e]">🏞️</span>
+                <div
+                  className="h-48 bg-[#f8fafc] relative cursor-pointer overflow-hidden"
+                  onClick={() => navigate(`/products/${product.id}`)}
+                >
+                  {/* Placeholder always rendered underneath */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-[#eaeaea] flex items-center justify-center text-2xl text-[#9e9e9e]">
+                      <span>🏞️</span>
                     </div>
                   </div>
-                )}
-                <div className="absolute top-3 left-3">
-                  <StatusBadge status={product.status} label={PRODUCT_STATUSES[product.status]?.label} size="sm" />
+
+                  {/* Image overlaid on top — disappears on error, revealing placeholder */}
+                  {(product.coverPhoto || product.photos?.[0]) && (
+                    <img
+                      src={product.coverPhoto || product.photos[0]}
+                      alt={product.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="eager"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.style.display = "none";
+                      }}
+                    />
+                  )}
+
+                  <div className="absolute top-3 left-3">
+                    <StatusBadge status={product.status} label={PRODUCT_STATUSES[product.status]?.label} size="sm" />
+                  </div>
                 </div>
-              </div>
 
               <div className="p-4">
                 <h3
