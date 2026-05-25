@@ -1,8 +1,6 @@
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
 import LocationAutocomplete from "@/components/shared/LocationAutocomplete";
-import LocationMapPicker from "@/components/shared/LocationMapPicker";
 import MultiSelect from "@/components/shared/MultiSelect";
-import config from "@/config";
 
 const TAG_OPTIONS = [
   { value: "adventure", label: "Adventure" },
@@ -313,24 +311,35 @@ export default function ProductBasicsStep() {
           />
         </div>
 
-        {/* Location Map Picker — Google Maps geocoding with Nominatim fallback */}
-        <div className="md:col-span-2">
-          <LocationMapPicker
-            apiKey={config.maps.googleMapsApiKey}
-            initialLat={product.latitude}
-            initialLng={product.longitude}
-            label="Find Location on Map"
-            placeholder="Search for a city or landmark..."
-            onSelect={(result) => {
-              updateProduct({
-                city: result.city || product.city,
-                country: result.country || product.country,
-                region: result.region || product.region,
-                latitude: result.latitude,
-                longitude: result.longitude,
-              });
-            }}
+        {/* Latitude / Longitude */}
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">Latitude</label>
+          <input
+            type="number"
+            step="any"
+            value={product.latitude ?? ""}
+            onChange={(e) => handleChange("latitude", e.target.value === "" ? null : Number(e.target.value))}
+            placeholder="e.g., -33.9249"
+            className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] ${
+              errors.latitude ? "border-[#dc3545]" : "border-[#eaeaea]"
+            }`}
           />
+          {errors.latitude && <p className="mt-1 text-xs text-[#dc3545]">{errors.latitude}</p>}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-[#1e293b] mb-2">Longitude</label>
+          <input
+            type="number"
+            step="any"
+            value={product.longitude ?? ""}
+            onChange={(e) => handleChange("longitude", e.target.value === "" ? null : Number(e.target.value))}
+            placeholder="e.g., 18.4241"
+            className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] ${
+              errors.longitude ? "border-[#dc3545]" : "border-[#eaeaea]"
+            }`}
+          />
+          {errors.longitude && <p className="mt-1 text-xs text-[#dc3545]">{errors.longitude}</p>}
         </div>
 
         {/* Meta Title */}
