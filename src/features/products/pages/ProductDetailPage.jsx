@@ -69,20 +69,8 @@ export default function ProductDetailPage() {
     return [tour.coverPhoto, ...rest];
   })();
 
-  // Helper function to generate Cloudinary thumbnail URL
-  const getCloudinaryThumbnail = (url, width = 400, height = 300) => {
-    if (!url) return url;
-    // Check if it's a Cloudinary URL
-    if (url.includes('cloudinary.com')) {
-      // Insert transformation parameters before the version or filename
-      // Pattern: https://res.cloudinary.com/{cloud_name}/image/upload/v{version}/{public_id}
-      const uploadIndex = url.indexOf('/upload/');
-      if (uploadIndex !== -1) {
-        const beforeUpload = url.substring(0, uploadIndex + 8); // includes '/upload/'
-        const afterUpload = url.substring(uploadIndex + 8);
-        return `${beforeUpload}c_fill,w_${width},h_${height},q_auto,f_auto/${afterUpload}`;
-      }
-    }
+  // Helper function to get image URL (backend already returns optimized Cloudinary URLs)
+  const getImageUrl = (url) => {
     return url;
   };
 
@@ -193,7 +181,7 @@ export default function ProductDetailPage() {
                 className={`rounded-lg overflow-hidden bg-[#f8fafc] text-left ${i === 0 ? "md:row-span-2" : ""}`}
               >
                 <img
-                  src={getCloudinaryThumbnail(photo, i === 0 ? 600 : 400, i === 0 ? 600 : 300)}
+                  src={getImageUrl(photo)}
                   alt={`${tour.title} - Photo ${i + 1}`}
                   className="w-full h-full object-cover hover:opacity-90 transition-opacity"
                   style={{ minHeight: i === 0 ? "300px" : "145px" }}
@@ -213,7 +201,7 @@ export default function ProductDetailPage() {
                 className="relative rounded-lg overflow-hidden min-h-[145px] cursor-pointer group w-full"
               >
                 <img
-                  src={getCloudinaryThumbnail(displayPhotos[4], 400, 300)}
+                  src={getImageUrl(displayPhotos[4])}
                   alt={`${tour.title} - Photo 5`}
                   className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-50 transition-opacity"
                   onError={(e) => { e.target.style.display = "none"; }}
@@ -575,7 +563,7 @@ export default function ProductDetailPage() {
                   className="rounded-lg overflow-hidden bg-[#f8fafc] text-left hover:opacity-90 transition-opacity"
                 >
                   <img
-                    src={getCloudinaryThumbnail(photo, 300, 200)}
+                    src={getImageUrl(photo)}
                     alt={`${tour.title} - Photo ${i + 1}`}
                     className="w-full h-48 object-cover"
                     onError={(e) => {

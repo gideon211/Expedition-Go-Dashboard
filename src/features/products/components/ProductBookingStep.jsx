@@ -1,5 +1,7 @@
 import { MapPin, Users, Clock, Check } from "lucide-react";
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
+import LocationMapPicker from "@/components/shared/LocationMapPicker";
+import config from "@/config";
 
 const CONFIRMATION_TYPES = [
   { value: "instant", label: "Instant Confirmation", description: "Booking is confirmed immediately" },
@@ -214,6 +216,24 @@ export default function ProductBookingStep() {
               className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
             />
           </div>
+        </div>
+
+        {/* Meeting Point Location Map */}
+        <div className="md:col-span-2">
+          <LocationMapPicker
+            apiKey={config.maps.googleMapsApiKey}
+            initialLat={bookingRules.meetingPointLat}
+            initialLng={bookingRules.meetingPointLng}
+            label="Set Meeting Point on Map"
+            placeholder="Search for the meeting location..."
+            onSelect={(result) => {
+              updateNested("bookingRules.meetingPointLat", result.latitude);
+              updateNested("bookingRules.meetingPointLng", result.longitude);
+              if (!bookingRules.meetingPoint && result.formatted) {
+                updateNested("bookingRules.meetingPoint", result.formatted.split(",")[0]);
+              }
+            }}
+          />
         </div>
       </div>
 
