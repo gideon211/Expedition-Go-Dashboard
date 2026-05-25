@@ -38,17 +38,6 @@ export default function ProductDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  useEffect(() => {
-    if (lightboxIndex === null) return;
-    const handleKey = (e) => {
-      if (e.key === "Escape") setLightboxIndex(null);
-      if (e.key === "ArrowLeft" && lightboxIndex > 0) setLightboxIndex(lightboxIndex - 1);
-      if (e.key === "ArrowRight" && lightboxIndex < tour.photos.length - 1) setLightboxIndex(lightboxIndex + 1);
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [lightboxIndex, tour?.photos?.length]);
-
   const handleDelete = () => {
     if (!window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) return;
 
@@ -108,6 +97,25 @@ export default function ProductDetailPage() {
   const location = content.location || {};
   const duration = categorization.duration || {};
 
+  // Reorder photos so coverPhoto is always first (hero image)
+  const displayPhotos = (() => {
+    const photos = tour.photos || [];
+    if (!tour.coverPhoto || photos.length === 0) return photos;
+    const rest = photos.filter((p) => p !== tour.coverPhoto);
+    return [tour.coverPhoto, ...rest];
+  })();
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const handleKey = (e) => {
+      if (e.key === "Escape") setLightboxIndex(null);
+      if (e.key === "ArrowLeft" && lightboxIndex > 0) setLightboxIndex(lightboxIndex - 1);
+      if (e.key === "ArrowRight" && lightboxIndex < displayPhotos.length - 1) setLightboxIndex(lightboxIndex + 1);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [lightboxIndex, displayPhotos.length]);
+
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto">
       {/* Header */}
@@ -150,10 +158,10 @@ export default function ProductDetailPage() {
       </div>
 
       {/* Photo Gallery */}
-      {tour.photos?.length > 0 && (
+      {displayPhotos.length > 0 && (
         <div className="mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {tour.photos.slice(0, 4).map((photo, i) => (
+            {displayPhotos.slice(0, 4).map((photo, i) => (
               <button
                 key={i}
                 onClick={() => setLightboxIndex(i)}
@@ -174,19 +182,19 @@ export default function ProductDetailPage() {
                 />
               </button>
             ))}
-            {tour.photos.length > 4 && (
+            {displayPhotos.length > 4 && (
               <button
                 onClick={() => setGalleryOpen(true)}
                 className="relative rounded-lg overflow-hidden min-h-[145px] cursor-pointer group w-full"
               >
                 <img
-                  src={tour.photos[4]}
+                  src={displayPhotos[4]}
                   alt={`${tour.title} - Photo 5`}
                   className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-50 transition-opacity"
                   onError={(e) => { e.target.style.display = "none"; }}
                 />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
-                  <span className="text-sm font-medium text-[#1e293b]">+{tour.photos.length - 4} more photos</span>
+                  <span className="text-sm font-medium text-[#1e293b]">+{displayPhotos.length - 4} more photos</span>
                 </div>
               </button>
             )}
@@ -535,7 +543,7 @@ export default function ProductDetailPage() {
               </button>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {tour.photos.map((photo, i) => (
+              {displayPhotos.map((photo, i) => (
                 <button
                   key={i}
                   onClick={() => { setGalleryOpen(false); setLightboxIndex(i); }}
@@ -561,7 +569,7 @@ export default function ProductDetailPage() {
       )}
 
       {/* Lightbox */}
-      {lightboxIndex !== null && tour.photos[lightboxIndex] && (
+      {lightboxIndex !== null && displayPhotos[lightboxIndex] && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4"
           onClick={() => setLightboxIndex(null)}
@@ -580,7 +588,7 @@ export default function ProductDetailPage() {
               <ChevronLeft size={32} />
             </button>
           )}
-          {lightboxIndex < tour.photos.length - 1 && (
+          {lightboxIndex < displayPhotos.length - 1 && (
             <button
               onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex + 1); }}
               className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-white/70 hover:text-white rounded-full hover:bg-white/10 transition-colors"
@@ -590,13 +598,13 @@ export default function ProductDetailPage() {
           )}
           <div className="max-w-5xl max-h-[85vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
             <img
-              src={tour.photos[lightboxIndex]}
+              src={displayPhotos[lightboxIndex]}
               alt={`${tour.title} - Photo ${lightboxIndex + 1}`}
               className="max-w-full max-h-[80vh] object-contain rounded-lg"
               onError={(e) => { e.target.style.display = "none"; }}
             />
             <p className="mt-3 text-sm text-white/70">
-              {lightboxIndex + 1} / {tour.photos.length}
+              {lightboxIndex + 1} / {displayPhotos.length}
             </p>
           </div>
         </div>
