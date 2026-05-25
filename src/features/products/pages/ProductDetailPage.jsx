@@ -53,6 +53,25 @@ export default function ProductDetailPage() {
       .finally(() => setDeleting(false));
   };
 
+  // Reorder photos so coverPhoto is always first (hero image)
+  const displayPhotos = (() => {
+    const photos = tour?.photos || [];
+    if (!tour?.coverPhoto || photos.length === 0) return photos;
+    const rest = photos.filter((p) => p !== tour.coverPhoto);
+    return [tour.coverPhoto, ...rest];
+  })();
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const handleKey = (e) => {
+      if (e.key === "Escape") setLightboxIndex(null);
+      if (e.key === "ArrowLeft" && lightboxIndex > 0) setLightboxIndex(lightboxIndex - 1);
+      if (e.key === "ArrowRight" && lightboxIndex < displayPhotos.length - 1) setLightboxIndex(lightboxIndex + 1);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [lightboxIndex, displayPhotos.length]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -96,25 +115,6 @@ export default function ProductDetailPage() {
   const meetingPoint = booking.meetingPoint || {};
   const location = content.location || {};
   const duration = categorization.duration || {};
-
-  // Reorder photos so coverPhoto is always first (hero image)
-  const displayPhotos = (() => {
-    const photos = tour.photos || [];
-    if (!tour.coverPhoto || photos.length === 0) return photos;
-    const rest = photos.filter((p) => p !== tour.coverPhoto);
-    return [tour.coverPhoto, ...rest];
-  })();
-
-  useEffect(() => {
-    if (lightboxIndex === null) return;
-    const handleKey = (e) => {
-      if (e.key === "Escape") setLightboxIndex(null);
-      if (e.key === "ArrowLeft" && lightboxIndex > 0) setLightboxIndex(lightboxIndex - 1);
-      if (e.key === "ArrowRight" && lightboxIndex < displayPhotos.length - 1) setLightboxIndex(lightboxIndex + 1);
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [lightboxIndex, displayPhotos.length]);
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto">
