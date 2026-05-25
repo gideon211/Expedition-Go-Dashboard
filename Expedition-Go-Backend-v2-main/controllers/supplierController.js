@@ -636,6 +636,47 @@ exports.activateSupplier = catchAsync(async (req, res, next) => {
 });
 
 /**
+ * Get all active suppliers (admin only)
+ * Returns suppliers who are logged in and able to create tours.
+ */
+exports.getActiveSuppliers = catchAsync(async (req, res, next) => {
+  const suppliers = await prisma.user.findMany({
+    where: {
+      roles: {
+        has: 'supplier'
+      },
+      supplierProfile: {
+        status: 'ACTIVE'
+      },
+      lastLoginAt: {
+        not: null
+      }
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      photoURL: true,
+      lastLoginAt: true,
+      supplierProfile: {
+        select: {
+          status: true,
+          totalEarnings: true,
+          totalBookings: true,
+          businessInfo: true
+        }
+      }
+    },
+    orderBy: { lastLoginAt: 'desc' }
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: { suppliers }
+  });
+});
+
+/**
  * Suspend/unsuspend supplier (admin only)
  */
 exports.suspendSupplier = catchAsync(async (req, res, next) => {

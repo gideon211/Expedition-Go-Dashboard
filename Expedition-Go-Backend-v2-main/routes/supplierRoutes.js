@@ -714,4 +714,42 @@ router.patch('/admin/:id/suspend', restrictTo('admin'), supplierController.suspe
  */
 router.patch('/admin/:id/activate', restrictTo('admin'), supplierController.activateSupplier);
 
+/**
+ * @swagger
+ * /suppliers/admin/active-suppliers:
+ *   get:
+ *     summary: Get all active suppliers (admin only)
+ *     description: |
+ *       Returns suppliers who have logged in and are able to create tours.
+ *       Filters for users with supplier role, ACTIVE supplier profile, and a non-null lastLoginAt.
+ *     tags: [Admin, Suppliers]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Active suppliers retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     suppliers:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/User'
+ *       403:
+ *         description: Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get('/admin/active-suppliers', restrictTo('admin'), supplierController.getActiveSuppliers);
+
 module.exports = router;
