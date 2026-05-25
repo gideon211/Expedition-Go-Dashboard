@@ -262,29 +262,21 @@ export default function ProductsListPage() {
               className="bg-white rounded-lg border border-[#eaeaea] overflow-hidden hover:shadow-md transition-shadow"
             >
               <div
-                className="aspect-[16/9] bg-[#f8fafc] flex items-center justify-center relative cursor-pointer"
+                className="aspect-[16/9] bg-[#f8fafc] flex items-center justify-center relative cursor-pointer overflow-hidden"
                 onClick={() => navigate(`/products/${product.id}`)}
               >
-                {(() => {
-                  const thumb = product.coverPhoto || product.photos?.[0] || null;
-                  return thumb ? (
-                    <img
-                      src={thumb}
-                      alt={product.title}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                        e.target.nextElementSibling?.style?.display !== undefined && (e.target.nextElementSibling.style.display = "flex");
-                      }}
-                    />
-                  ) : null;
-                })()}
-                <div
-                  className="w-12 h-12 rounded-full bg-[#eaeaea] flex items-center justify-center"
-                  style={{ display: product.coverPhoto || product.photos?.[0] ? "none" : "flex" }}
-                >
-                  <span className="text-2xl text-[#9e9e9e]">🏞️</span>
-                </div>
+                {(product.coverPhoto || product.photos?.[0]) ? (
+                  <img
+                    src={product.coverPhoto || product.photos[0]}
+                    alt={product.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { e.target.style.display = "none"; }}
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-[#eaeaea] flex items-center justify-center">
+                    <span className="text-2xl text-[#9e9e9e]">🏞️</span>
+                  </div>
+                )}
                 <div className="absolute top-3 left-3">
                   <StatusBadge status={product.status} label={PRODUCT_STATUSES[product.status]?.label} size="sm" />
                 </div>
