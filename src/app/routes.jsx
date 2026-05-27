@@ -45,23 +45,26 @@ export default function AppRoutes() {
       <Route path="/error/403" element={<ForbiddenPage />} />
       <Route path="/error/network" element={<NetworkErrorPage />} />
 
-      {/* Main App Routes (with AppShell) — protected for verified suppliers */}
-      <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/bookings" element={<BookingsPage />} />
-        <Route path="/products" element={<ProductsListPage />} />
-        <Route path="/products/:id" element={<ProductDetailPage />} />
-        <Route path="/products/build/:id?/:step?" element={<ProductBuilderPage />} />
-        <Route path="/availability" element={<AvailabilityPage />} />
-        <Route path="/performance" element={<PerformancePage />} />
-        <Route path="/reviews" element={<ReviewsPage />} />
-        <Route path="/finance" element={<FinancePage />} />
-        <Route path="/notifications" element={<NotificationsPage />} />
-        <Route path="/users" element={<UsersPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
+      {/* Protected layout — checks auth & supplier status */}
+      <Route element={<ProtectedRoute />}>
+        {/* Main App Layout (with AppShell) */}
+        <Route element={<AppShell />}>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/bookings" element={<BookingsPage />} />
+          <Route path="/products" element={<ProductsListPage />} />
+          <Route path="/products/:id" element={<ProductDetailPage />} />
+          <Route path="/products/build/:id?/:step?" element={<ProductBuilderPage />} />
+          <Route path="/availability" element={<AvailabilityPage />} />
+          <Route path="/performance" element={<PerformancePage />} />
+          <Route path="/reviews" element={<ReviewsPage />} />
+          <Route path="/finance" element={<FinancePage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/users" element={<UsersPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
 
-        {/* Catch-all route for 404 */}
-        <Route path="*" element={<NotFoundPage />} />
+          {/* Catch-all route for 404 */}
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
       </Route>
     </Routes>
   );

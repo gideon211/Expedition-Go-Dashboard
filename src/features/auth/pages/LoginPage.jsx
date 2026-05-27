@@ -37,6 +37,11 @@ export default function LoginPage() {
       return;
     }
 
+    if (!auth) {
+      setError("Authentication service is unavailable. Please try again later or use the main site to log in.");
+      return;
+    }
+
     setLoading(true);
 
     try {

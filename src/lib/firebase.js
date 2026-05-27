@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps } from "firebase/app";
 import {
   getAuth,
   signInWithEmailAndPassword,
@@ -15,8 +15,18 @@ const firebaseConfig = {
   messagingSenderId: config.auth.firebase.messagingSenderId,
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+// Only initialize if not already initialized to avoid duplicate app errors
+let app;
+let auth;
+
+try {
+  const existing = getApps();
+  app = existing.length > 0 ? existing[0] : initializeApp(firebaseConfig);
+  auth = getAuth(app);
+} catch (err) {
+  console.warn("Firebase initialization failed:", err);
+  auth = null;
+}
 
 export {
   auth,

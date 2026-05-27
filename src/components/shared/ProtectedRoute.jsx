@@ -1,8 +1,8 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuthStore, isSupplierUser, isAdminUser } from "@/stores/authStore";
 import { Loader2 } from "lucide-react";
 
-export default function ProtectedRoute({ children, requireAdmin = false }) {
+export default function ProtectedRoute({ requireAdmin = false }) {
   const { isAuthenticated, isLoading, supplierProfile } = useAuthStore();
   const location = useLocation();
 
@@ -24,17 +24,14 @@ export default function ProtectedRoute({ children, requireAdmin = false }) {
   const isSupplier = isSupplierUser();
   const isAdmin = isAdminUser();
 
-  // Admin-only pages (e.g., User Management)
   if (requireAdmin && !isAdmin) {
     return <Navigate to="/" replace />;
   }
 
-  // Supplier dashboard pages require verified supplier or admin
   if (!isSupplier && !isAdmin) {
     return <Navigate to="/supplier/status" replace />;
   }
 
-  // Supplier exists but not yet verified/active
   if (isSupplier && !isAdmin) {
     if (!supplierProfile) {
       return <Navigate to="/supplier/status" replace />;
@@ -45,5 +42,5 @@ export default function ProtectedRoute({ children, requireAdmin = false }) {
     }
   }
 
-  return children;
+  return <Outlet />;
 }
