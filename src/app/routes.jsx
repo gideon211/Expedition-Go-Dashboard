@@ -18,6 +18,7 @@ import SettingsPage from "@/features/settings/pages/SettingsPage";
 
 // Auth Pages (rendered outside AppShell)
 import AuthCallback from "@/features/auth/pages/AuthCallback";
+import LoginPage from "@/features/auth/pages/LoginPage";
 
 // Supplier Pages (rendered outside AppShell)
 import SupplierStatusPage from "@/features/supplier/pages/SupplierStatusPage";
@@ -31,8 +32,9 @@ import NetworkErrorPage from "@/pages/errors/NetworkErrorPage";
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Auth Callback (without AppShell — full-screen auth bridge) */}
+      {/* Auth Pages (without AppShell) */}
       <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/login" element={<LoginPage />} />
 
       {/* Supplier Status (without AppShell — full-screen status check) */}
       <Route path="/supplier/status" element={<SupplierStatusPage />} />

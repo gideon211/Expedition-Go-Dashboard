@@ -483,30 +483,6 @@ export default function ProductDetailPage() {
           </div>
         </div>
       )}
-                    e.target.parentElement.appendChild(placeholder);
-                  }}
-                />
-              </button>
-            ))}
-            {displayPhotos.length > 4 && (
-              <button
-                onClick={() => setGalleryOpen(true)}
-                className="relative rounded-lg overflow-hidden min-h-[145px] cursor-pointer group w-full"
-              >
-                <img
-                  src={getImageUrl(displayPhotos[4])}
-                  alt={`${tour.title} - Photo 5`}
-                  className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-50 transition-opacity"
-                  onError={(e) => { e.target.style.display = "none"; }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
-                  <span className="text-sm font-medium text-[#1e293b]">+{displayPhotos.length - 4} more photos</span>
-                </div>
-              </button>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* ========================================================================
           MAIN LAYOUT: 2-COLUMN GRID

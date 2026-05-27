@@ -1,7 +1,8 @@
-import { Search, Bell, ChevronDown, Building2, Shield, Clock, FileText } from "lucide-react";
+import { Search, Bell, ChevronDown, Building2, Shield, Clock, FileText, LogOut, User, Mail } from "lucide-react";
 import { useSidebarStore } from "@/stores/sidebarStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "@/lib/axios";
 
 const STATUS_STYLES = {
@@ -14,6 +15,7 @@ const STATUS_STYLES = {
 };
 
 export default function Header() {
+  const navigate = useNavigate();
   const { isCollapsed } = useSidebarStore();
   const user = useAuthStore((state) => state.user);
   const isAdmin = user?.roles?.includes("admin");
@@ -26,6 +28,10 @@ export default function Header() {
 
   const [supplierProfile, setSupplierProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
+
+  // User dropdown state
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -55,10 +61,14 @@ export default function Header() {
       .finally(() => setProfileLoading(false));
   }, [isSupplier]);
 
+  // Click outside handlers
   useEffect(() => {
     function handleClickOutside(e) {
       if (suppliersRef.current && !suppliersRef.current.contains(e.target)) {
         setSuppliersOpen(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -70,6 +80,12 @@ export default function Header() {
   const avatarLetter = displayName?.charAt(0)?.toUpperCase() || "A";
 
   const statusStyle = STATUS_STYLES[supplierProfile?.status] || STATUS_STYLES.PENDING;
+
+  const handleLogout = async () => {
+    setUserMenuOpen(false);
+    await useAuthStore.getState().logout();
+    navigate("/login", { replace: true });
+  };
 
   return (
     <header
@@ -203,16 +219,68 @@ export default function Header() {
           </span>
         </button>
 
-        {/* User Profile */}
-        <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-[#eaeaea]">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium text-[#1e293b]">{displayName}</p>
-            <p className="text-xs text-[#64748b] capitalize">{displayRole}</p>
-          </div>
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#044b3b] flex items-center justify-center text-white font-medium text-sm cursor-pointer">
-            {avatarLetter}
-          </div>
-          <ChevronDown size={14} className="text-[#9e9e9e] hidden sm:block" />
+        {/* User Profile Dropdown */}
+        <div className="relative" ref={userMenuRef}>
+          <button
+            onClick={() => setUserMenuOpen((open) => !open)}
+            className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-[#eaeaea] hover:bg-[#f8fafc] rounded-lg py-1.5 pr-2 transition-colors"
+          >
+            <div className="text-right hidden sm:block">
+              <p className="text-sm font-medium text-[#1e293b]">{displayName}</p>
+              <p className="text-xs text-[#64748b] capitalize">{displayRole}</p>
+            </div>
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#044b3b] flex items-center justify-center text-white font-medium text-sm">
+              {avatarLetter}
+            </div>
+            <ChevronDown
+              size={14}
+              className={`text-[#9e9e9e] hidden sm:block transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+          {userMenuOpen && (
+            <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl border border-[#eaeaea] shadow-lg z-50 overflow-hidden">
+              {/* Profile Info */}
+              <div className="px-4 py-4 border-b border-[#eaeaea]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#044b3b] flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
+                    {avatarLetter}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-[#1e293b] truncate">{displayName}</p>
+                    <p className="text-xs text-[#64748b] truncate capitalize">{displayRole}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Menu Items */}
+              <div className="py-1">
+                <button
+                  onClick={() => { setUserMenuOpen(false); navigate("/settings"); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#1e293b] hover:bg-[#f8fafc] transition-colors"
+                >
+                  <User size={16} className="text-[#64748b]" />
+                  Profile Settings
+                </button>
+                {user?.email && (
+                  <div className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#64748b]">
+                    <Mail size={16} />
+                    <span className="truncate">{user.email}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Logout */}
+              <div className="border-t border-[#eaeaea] py-1">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#dc2626] hover:bg-[#fef2f2] transition-colors"
+                >
+                  <LogOut size={16} />
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>
