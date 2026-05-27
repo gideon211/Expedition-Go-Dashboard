@@ -6,8 +6,8 @@ import { persist } from "zustand/middleware";
  *
  * Manages authentication state for the supplier dashboard.
  * Supports two auth mechanisms:
- *  1. Cookie-based session (__session cookie set by backend after
- *     /api/auth/verify-token). This is the PRIMARY mechanism.
+ *  1. Cookie-based session (set by backend after token exchange via
+ *     /api/users/signup or /api/auth/verify-token). This is the PRIMARY mechanism.
  *  2. localStorage fallback (Authorization: Bearer token). Used when
  *     cookies are blocked (e.g. Safari Private Mode, strict tracker blockers).
  */
@@ -141,9 +141,16 @@ export function canAccessSupplierDashboard(supplierProfile) {
 }
 
 /**
+ * Whether a supplier can create and manage tours in the dashboard.
+ */
+export function canCreateTours(supplierProfile) {
+  return canAccessSupplierDashboard(supplierProfile);
+}
+
+/**
  * Check if the current user is an approved or active supplier.
  */
 export function isVerifiedSupplier() {
   const { supplierProfile } = useAuthStore.getState();
-  return canAccessSupplierDashboard(supplierProfile);
+  return canCreateTours(supplierProfile);
 }

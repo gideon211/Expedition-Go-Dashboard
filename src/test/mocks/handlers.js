@@ -71,24 +71,34 @@ export const handlers = [
     return HttpResponse.json({ message: 'Logged out successfully' });
   }),
 
-  // Cross-domain auth callback — verify Firebase token and create session
-  http.post(`${API_BASE_URL}/auth/verify-token`, async ({ request }) => {
-    const body = await request.json();
+  // Mirrors production: verify-token is not deployed yet on Render.
+  http.post(`${API_BASE_URL}/auth/verify-token`, () => {
+    return HttpResponse.json(
+      {
+        status: "fail",
+        message: "Can't find /api/auth/verify-token on this server!",
+        isOperational: true,
+      },
+      { status: 404 }
+    );
+  }),
 
-    if (!body.token || body.token.length < 10) {
+  http.post(`${API_BASE_URL}/users/signup`, ({ request }) => {
+    const authHeader = request.headers.get("Authorization");
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return HttpResponse.json(
-        { error: 'No token provided' },
-        { status: 400 }
+        { status: "fail", message: "You are not logged in! Please log in to get access." },
+        { status: 401 }
       );
     }
 
-    // Simulate Firebase token verification (accept any non-empty token in tests)
     return HttpResponse.json({
-      success: true,
-      user: { ...mockUsers[0], roles: ["supplier"] },
-      supplierProfile: { id: "sp-001", status: "ACTIVE" },
-      token: "mock-session-token",
-      message: "Session established",
+      status: "success",
+      data: {
+        user: { ...mockUsers[0], roles: ["supplier"] },
+        supplierProfile: { id: "sp-001", status: "ACTIVE" },
+      },
     });
   }),
 

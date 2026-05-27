@@ -16,6 +16,8 @@ import NotificationsPage from "@/features/notifications/pages/NotificationsPage"
 import UsersPage from "@/features/users/pages/UsersPage";
 import SettingsPage from "@/features/settings/pages/SettingsPage";
 
+import GuestRoute from "@/components/shared/GuestRoute";
+
 // Auth Pages (rendered outside AppShell)
 import AuthCallback from "@/features/auth/pages/AuthCallback";
 import LoginPage from "@/features/auth/pages/LoginPage";
@@ -34,7 +36,14 @@ export default function AppRoutes() {
     <Routes>
       {/* Auth Pages (without AppShell) */}
       <Route path="/auth/callback" element={<AuthCallback />} />
-      <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/login"
+        element={
+          <GuestRoute>
+            <LoginPage />
+          </GuestRoute>
+        }
+      />
 
       {/* Supplier Status (without AppShell — full-screen status check) */}
       <Route path="/supplier/status" element={<SupplierStatusPage />} />

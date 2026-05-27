@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Loader2, CheckCircle2, AlertCircle, ArrowRight, Shield } from "lucide-react";
 import { toast } from "sonner";
-import api from "@/lib/axios";
-import { useAuthStore, canAccessSupplierDashboard } from "@/stores/authStore";
+import { exchangeFirebaseToken } from "@/features/auth/api";
+import { useAuthStore } from "@/stores/authStore";
+import { getPostLoginPath } from "@/features/auth/hooks/useSupplierLogin";
 
 /**
  * AuthCallback
@@ -12,8 +13,8 @@ import { useAuthStore, canAccessSupplierDashboard } from "@/stores/authStore";
  * When the main site (travioafrica.com) redirects a logged-in user here
  * with ?token=<firebase_id_token>, this page:
  *  1. Reads the token from the URL
- *  2. POSTs it to /api/auth/verify-token (backend verifies with Firebase Admin)
- *  3. The backend sets an HTTP-only __session cookie
+ *  2. Exchanges the token with the backend (verify-token or users/signup)
+ *  3. The backend sets an HTTP-only session cookie
  *  4. We update local auth state and redirect to the dashboard
  *
  * The token is removed from the URL immediately to prevent it from lingering
@@ -53,47 +54,21 @@ export default function AuthCallback() {
 
     setStatus("loading");
 
-    // POST token to backend for verification and session cookie creation
-    api
-      .post(
-        "/auth/verify-token",
-        { token },
-        { withCredentials: true } // required: tells browser to accept the __session cookie
-      )
-      .then((response) => {
-        const responseData = response.data?.data || response.data;
-        const user = responseData?.user;
-        const supplierProfile = responseData?.supplierProfile || null;
-        const backendToken = responseData?.token;
-
+    exchangeFirebaseToken(token)
+      .then(({ user, supplierProfile, token: backendToken }) => {
         if (!user) {
           throw new Error("Backend did not return user data.");
         }
 
-        // Persist token in localStorage as fallback if cookies are blocked
-        // The __session cookie is the primary auth mechanism, but we keep
-        // the Authorization header as a backup (e.g., Safari in private mode).
         const authToken = backendToken || token;
-        if (authToken) {
-          login(user, authToken, supplierProfile);
-        } else {
-          // Cookie-only mode: just update user state
-          useAuthStore.setState({ user, isAuthenticated: true, supplierProfile });
-        }
+        login(user, authToken, supplierProfile);
 
         setStatus("success");
         toast.success(`Welcome back, ${user.name || user.email || ""}!`);
 
         const returnUrl = localStorage.getItem("auth_return_url");
-        let redirectTo = "/";
+        const redirectTo = returnUrl || getPostLoginPath(supplierProfile);
 
-        if (returnUrl) {
-          redirectTo = returnUrl;
-        } else if (!canAccessSupplierDashboard(supplierProfile)) {
-          redirectTo = "/supplier/status";
-        }
-
-        // Give the user a moment to see the success state, then redirect
         setTimeout(() => {
           localStorage.removeItem("auth_return_url");
           navigate(redirectTo, { replace: true });
