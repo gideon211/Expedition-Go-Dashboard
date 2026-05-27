@@ -6,7 +6,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
+Expedition-GO-Frontend-main/*
+Expedition-GO-Frontend-main/Expedition-Go-Dashboard-main/*
 node_modules
 dist
 dist-ssr

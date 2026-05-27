@@ -3,8 +3,10 @@ import config from "@/config";
 import { retryWithBackoff, isRetryableError, handleApiError } from "./errorHandler";
 import { useAuthStore } from "@/stores/authStore";
 
+const FALLBACK_BASE_URL = "https://expedition-go-backend-v2.onrender.com/api";
+
 const api = axios.create({
-  baseURL: config.api.baseURL,
+  baseURL: config.api.baseURL || FALLBACK_BASE_URL,
   timeout: config.api.timeout,
   withCredentials: true, // Required: send & accept cookies on every request
 });
