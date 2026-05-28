@@ -1,4 +1,4 @@
-import { Search, Bell, ChevronDown, Building2, Shield, Clock, FileText, LogOut, User, Mail } from "lucide-react";
+import { Search, Bell, ChevronDown, Building2, Shield, Clock, FileText, LogOut, User, Mail, Loader2 } from "lucide-react";
 import { useSidebarStore } from "@/stores/sidebarStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useEffect, useRef, useState } from "react";
@@ -28,6 +28,7 @@ export default function Header() {
 
   // User dropdown state
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
   const userMenuRef = useRef(null);
 
   // Click outside handlers
@@ -37,12 +38,14 @@ export default function Header() {
         setSuppliersOpen(false);
       }
       if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
-        setUserMenuOpen(false);
+        if (!logoutLoading) {
+          setUserMenuOpen(false);
+        }
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [logoutLoading]);
 
   const displayName = user?.name || "Admin User";
   const displayRole = isAdmin ? "Administrator" : user?.roles?.[0] || "User";
@@ -51,8 +54,15 @@ export default function Header() {
   const statusStyle = STATUS_STYLES[supplierProfile?.status] || STATUS_STYLES.PENDING;
 
   const handleLogout = async () => {
-    setUserMenuOpen(false);
-    await useAuthStore.getState().logout();
+    if (logoutLoading) return;
+
+    setLogoutLoading(true);
+
+    await Promise.all([
+      useAuthStore.getState().logout(),
+      new Promise((resolve) => setTimeout(resolve, 2000)),
+    ]);
+
     navigate("/login", { replace: true });
   };
 
@@ -240,10 +250,15 @@ export default function Header() {
               <div className="border-t border-[#eaeaea] py-1">
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#dc2626] hover:bg-[#fef2f2] transition-colors"
+                  disabled={logoutLoading}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#dc2626] hover:bg-[#fef2f2] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <LogOut size={16} />
-                  Sign Out
+                  {logoutLoading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <LogOut size={16} />
+                  )}
+                  {logoutLoading ? "Signing out..." : "Sign Out"}
                 </button>
               </div>
             </div>
