@@ -6,8 +6,9 @@ import { persist } from "zustand/middleware";
  *
  * Manages authentication state for the supplier dashboard.
  * Supports two auth mechanisms:
- *  1. Cookie-based session (set by backend after POST /api/users/signup).
- *     Bearer token in localStorage is used as fallback auth.
+ *  1. Cookie-based session (set by backend after POST /api/users/signup
+ *     with Authorization: Bearer <firebase_id_token>).
+ *  2. Bearer token in localStorage as fallback auth.
  */
 
 export const useAuthStore = create(

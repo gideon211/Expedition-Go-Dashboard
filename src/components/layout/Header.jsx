@@ -34,20 +34,6 @@ export default function Header() {
   const userMenuRef = useRef(null);
 
   useEffect(() => {
-    if (!isAdmin) return;
-    setSuppliersLoading(true);
-    api
-      .get("/suppliers/admin/active-suppliers")
-      .then((res) => {
-        setSuppliers(res.data?.data?.suppliers || []);
-      })
-      .catch(() => {
-        setSuppliers([]);
-      })
-      .finally(() => setSuppliersLoading(false));
-  }, [isAdmin]);
-
-  useEffect(() => {
     if (!isSupplier) return;
     setProfileLoading(true);
     api
