@@ -19,6 +19,7 @@ import {
 } from "@/lib/firebase";
 import { useSupplierLogin } from "@/features/auth/hooks/useSupplierLogin";
 import { getLoginErrorMessage } from "@/features/auth/api";
+import supplierLoginImage from "@/assets/supplier_login.jpg";
 
 const FEATURES = [
   { icon: Package, label: "Create and publish tours" },
@@ -88,38 +89,47 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-[#f8fafc]">
-      {/* Brand panel */}
-      <div className="hidden lg:flex lg:w-[45%] xl:w-[42%] bg-[#044b3b] text-white flex-col justify-between p-10 xl:p-14">
-        <div>
-          <div className="flex items-center gap-3 mb-12">
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-              <span className="font-bold text-lg">T</span>
+      {/* Brand panel with supplier image */}
+      <div className="hidden lg:flex lg:w-[45%] xl:w-[42%] relative overflow-hidden">
+        <img
+          src={supplierLoginImage}
+          alt="African travel and safari experiences"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#044b3b]/95 via-[#044b3b]/75 to-[#044b3b]/40" />
+
+        <div className="relative z-10 flex flex-col justify-between p-10 xl:p-14 text-white w-full min-h-screen">
+          <div>
+            <div className="flex items-center gap-3 mb-12">
+              <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                <span className="font-bold text-lg">T</span>
+              </div>
+              <span className="font-bold text-xl tracking-tight">TravioAfrica</span>
             </div>
-            <span className="font-bold text-xl tracking-tight">TravioAfrica</span>
+
+            <h1 className="text-3xl xl:text-4xl font-bold leading-tight mb-4">
+              Supplier Dashboard
+            </h1>
+            <p className="text-white/85 text-base leading-relaxed max-w-md">
+              Sign in to create tours, manage bookings, and grow your travel business across Africa.
+            </p>
           </div>
 
-          <h1 className="text-3xl xl:text-4xl font-bold leading-tight mb-4">
-            Supplier Dashboard
-          </h1>
-          <p className="text-white/75 text-base leading-relaxed max-w-md">
-            Sign in to create tours, manage bookings, and grow your travel business across Africa.
+          <ul className="space-y-4">
+            {FEATURES.map(({ icon: Icon, label }) => (
+              <li key={label} className="flex items-center gap-3 text-white/90">
+                <span className="w-9 h-9 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
+                  <Icon size={18} />
+                </span>
+                <span className="text-sm font-medium">{label}</span>
+              </li>
+            ))}
+          </ul>
+
+          <p className="text-xs text-white/60">
+            Access is limited to approved and active suppliers.
           </p>
         </div>
-
-        <ul className="space-y-4">
-          {FEATURES.map(({ icon: Icon, label }) => (
-            <li key={label} className="flex items-center gap-3 text-white/90">
-              <span className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
-                <Icon size={18} />
-              </span>
-              <span className="text-sm font-medium">{label}</span>
-            </li>
-          ))}
-        </ul>
-
-        <p className="text-xs text-white/50">
-          Access is limited to approved and active suppliers.
-        </p>
       </div>
 
       {/* Login form */}
