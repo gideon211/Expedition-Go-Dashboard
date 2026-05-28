@@ -17,7 +17,7 @@ export const useAuthStore = create(
       user: null,
       token: null,
       isAuthenticated: false,
-      isLoading: true,
+      isLoading: false,
       hasHydrated: false,
       supplierProfile: null,
 
@@ -174,7 +174,7 @@ export function initAuthFromStorage() {
   const user = getStoredAuthUser();
 
   if (token && user) {
-    useAuthStore.setState({ user, token, isAuthenticated: true });
+    useAuthStore.setState({ user, token, isAuthenticated: true, isLoading: false });
   } else if (token || user) {
     // Partial state — clear it to avoid stale data
     useAuthStore.getState().setUnauthenticated();

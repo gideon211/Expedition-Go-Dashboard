@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import api from "@/lib/axios";
-import { canAccessSupplierDashboard } from "@/stores/authStore";
+import { canAccessSupplierDashboard, getAuthToken } from "@/stores/authStore";
 
 const AUTH_REQUEST_OPTIONS = {
   withCredentials: true,
@@ -23,6 +23,10 @@ async function fetchSupplierProfile(authToken) {
   } catch {
     return null;
   }
+}
+
+export async function loadSupplierProfile(authToken = getAuthToken()) {
+  return fetchSupplierProfile(authToken);
 }
 
 function parseAuthResponse(response) {

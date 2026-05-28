@@ -18,7 +18,7 @@ import {
   canAccessSupplierDashboard,
   getAuthToken,
 } from "@/stores/authStore";
-import api from "@/lib/axios";
+import { loadSupplierProfile } from "@/features/auth/api";
 
 const STATUS_CONFIG = {
   PENDING: {
@@ -84,10 +84,8 @@ export default function SupplierStatusPage() {
       return;
     }
 
-    api
-      .get("/suppliers/application/status", { skipGlobalErrorHandler: true })
-      .then((res) => {
-        const profile = res.data?.data?.supplierProfile || null;
+    loadSupplierProfile()
+      .then((profile) => {
         setSupplierProfile(profile);
       })
       .catch((err) => {

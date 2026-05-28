@@ -19,7 +19,13 @@ function App() {
       return undefined;
     }
 
-    return useAuthStore.persist.onFinishHydration(finishHydration);
+    const unsubscribe = useAuthStore.persist.onFinishHydration(finishHydration);
+    const fallbackTimer = window.setTimeout(finishHydration, 500);
+
+    return () => {
+      unsubscribe?.();
+      window.clearTimeout(fallbackTimer);
+    };
   }, []);
 
   return (

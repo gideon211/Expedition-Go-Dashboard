@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import {
   useAuthStore,
@@ -6,66 +6,77 @@ import {
   canAccessSupplierDashboard,
   getAuthToken,
 } from "@/stores/authStore";
+import { loadSupplierProfile } from "@/features/auth/api";
 import { Loader2 } from "lucide-react";
-import api from "@/lib/axios";
+
+const PROFILE_CHECK_TIMEOUT_MS = 8000;
+
+function SessionLoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
+      <div className="flex flex-col items-center gap-3">
+        <Loader2 size={32} className="animate-spin text-[#044b3b]" />
+        <p className="text-sm text-[#64748b]">Verifying session...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function ProtectedRoute({ requireAdmin = false }) {
-  const { isAuthenticated, isLoading, hasHydrated, supplierProfile, setSupplierProfile } =
-    useAuthStore();
+  const { isAuthenticated, hasHydrated, supplierProfile, setSupplierProfile } = useAuthStore();
   const location = useLocation();
-  const [profileChecked, setProfileChecked] = useState(Boolean(supplierProfile));
   const isAdmin = isAdminUser();
+  const authToken = getAuthToken();
+  const profileCheckStarted = useRef(false);
+
+  const hasDashboardAccess = isAdmin || canAccessSupplierDashboard(supplierProfile);
+  const needsProfileLookup =
+    hasHydrated && isAuthenticated && Boolean(authToken) && !isAdmin && !hasDashboardAccess;
+
+  const [profileResolved, setProfileResolved] = useState(() => !needsProfileLookup);
 
   useEffect(() => {
-    if (!hasHydrated || !isAuthenticated || isAdmin || supplierProfile) {
-      setProfileChecked(true);
-      return;
+    if (!needsProfileLookup) {
+      setProfileResolved(true);
+      return undefined;
     }
 
-    const authToken = getAuthToken();
-    if (!authToken) {
-      useAuthStore.getState().setUnauthenticated();
-      setProfileChecked(true);
-      return;
+    setProfileResolved(false);
+
+    if (profileCheckStarted.current) {
+      return undefined;
     }
 
+    profileCheckStarted.current = true;
     let cancelled = false;
-    setProfileChecked(false);
 
-    api
-      .get("/suppliers/application/status", { skipGlobalErrorHandler: true })
-      .then((res) => {
+    const timeoutId = window.setTimeout(() => {
+      if (!cancelled) {
+        setProfileResolved(true);
+      }
+    }, PROFILE_CHECK_TIMEOUT_MS);
+
+    loadSupplierProfile(authToken)
+      .then((profile) => {
         if (!cancelled) {
-          setSupplierProfile(res.data?.data?.supplierProfile || null);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setSupplierProfile(null);
+          setSupplierProfile(profile);
         }
       })
       .finally(() => {
         if (!cancelled) {
-          setProfileChecked(true);
+          window.clearTimeout(timeoutId);
+          setProfileResolved(true);
         }
       });
 
     return () => {
       cancelled = true;
+      window.clearTimeout(timeoutId);
     };
-  }, [hasHydrated, isAuthenticated, isAdmin, supplierProfile, setSupplierProfile]);
+  }, [needsProfileLookup, authToken, setSupplierProfile]);
 
-  const authToken = getAuthToken();
-
-  if (!hasHydrated || isLoading || (isAuthenticated && authToken && !profileChecked)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 size={32} className="animate-spin text-[#044b3b]" />
-          <p className="text-sm text-[#64748b]">Verifying session...</p>
-        </div>
-      </div>
-    );
+  if (!hasHydrated) {
+    return <SessionLoadingScreen />;
   }
 
   if (!isAuthenticated || !authToken) {
@@ -73,6 +84,10 @@ export default function ProtectedRoute({ requireAdmin = false }) {
       useAuthStore.getState().setUnauthenticated();
     }
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (needsProfileLookup && !profileResolved) {
+    return <SessionLoadingScreen />;
   }
 
   if (requireAdmin && !isAdmin) {
