@@ -41,15 +41,15 @@ const BOOKING_STATUS_COLORS = {
   NO_SHOW: "#dc3545",
 };
 
-function StatCard({ title, value, change, isPositive, icon: Icon, color, loading }) {
+function StatCard({ title, value, change, isPositive, icon: Icon, iconBg, iconColor, loading }) {
   return (
     <div className="bg-white rounded-lg border border-[#eaeaea] p-5 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-3">
-        <div className={`w-10 h-10 rounded-lg ${color} bg-opacity-10 flex items-center justify-center`}>
+        <div className={`w-10 h-10 rounded-lg ${iconBg} flex items-center justify-center`}>
           {loading ? (
             <Loader2 size={20} className="animate-spin text-[#9e9e9e]" />
           ) : (
-            <Icon size={20} className={color.replace("bg-", "text-")} />
+            <Icon size={20} className={iconColor} />
           )}
         </div>
         {!loading && change !== null && (
@@ -207,7 +207,8 @@ export default function DashboardPage() {
           change={null}
           isPositive={true}
           icon={DollarSign}
-          color="bg-[#044b3b]"
+          iconBg="bg-[#f0fdf4]"
+          iconColor="text-[#044b3b]"
           loading={loading}
         />
         <StatCard
@@ -216,7 +217,8 @@ export default function DashboardPage() {
           change={null}
           isPositive={true}
           icon={ShoppingCart}
-          color="bg-[#0f766e]"
+          iconBg="bg-[#ecfeff]"
+          iconColor="text-[#0f766e]"
           loading={loading}
         />
         <StatCard
@@ -225,7 +227,8 @@ export default function DashboardPage() {
           change={null}
           isPositive={true}
           icon={Package}
-          color="bg-[#18ddef]"
+          iconBg="bg-[#ecfdff]"
+          iconColor="text-[#0891b2]"
           loading={loading}
         />
         <StatCard
@@ -234,7 +237,8 @@ export default function DashboardPage() {
           change={null}
           isPositive={true}
           icon={Users}
-          color="bg-[#ffc400]"
+          iconBg="bg-[#fefce8]"
+          iconColor="text-[#ca8a04]"
           loading={loading}
         />
       </div>
