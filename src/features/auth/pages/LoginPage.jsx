@@ -96,7 +96,7 @@ export default function LoginPage() {
           alt="African travel and safari experiences"
           className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#044b3b]/95 via-[#044b3b]/75 to-[#044b3b]/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#044b3b]/70 via-[#044b3b]/45 to-[#044b3b]/20" />
 
         <div className="relative z-10 flex flex-col justify-between p-10 xl:p-14 text-white w-full min-h-screen">
           <div>
