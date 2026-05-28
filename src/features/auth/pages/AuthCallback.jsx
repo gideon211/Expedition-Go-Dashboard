@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Loader2, CheckCircle2, AlertCircle, ArrowRight, Shield } from "lucide-react";
 import { toast } from "sonner";
-import { exchangeFirebaseToken } from "@/features/auth/api";
+import { exchangeFirebaseToken, getLoginErrorMessage, showSupplierLoginToast } from "@/features/auth/api";
 import { useAuthStore } from "@/stores/authStore";
 import { getPostLoginPath } from "@/features/auth/hooks/useSupplierLogin";
 
@@ -13,9 +13,8 @@ import { getPostLoginPath } from "@/features/auth/hooks/useSupplierLogin";
  * When the main site (travioafrica.com) redirects a logged-in user here
  * with ?token=<firebase_id_token>, this page:
  *  1. Reads the token from the URL
- *  2. Exchanges the token with the backend (verify-token or users/signup)
- *  3. The backend sets an HTTP-only session cookie
- *  4. We update local auth state and redirect to the dashboard
+ *  2. Exchanges the token with POST /api/users/signup
+ *  3. We update local auth state and redirect based on supplier approval status
  *
  * The token is removed from the URL immediately to prevent it from lingering
  * in browser history or referrer headers.
@@ -64,7 +63,7 @@ export default function AuthCallback() {
         login(user, authToken, supplierProfile);
 
         setStatus("success");
-        toast.success(`Welcome back, ${user.name || user.email || ""}!`);
+        showSupplierLoginToast(supplierProfile, user);
 
         const returnUrl = localStorage.getItem("auth_return_url");
         const redirectTo = returnUrl || getPostLoginPath(supplierProfile);
@@ -75,11 +74,7 @@ export default function AuthCallback() {
         }, 1500);
       })
       .catch((err) => {
-        const message =
-          err.response?.data?.error ||
-          err.response?.data?.message ||
-          err.message ||
-          "Session verification failed.";
+        const message = getLoginErrorMessage(err);
 
         setStatus("error");
         setErrorMessage(message);

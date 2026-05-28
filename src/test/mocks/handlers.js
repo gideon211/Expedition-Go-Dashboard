@@ -71,18 +71,6 @@ export const handlers = [
     return HttpResponse.json({ message: 'Logged out successfully' });
   }),
 
-  // Mirrors production: verify-token is not deployed yet on Render.
-  http.post(`${API_BASE_URL}/auth/verify-token`, () => {
-    return HttpResponse.json(
-      {
-        status: "fail",
-        message: "Can't find /api/auth/verify-token on this server!",
-        isOperational: true,
-      },
-      { status: 404 }
-    );
-  }),
-
   http.post(`${API_BASE_URL}/users/signup`, ({ request }) => {
     const authHeader = request.headers.get("Authorization");
 

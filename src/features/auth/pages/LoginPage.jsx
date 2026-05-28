@@ -18,6 +18,7 @@ import {
   getFirebaseStatus,
 } from "@/lib/firebase";
 import { useSupplierLogin } from "@/features/auth/hooks/useSupplierLogin";
+import { getLoginErrorMessage } from "@/features/auth/api";
 
 const FEATURES = [
   { icon: Package, label: "Create and publish tours" },
@@ -52,15 +53,8 @@ export default function LoginPage() {
       await completeLogin(idToken);
     } catch (err) {
       if (err.code === "auth/popup-closed-by-user") return;
-      // completeLogin already sets error for backend failures
       if (!err.response) {
-        const message =
-          err.code === "auth/invalid-credential" || err.code === "auth/wrong-password"
-            ? "Invalid email or password."
-            : err.code === "auth/user-not-found"
-              ? "No account found with this email."
-              : err.message || "Sign in failed";
-        setError(message);
+        setError(getLoginErrorMessage(err));
       }
     }
   };
@@ -87,7 +81,7 @@ export default function LoginPage() {
     } catch (err) {
       if (err.code === "auth/popup-closed-by-user") return;
       if (!err.response) {
-        setError(err.message || "Google sign-in failed.");
+        setError(getLoginErrorMessage(err));
       }
     }
   };

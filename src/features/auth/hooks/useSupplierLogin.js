@@ -1,7 +1,10 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import { exchangeFirebaseToken } from "@/features/auth/api";
+import {
+  exchangeFirebaseToken,
+  getLoginErrorMessage,
+  showSupplierLoginToast,
+} from "@/features/auth/api";
 import { useAuthStore, canAccessSupplierDashboard } from "@/stores/authStore";
 
 export function getPostLoginPath(supplierProfile) {
@@ -37,12 +40,7 @@ export function useSupplierLogin() {
         }
 
         login(user, token || idToken, supplierProfile);
-
-        if (canAccessSupplierDashboard(supplierProfile)) {
-          toast.success(`Welcome back, ${user.name || user.email}!`);
-        } else {
-          toast.info("Signed in. Your supplier application is still being reviewed.");
-        }
+        showSupplierLoginToast(supplierProfile, user);
 
         const path = getPostLoginPath(supplierProfile);
         localStorage.removeItem("auth_return_url");
@@ -54,22 +52,7 @@ export function useSupplierLogin() {
           return null;
         }
 
-        let message = "Sign in failed";
-
-        if (err.code === "auth/unauthorized-domain") {
-          message = "This domain is not authorized for sign-in. Contact support.";
-        } else if (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password") {
-          message = "Invalid email or password.";
-        } else if (err.code === "auth/user-not-found") {
-          message = "No account found with this email.";
-        } else {
-          message =
-            err.response?.data?.error ||
-            err.response?.data?.message ||
-            err.message ||
-            message;
-        }
-
+        const message = getLoginErrorMessage(err);
         setError(message);
         throw err;
       } finally {

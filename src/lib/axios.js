@@ -62,8 +62,8 @@ api.interceptors.response.use(
       });
     }
 
-    // Handle 401 Unauthorized
-    if (error.response?.status === 401) {
+    // Handle 401 Unauthorized (skip during login/token exchange)
+    if (error.response?.status === 401 && !originalRequest?.skipGlobalErrorHandler) {
       // Save current URL so we can return here after re-authentication
       if (typeof window !== "undefined") {
         localStorage.setItem("auth_return_url", window.location.pathname + window.location.search);
@@ -97,15 +97,18 @@ api.interceptors.response.use(
             1000
           );
         } catch (retryError) {
-          // If all retries failed, handle the error
-          handleApiError(retryError);
+          if (!originalRequest?.skipGlobalErrorHandler) {
+            handleApiError(retryError);
+          }
           return Promise.reject(retryError);
         }
       }
     }
 
-    // Handle other errors
-    handleApiError(error);
+    // Handle other errors (auth flows show their own toasts)
+    if (!originalRequest?.skipGlobalErrorHandler) {
+      handleApiError(error);
+    }
     return Promise.reject(error);
   }
 );

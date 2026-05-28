@@ -6,10 +6,8 @@ import { persist } from "zustand/middleware";
  *
  * Manages authentication state for the supplier dashboard.
  * Supports two auth mechanisms:
- *  1. Cookie-based session (set by backend after token exchange via
- *     /api/users/signup or /api/auth/verify-token). This is the PRIMARY mechanism.
- *  2. localStorage fallback (Authorization: Bearer token). Used when
- *     cookies are blocked (e.g. Safari Private Mode, strict tracker blockers).
+ *  1. Cookie-based session (set by backend after POST /api/users/signup).
+ *     Bearer token in localStorage is used as fallback auth.
  */
 
 export const useAuthStore = create(
