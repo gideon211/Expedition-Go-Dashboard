@@ -113,6 +113,7 @@ export default function ProductPricingStep() {
             value={pricing.startDate}
             onChange={(value) => updateNested("pricing.startDate", value)}
             placeholder="Select start date"
+            className="w-full"
             error={Boolean(errors.pricingStartDate)}
             maxDate={pricing.endDate || undefined}
           />
@@ -126,6 +127,7 @@ export default function ProductPricingStep() {
             value={pricing.endDate}
             onChange={(value) => updateNested("pricing.endDate", value)}
             placeholder="Select end date"
+            className="w-full"
             error={Boolean(errors.pricingEndDate)}
             minDate={pricing.startDate || undefined}
           />

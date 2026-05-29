@@ -192,18 +192,19 @@ export default function AvailabilityPage() {
         ))}
       </div>
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto">
           <DatePicker
             value={format(currentDate, "yyyy-MM-dd")}
             onChange={handleDateChange}
             placeholder="Jump to date"
+            size="sm"
             className="w-full sm:w-56"
           />
           <button
             type="button"
             onClick={() => setCurrentDate(new Date())}
-            className="px-3 py-2.5 text-sm font-medium text-[#044b3b] bg-[#f0fdf4] rounded-lg hover:bg-[#dcfce7] transition-colors"
+            className="shrink-0 px-3 py-2.5 text-sm font-medium text-[#044b3b] bg-[#f0fdf4] rounded-lg hover:bg-[#dcfce7] transition-colors"
           >
             Today
           </button>
@@ -217,7 +218,7 @@ export default function AvailabilityPage() {
       </div>
 
       {viewMode === "month" && (
-        <div className="bg-white rounded-lg border border-[#eaeaea] p-4 md:p-6">
+        <div className="bg-white rounded-lg border border-[#eaeaea] overflow-hidden">
           <DatePicker
             inline
             value={selectedDate ? format(selectedDate, "yyyy-MM-dd") : ""}

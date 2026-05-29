@@ -205,6 +205,7 @@ export default function ProductScheduleStep() {
                 value={date}
                 onChange={(value) => updateBlackoutDate(index, value)}
                 placeholder="Select blackout date"
+                className="flex-1 min-w-0"
               />
               <button
                 onClick={() => removeBlackoutDate(index)}

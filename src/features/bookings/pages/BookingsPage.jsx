@@ -372,25 +372,27 @@ export default function BookingsPage() {
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
             <DatePicker
               value={dateFrom}
               onChange={setDateFrom}
               placeholder="From date"
-              className="w-full sm:w-40"
+              size="sm"
+              className="w-[9.5rem] sm:w-40"
               maxDate={dateTo || undefined}
             />
-            <span className="text-[#9e9e9e]">to</span>
+            <span className="text-[#9e9e9e] shrink-0">to</span>
             <DatePicker
               value={dateTo}
               onChange={setDateTo}
               placeholder="To date"
-              className="w-full sm:w-40"
+              size="sm"
+              className="w-[9.5rem] sm:w-40"
               minDate={dateFrom || undefined}
             />
             <button
               onClick={applyDateFilter}
-              className="px-3 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
+              className="shrink-0 px-3 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
             >
               Apply
             </button>

@@ -24,6 +24,7 @@ const DatePicker = forwardRef(function DatePicker(
     error = false,
     disabled = false,
     inline = false,
+    size = "md",
     id,
     name,
     ...rest
@@ -39,7 +40,13 @@ const DatePicker = forwardRef(function DatePicker(
   };
 
   return (
-    <div className={cn("dashboard-date-picker", inline && "dashboard-date-picker--inline", className)}>
+    <div
+      className={cn(
+        "dashboard-date-picker",
+        inline ? "dashboard-date-picker--inline" : "dashboard-date-picker--field",
+        className,
+      )}
+    >
       <ReactDatePicker
         ref={ref}
         id={id}
@@ -58,6 +65,8 @@ const DatePicker = forwardRef(function DatePicker(
         popperClassName="dashboard-date-picker__popper"
         className={cn(
           "dashboard-date-picker__input",
+          size === "sm" && "dashboard-date-picker__input--sm",
+          size === "md" && "dashboard-date-picker__input--md",
           error && "dashboard-date-picker__input--error",
         )}
         {...rest}
