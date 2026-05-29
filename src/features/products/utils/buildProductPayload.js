@@ -4,6 +4,7 @@
  * Only sends fields the backend reads from req.body.
  */
 import { normalizeHighlights } from "@/features/products/utils/normalizeHighlights";
+import { buildCategorizationProductTypeFields } from "@/features/products/utils/productTypeFromCategorization";
 
 export const buildProductPayload = (product) => {
   // Build duration object for backend
@@ -85,6 +86,7 @@ export const buildProductPayload = (product) => {
       subcategory: product.subcategory || "",
       activityType: product.activityType || "Guided Tour",
       difficulty: product.difficulty || "Easy",
+      ...buildCategorizationProductTypeFields(product),
       duration: durationPayload,
       groupSize: {
         min: product.bookingRules?.minGroupSize ?? 1,

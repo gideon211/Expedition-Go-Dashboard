@@ -13,6 +13,9 @@ import ProductBookingStep from "@/features/products/components/ProductBookingSte
 import ProductContentStep from "@/features/products/components/ProductContentStep";
 import ProductReviewStep from "@/features/products/components/ProductReviewStep";
 import { normalizeHighlights } from "@/features/products/utils/normalizeHighlights";
+import {
+  parseProductTypeFromCategorization,
+} from "@/features/products/utils/productTypeFromCategorization";
 
 const STEPS = [
   { id: "type", label: "Product Type", description: "Choose the type of product you are creating.", component: ProductTypeStep },
@@ -75,6 +78,13 @@ function tourToProduct(tour) {
     endTime: slot.endTime || "",
   }));
 
+  const {
+    productType,
+    tourDurationCategory,
+    activityCategories,
+    transportCategories,
+  } = parseProductTypeFromCategorization(categorization);
+
   return {
     title: tour.title || "",
     description: tour.description || "",
@@ -90,11 +100,11 @@ function tourToProduct(tour) {
     duration: durationValue,
     durationUnit,
     activityType: categorization.activityType || "Guided Tour",
-    productType: categorization.category?.toLowerCase() === "tour" ? "tour" : "activity",
+    productType,
     tourTransportationModes: transportModes,
-    tourDurationCategory: "",
-    activityCategories: [],
-    transportCategories: [],
+    tourDurationCategory,
+    activityCategories,
+    transportCategories,
     city: location.city || tour.city || "",
     country: location.country || tour.country || "",
     region: location.region || tour.region || "",

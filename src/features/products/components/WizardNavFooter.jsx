@@ -5,6 +5,7 @@ import { useProductBuilderStore } from "@/features/products/stores/productBuilde
 import { createProduct, updateProduct } from "@/features/products/api";
 
 import { normalizeHighlights } from "@/features/products/utils/normalizeHighlights";
+import { buildCategorizationProductTypeFields } from "@/features/products/utils/productTypeFromCategorization";
 
 function buildFormData(product) {
   const formData = new FormData();
@@ -49,6 +50,7 @@ function buildFormData(product) {
     subcategory: product.subcategory || "",
     activityType: product.activityType || "Guided Tour",
     difficulty: product.difficulty || "Easy",
+    ...buildCategorizationProductTypeFields(product),
     duration: { hours: product.durationUnit === "hours" ? durationValue : 0, days: product.durationUnit === "days" ? durationValue : 0 },
     groupSize: {
       min: product.bookingRules?.minGroupSize ?? 1,
