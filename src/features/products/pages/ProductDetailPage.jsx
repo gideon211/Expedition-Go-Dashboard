@@ -431,48 +431,47 @@ export default function ProductDetailPage() {
           ======================================================================== */}
       {displayPhotos.length > 0 && (
         <div className="mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {/* Display first 4 photos in grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-[145px_145px] gap-3">
             {displayPhotos.slice(0, 4).map((photo, i) => (
               <button
                 key={i}
                 onClick={() => setLightboxIndex(i)}
-                className={`rounded-lg overflow-hidden bg-[#f8fafc] text-left ${i === 0 ? "md:row-span-2" : ""}`}
+                className={`relative w-full overflow-hidden rounded-lg bg-[#f8fafc] text-left ${
+                  i === 0 ? "h-[240px] md:h-full md:row-span-2" : "h-[145px]"
+                }`}
                 aria-label={`View photo ${i + 1} of ${displayPhotos.length}`}
               >
                 <img
                   src={getImageUrl(photo)}
                   alt={`${tour.title} - Photo ${i + 1}`}
-                  className="w-full h-full object-cover hover:opacity-90 transition-opacity"
-                  style={{ minHeight: i === 0 ? "300px" : "145px" }} // Hero image is taller
+                  className="absolute inset-0 h-full w-full object-cover hover:opacity-90 transition-opacity"
                   onError={(e) => {
-                    // Fallback: Show camera emoji placeholder if image fails to load
                     e.target.style.display = "none";
-                    const placeholder = document.createElement('div');
-                    placeholder.className = 'flex items-center justify-center h-full min-h-[145px] text-[#9e9e9e]';
-                    placeholder.textContent = '📷';
+                    const placeholder = document.createElement("div");
+                    placeholder.className =
+                      "absolute inset-0 flex items-center justify-center text-[#9e9e9e] bg-[#f8fafc]";
+                    placeholder.textContent = "📷";
                     e.target.parentElement.appendChild(placeholder);
                   }}
                 />
               </button>
             ))}
-            
-            {/* Show "+X more photos" button if more than 4 photos exist */}
+
             {displayPhotos.length > 4 && (
               <button
                 onClick={() => setGalleryOpen(true)}
-                className="relative rounded-lg overflow-hidden min-h-[145px] cursor-pointer group w-full"
+                className="relative h-[145px] w-full overflow-hidden rounded-lg cursor-pointer group"
                 aria-label={`View all ${displayPhotos.length} photos`}
               >
-                {/* Background: 5th photo with reduced opacity */}
                 <img
                   src={getImageUrl(displayPhotos[4])}
                   alt={`${tour.title} - Photo 5`}
-                  className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-50 transition-opacity"
-                  onError={(e) => { e.target.style.display = "none"; }}
+                  className="absolute inset-0 h-full w-full object-cover opacity-40 group-hover:opacity-50 transition-opacity"
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                  }}
                 />
-                
-                {/* Overlay: "+X more photos" text */}
+
                 <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
                   <span className="text-sm font-medium text-[#1e293b]">
                     +{displayPhotos.length - 4} more photos
@@ -946,17 +945,18 @@ export default function ProductDetailPage() {
                 <button
                   key={i}
                   onClick={() => { setGalleryOpen(false); setLightboxIndex(i); }}
-                  className="rounded-lg overflow-hidden bg-[#f8fafc] text-left hover:opacity-90 transition-opacity"
+                  className="relative h-48 w-full overflow-hidden rounded-lg bg-[#f8fafc] text-left hover:opacity-90 transition-opacity"
                 >
                   <img
                     src={getImageUrl(photo)}
                     alt={`${tour.title} - Photo ${i + 1}`}
-                    className="w-full h-48 object-cover"
+                    className="absolute inset-0 h-full w-full object-cover"
                     onError={(e) => {
                       e.target.style.display = "none";
-                      const placeholder = document.createElement('div');
-                      placeholder.className = 'flex items-center justify-center h-48 text-[#9e9e9e]';
-                      placeholder.textContent = '📷';
+                      const placeholder = document.createElement("div");
+                      placeholder.className =
+                        "absolute inset-0 flex items-center justify-center text-[#9e9e9e] bg-[#f8fafc]";
+                      placeholder.textContent = "📷";
                       e.target.parentElement.appendChild(placeholder);
                     }}
                   />
