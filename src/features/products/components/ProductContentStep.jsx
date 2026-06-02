@@ -390,7 +390,7 @@ function TagList({ label, items, placeholder, onChange }) {
           {items.map((item, index) => (
             <span
               key={`${item}-${index}`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#f8fafc] text-[#1e293b] border border-[#eaeaea] rounded-full text-sm"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white text-[#1e293b] border border-[#e0e0e0] rounded-md text-sm shadow-sm"
             >
               {item}
               <button
