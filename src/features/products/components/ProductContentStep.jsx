@@ -390,13 +390,13 @@ function TagList({ label, items, placeholder, onChange }) {
           {items.map((item, index) => (
             <span
               key={`${item}-${index}`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#f0fdf4] text-[#044b3b] border border-[#bbf7d0] rounded-full text-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#f8fafc] text-[#1e293b] border border-[#eaeaea] rounded-full text-sm"
             >
               {item}
               <button
                 type="button"
                 onClick={() => removeItem(index)}
-                className="text-[#044b3b]/60 hover:text-[#dc3545] transition-colors"
+                className="text-[#9e9e9e] hover:text-[#dc3545] transition-colors"
               >
                 <X size={14} />
               </button>
