@@ -119,48 +119,39 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
   }, []);
 
-  const stats = dashboardData?.stats;
-  const supplierProfile = dashboardData?.supplierProfile;
-  const monthlyRevenue = dashboardData?.analytics?.monthlyRevenue || [];
-  const recentBookings = dashboardData?.recentActivity?.bookings || [];
-  const recentReviews = dashboardData?.recentActivity?.reviews || [];
+  const tours = dashboardData?.tours || {};
+  const bookings = dashboardData?.bookings || {};
+  const earnings = dashboardData?.earnings || {};
+  const reviewsData = dashboardData?.reviews || {};
 
   // Derived stats
-  const totalTours = stats?.tours?.reduce((sum, t) => sum + t._count, 0) || 0;
-  const activeTours = stats?.tours?.find((t) => t.status === "ACTIVE")?._count || 0;
-  const activeBookings = stats?.bookings?.find((b) => b.status === "CONFIRMED")?._count || 0;
-  const totalRevenue = supplierProfile?.totalEarnings || 0;
+  const totalTours = tours.total || 0;
+  const activeTours = tours.active || 0;
+  const activeBookings = bookings.confirmed || 0;
+  const totalRevenue = Number(earnings.totalEarnings) || 0;
 
   // Booking status distribution for pie chart
-  const bookingStatusData = (stats?.bookings || [])
-    .filter((b) => b._count > 0)
-    .map((b) => ({
-      name: b.status.replace(/_/g, " "),
-      value: b._count,
-      color: BOOKING_STATUS_COLORS[b.status] || "#9e9e9e",
-    }));
+  const BOOKING_STATUS_MAP = {
+    pending: "PENDING",
+    confirmed: "CONFIRMED",
+    completed: "COMPLETED",
+    cancelled: "CANCELLED",
+  };
+  const bookingStatusData = Object.entries(BOOKING_STATUS_MAP)
+    .map(([key, status]) => ({
+      name: status.replace(/_/g, " "),
+      value: bookings[key] || 0,
+      color: BOOKING_STATUS_COLORS[status] || "#9e9e9e",
+    }))
+    .filter((b) => b.value > 0);
 
   // Monthly revenue for chart
-  const revenueData = [...monthlyRevenue]
-    .reverse()
-    .map((m) => ({
-      month: new Date(m.month).toLocaleDateString("en-GB", { month: "short", year: "2-digit" }),
-      revenue: Number(m.revenue) || 0,
-    }));
+  const revenueData = [];
 
-  // Top tours from recent bookings
-  const topTours = [];
-  const tourMap = {};
-  recentBookings.forEach((b) => {
-    const name = b.tour?.title || "Unknown Tour";
-    if (!tourMap[name]) {
-      tourMap[name] = { name, bookings: 0, revenue: 0 };
-      topTours.push(tourMap[name]);
-    }
-    tourMap[name].bookings += 1;
-    tourMap[name].revenue += Number(b.total) || 0;
-  });
-  topTours.sort((a, b) => b.bookings - a.bookings).slice(0, 5);
+  // Recent reviews
+  const recentReviews = reviewsData.recentReviews || [];
+  // Recent bookings - backend doesn't return these in the dashboard endpoint
+  const recentBookings = [];
 
   return (
     <div className="p-4 md:p-6">

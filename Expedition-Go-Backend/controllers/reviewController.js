@@ -125,7 +125,7 @@ exports.createReview = catchAsync(async (req, res, next) => {
       rating
     },
     sendEmail: true
-  }).catch(() => {});
+  }).catch((err) => console.error('[Notification] enqueueNotification (review) failed:', err.message));
 
   // Log activity
   await logActivity({
@@ -413,11 +413,12 @@ exports.getReview = catchAsync(async (req, res, next) => {
         select: {
           id: true,
           title: true,
-          supplier: {
-            select: {
-              name: true
-            }
-          }
+              supplier: {
+                select: {
+                  name: true,
+                  photoURL: true
+                }
+              }
         }
       }
     }
@@ -505,7 +506,7 @@ exports.addSupplierResponse = catchAsync(async (req, res, next) => {
       reviewId: review.id,
       tourId: review.tourId
     }
-  }).catch(() => {});
+  }).catch((err) => console.error('[Notification] enqueueNotification (review response) failed:', err.message));
 
   // Log activity
   await logActivity({
@@ -720,12 +721,17 @@ exports.getSupplierReviews = catchAsync(async (req, res, next) => {
  * Get reviews pending moderation (admin only)
  */
 exports.getPendingReviews = catchAsync(async (req, res, next) => {
-  const { page = 1, limit = 20 } = req.query;
+  const { page = 1, limit = 20, status } = req.query;
   const skip = (parseInt(page) - 1) * parseInt(limit);
 
-  const [reviews, totalCount] = await Promise.all([
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const statusFilter = status && status !== 'ALL' ? status : undefined;
+
+  const [reviews, filteredCount, pendingCount, flaggedCount, moderatedTodayCount] = await Promise.all([
     prisma.review.findMany({
-      where: { status: 'PENDING' },
+      where: { ...(statusFilter && { status: statusFilter }) },
       include: {
         customer: {
           select: {
@@ -751,10 +757,13 @@ exports.getPendingReviews = catchAsync(async (req, res, next) => {
       skip,
       take: parseInt(limit)
     }),
-    prisma.review.count({ where: { status: 'PENDING' } })
+    prisma.review.count({ where: { ...(statusFilter && { status: statusFilter }) } }),
+    prisma.review.count({ where: { status: 'PENDING' } }),
+    prisma.review.count({ where: { status: 'FLAGGED' } }),
+    prisma.review.count({ where: { moderatedAt: { gte: todayStart } } }),
   ]);
 
-  const totalPages = Math.ceil(totalCount / parseInt(limit));
+  const totalPages = Math.ceil(filteredCount / parseInt(limit));
 
   res.status(200).json({
     status: 'success',
@@ -763,8 +772,13 @@ exports.getPendingReviews = catchAsync(async (req, res, next) => {
       pagination: {
         currentPage: parseInt(page),
         totalPages,
-        totalCount,
+        totalCount: filteredCount,
         limit: parseInt(limit)
+      },
+      counts: {
+        pending: pendingCount,
+        flagged: flaggedCount,
+        moderatedToday: moderatedTodayCount,
       }
     }
   });
@@ -838,7 +852,7 @@ exports.moderateReview = catchAsync(async (req, res, next) => {
       action,
       reason
     }
-  }).catch(() => {});
+  }).catch((err) => console.error('[Notification] enqueueNotification (review moderation) failed:', err.message));
 
   await notifyAdmin({
     type: 'REVIEW_NEEDS_MODERATION',

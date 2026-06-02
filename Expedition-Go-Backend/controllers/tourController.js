@@ -28,6 +28,10 @@ const {
   getTourDistances
 } = require('../utils/tourFilterBuilder');
 const { getPopularByCategory } = require('../utils/popularityScorer');
+
+// In-memory cache for view tracking (prevents duplicate counts)
+// Key format: "view:{tourId}:{userId|IP}" -> timestamp
+const viewTrackingCache = new Map();
 const { rankTourIdsBySearch } = require('../utils/fullTextSearch');
 const cache = require('../utils/cacheHelper');
 const crypto = require('crypto');
@@ -386,16 +390,73 @@ exports.getTour = catchAsync(async (req, res, next) => {
     return next(new AppError('Tour not found', 404));
   }
 
-  prisma.tour.update({
-    where: { id: result.id },
-    data: { viewCount: { increment: 1 } }
-  }).catch(console.error);
+  // ── View tracking: count each unique visitor once per 30 minutes ──
+  const shouldCountView = (() => {
+    // Never count the tour owner
+    if (req.user?.id && req.user.id === result.supplierId) return false;
 
-  event.emit({ name: 'tour.viewed', userId: req.user?.id, req, resource: 'Tour', resourceId: result.id });
+    // Never count admins
+    if (req.user?.roles?.includes('admin')) return false;
+
+    // Build a stable viewer fingerprint:
+    //   1. Authenticated user  → use their DB id (most reliable)
+    //   2. Anonymous           → hash of real IP + User-Agent
+    //      req.ip on Render is the proxy IP, so read x-forwarded-for first
+    let viewerId;
+    if (req.user?.id) {
+      viewerId = req.user.id;
+    } else {
+      const realIp =
+        (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
+        req.socket?.remoteAddress ||
+        req.ip ||
+        'unknown';
+      const ua = req.headers['user-agent'] || '';
+      // Hash so we never store raw IPs
+      viewerId = crypto
+        .createHash('sha256')
+        .update(`${realIp}:${ua}`)
+        .digest('hex')
+        .slice(0, 16);
+    }
+
+    const viewKey = `view:${result.id}:${viewerId}`;
+    const now = Date.now();
+    const lastViewTime = viewTrackingCache.get(viewKey);
+
+    // Already counted within the last 30 minutes → skip
+    if (lastViewTime && now - lastViewTime < 30 * 60 * 1000) return false;
+
+    // Record this view
+    viewTrackingCache.set(viewKey, now);
+
+    // Probabilistic cleanup: remove entries older than 1 hour (~1% of requests)
+    if (Math.random() < 0.01) {
+      const cutoff = now - 60 * 60 * 1000;
+      for (const [k, t] of viewTrackingCache.entries()) {
+        if (t < cutoff) viewTrackingCache.delete(k);
+      }
+    }
+
+    return true;
+  })();
+
+  if (shouldCountView) {
+    prisma.tour.update({
+      where: { id: result.id },
+      data: { viewCount: { increment: 1 } },
+    }).catch(console.error);
+
+    event.emit({ name: 'tour.viewed', userId: req.user?.id, req, resource: 'Tour', resourceId: result.id });
+  }
+
+  // Tell browsers/CDNs: cache this response for 60 s, then revalidate.
+  // This stops the frontend from hammering the endpoint on every re-render.
+  res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
 
   res.status(200).json({
     status: 'success',
-    data: { tour: result }
+    data: { tour: result },
   });
 });
 
@@ -414,8 +475,8 @@ exports.createTour = catchAsync(async (req, res, next) => {
     where: { userId: supplierId }
   });
 
-  if (!supplierProfile || !['ACTIVE', 'APPROVED'].includes(supplierProfile.status)) {
-    return next(new AppError('Only approved or active suppliers can create tours', 403));
+  if (!supplierProfile || supplierProfile.status !== 'ACTIVE') {
+    return next(new AppError('Only active suppliers can create tours', 403));
   }
 
   // Block publishing without a verified payout method
@@ -779,17 +840,6 @@ exports.getMyTours = catchAsync(async (req, res, next) => {
     prisma.tour.findMany({
       where,
       include: {
-        supplier: {
-          select: {
-            id: true,
-            name: true,
-            supplierProfile: {
-              select: {
-                businessInfo: true,
-              },
-            },
-          },
-        },
         _count: {
           select: {
             reviews: true,

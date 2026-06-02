@@ -3,6 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const prisma = require('./utils/prismaClient');
 const event = require('./utils/eventEmitter');
+const { setIO, setupPrismaMiddleware } = require('./utils/dataChangeEmitter');
 const { registerWorkers, closeAll, enqueueNotification, enqueueCleanup, enqueueAggregation, isRedisAvailable } = require('./utils/queue');
  
 
@@ -66,6 +67,8 @@ process.on('SIGINT', () => {
     await prisma.$connect();
     console.log('PostgreSQL connection successful!');
 
+    setupPrismaMiddleware(prisma);
+
     server = http.createServer(app);
 
     io = new Server(server, {
@@ -76,6 +79,7 @@ process.on('SIGINT', () => {
     });
 
     app.set('io', io);
+    setIO(io);
 
     io.engine.on('connection_error', (err) => {
       console.warn('Socket.IO connection error:', err.message);
@@ -155,7 +159,7 @@ process.on('SIGINT', () => {
             title: 'Supplier Responded to Your Review',
             message: `The supplier responded to your review for "${review.tour.title}"`,
             data: { reviewId: review.id, tourId: review.tourId }
-          }).catch(() => {});
+          }).catch((err) => console.error('[Notification] enqueueNotification failed:', err.message));
 
           ack?.({ status: 'success', data: { review: updated } });
 
