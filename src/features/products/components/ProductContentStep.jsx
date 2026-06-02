@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Globe, FileText, Star, MapPin, Check, ChevronRight, Users, Sparkles, Info } from "lucide-react";
+import { Globe, FileText, Star, MapPin, Check, ChevronRight, Users, Sparkles, Info, Plus, X } from "lucide-react";
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
 import { normalizeHighlights } from "@/features/products/utils/normalizeHighlights";
 
@@ -185,32 +185,18 @@ export default function ProductContentStep() {
         return (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-[#1e293b] mb-2">
-                  What's Included
-                </label>
-                <textarea
-                  value={content.included.join("\n")}
-                  onChange={(e) => updateNested("content.included", e.target.value.split("\n").filter(Boolean))}
-                  rows={6}
-                  placeholder="Professional guide\nTransportation\nMeals\n..."
-                  className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] resize-none"
-                />
-                <p className="text-xs text-[#64748b] mt-1">Enter each item on a new line</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#1e293b] mb-2">
-                  What's Excluded
-                </label>
-                <textarea
-                  value={content.excluded.join("\n")}
-                  onChange={(e) => updateNested("content.excluded", e.target.value.split("\n").filter(Boolean))}
-                  rows={6}
-                  placeholder="Flights\nPersonal expenses\nTravel insurance\n..."
-                  className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] resize-none"
-                />
-                <p className="text-xs text-[#64748b] mt-1">Enter each item on a new line</p>
-              </div>
+              <TagList
+                label="What's Included"
+                items={content.included}
+                placeholder="e.g. Professional guide"
+                onChange={(items) => updateNested("content.included", items)}
+              />
+              <TagList
+                label="What's Excluded"
+                items={content.excluded}
+                placeholder="e.g. Personal expenses"
+                onChange={(items) => updateNested("content.excluded", items)}
+              />
             </div>
           </div>
         );
@@ -350,6 +336,74 @@ export default function ProductContentStep() {
           {renderSectionContent()}
         </div>
       </div>
+    </div>
+  );
+}
+
+function TagList({ label, items, placeholder, onChange }) {
+  const [inputValue, setInputValue] = useState("");
+
+  const addItem = () => {
+    const trimmed = inputValue.trim();
+    if (!trimmed) return;
+    if (items.includes(trimmed)) return;
+    onChange([...items, trimmed]);
+    setInputValue("");
+  };
+
+  const removeItem = (index) => {
+    onChange(items.filter((_, i) => i !== index));
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addItem();
+    }
+  };
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-[#1e293b] mb-2">{label}</label>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className="flex-1 min-w-0 px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+        />
+        <button
+          type="button"
+          onClick={addItem}
+          disabled={!inputValue.trim()}
+          className="flex items-center gap-1.5 px-4 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+        >
+          <Plus size={16} />
+          <span className="hidden sm:inline">Add</span>
+        </button>
+      </div>
+      <p className="text-xs text-[#64748b] mt-1">Type an item and press Enter to add it</p>
+      {items.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {items.map((item, index) => (
+            <span
+              key={`${item}-${index}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#f0fdf4] text-[#044b3b] border border-[#bbf7d0] rounded-full text-sm"
+            >
+              {item}
+              <button
+                type="button"
+                onClick={() => removeItem(index)}
+                className="text-[#044b3b]/60 hover:text-[#dc3545] transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
