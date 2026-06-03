@@ -85,7 +85,7 @@ const INITIAL_PRODUCT = {
     exclusions: [],
   },
   content: {
-    itinerary: "",
+    itinerary: [],
     highlights: [],
     included: [],
     excluded: [],
@@ -142,10 +142,7 @@ export const useProductBuilderStore = create(
       },
 
       goToStep: (step) => {
-        const { completedSteps, currentStep } = get();
-        if (step <= currentStep + 1 || completedSteps.includes(step)) {
-          set({ currentStep: step });
-        }
+        set({ currentStep: step });
       },
 
       updateProduct: (updates) => {
@@ -241,7 +238,7 @@ export const useProductBuilderStore = create(
             break;
 
           case 2: // Content
-            if (!product.content.itinerary?.trim()) errors.itinerary = "Itinerary is required";
+            if (!product.content.itinerary?.length) errors.itinerary = "At least one itinerary item is required";
             if (normalizeHighlights(product.content.highlights).length === 0) {
               errors.highlights = "At least one tour highlight is required";
             }

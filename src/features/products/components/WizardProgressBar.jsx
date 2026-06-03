@@ -12,21 +12,18 @@ export default function WizardProgressBar() {
           const isCompleted = completedSteps.includes(index);
           const isCurrent = currentStep === index;
           const isPending = index > currentStep && !isCompleted;
-          const isClickable = isCompleted || index === currentStep || index === currentStep + 1;
 
           return (
             <div key={step.id} className="flex flex-1 items-center">
               {/* Step indicator */}
               <div className="flex flex-col items-center relative">
                 <button
-                  onClick={() => isClickable && useProductBuilderStore.getState().goToStep(index)}
-                  disabled={!isClickable}
+                  onClick={() => useProductBuilderStore.getState().goToStep(index)}
                   className={cn(
-                    "w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-200 border-2",
+                    "w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-200 border-2 cursor-pointer",
                     isCompleted && "bg-[#044b3b] border-[#044b3b] text-white",
                     isCurrent && "bg-white border-[#044b3b] text-[#044b3b] ring-4 ring-[#044b3b]/10",
-                    isPending && "bg-white border-[#eaeaea] text-[#9e9e9e]",
-                    isClickable && !isCurrent && !isCompleted && "hover:border-[#044b3b] hover:text-[#044b3b] cursor-pointer"
+                    isPending && "bg-white border-[#eaeaea] text-[#9e9e9e] hover:border-[#044b3b] hover:text-[#044b3b]"
                   )}
                 >
                   {isCompleted ? <Check size={16} className="sm:w-[18px] sm:h-[18px]" /> : step.number}

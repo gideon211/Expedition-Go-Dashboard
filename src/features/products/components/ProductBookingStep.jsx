@@ -1,6 +1,8 @@
-import { MapPin, Users, Clock, Check } from "lucide-react";
+import { useRef, useState, useCallback, useEffect } from "react";
+import { MapPin, Users, Clock, Check, Search, Loader2, X } from "lucide-react";
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
 import LocationMapPicker from "@/components/shared/LocationMapPicker";
+import { useGeocoding } from "@/hooks/useGeocoding";
 import config from "@/config";
 
 const CONFIRMATION_TYPES = [
@@ -11,6 +13,90 @@ const CONFIRMATION_TYPES = [
 export default function ProductBookingStep() {
   const { product, errors, updateNested } = useProductBuilderStore();
   const { bookingRules } = product;
+
+  const apiKey = config.maps?.geoapifyApiKey || "";
+  const { search, clear, results, loading, error } = useGeocoding(apiKey);
+
+  const [meetingQuery, setMeetingQuery] = useState(bookingRules.meetingPoint || "");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [highlightedIdx, setHighlightedIdx] = useState(-1);
+  const meetingInputRef = useRef(null);
+  const meetingContainerRef = useRef(null);
+
+  useEffect(() => {
+    setMeetingQuery(bookingRules.meetingPoint || "");
+  }, [bookingRules.meetingPoint]);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (meetingContainerRef.current && !meetingContainerRef.current.contains(e.target)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleMeetingInputChange = (e) => {
+    const value = e.target.value;
+    setMeetingQuery(value);
+    updateNested("bookingRules.meetingPoint", value);
+    setHighlightedIdx(-1);
+    if (value.trim().length >= 2) {
+      search(value);
+      setShowSuggestions(true);
+    } else {
+      clear();
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleMeetingSelect = useCallback(
+    (result) => {
+      setMeetingQuery(result.formatted);
+      setShowSuggestions(false);
+      setHighlightedIdx(-1);
+      updateNested("bookingRules.meetingPoint", result.formatted);
+      if (result.formatted) {
+        updateNested("bookingRules.meetingPointAddress", result.formatted);
+      }
+      if (result.latitude != null) updateNested("bookingRules.meetingPointLat", result.latitude);
+      if (result.longitude != null) updateNested("bookingRules.meetingPointLng", result.longitude);
+    },
+    [updateNested],
+  );
+
+  const handleMeetingKeyDown = (e) => {
+    if (!showSuggestions || results.length === 0) return;
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setHighlightedIdx((prev) => (prev < results.length - 1 ? prev + 1 : 0));
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setHighlightedIdx((prev) => (prev > 0 ? prev - 1 : results.length - 1));
+        break;
+      case "Enter":
+        e.preventDefault();
+        if (highlightedIdx >= 0) {
+          handleMeetingSelect(results[highlightedIdx]);
+        }
+        break;
+      case "Escape":
+        setShowSuggestions(false);
+        setHighlightedIdx(-1);
+        break;
+    }
+  };
+
+  const handleMeetingClear = () => {
+    setMeetingQuery("");
+    clear();
+    setShowSuggestions(false);
+    updateNested("bookingRules.meetingPoint", "");
+    meetingInputRef.current?.focus();
+  };
 
   const handleInclusionChange = (index, value) => {
     const newInclusions = [...bookingRules.inclusions];
@@ -158,23 +244,80 @@ export default function ProductBookingStep() {
 
       {/* Meeting Point */}
       <div className="space-y-4">
-        <div>
+        <div ref={meetingContainerRef} className="relative">
           <label className="block text-sm font-medium text-[#1e293b] mb-2">
             <span className="flex items-center gap-2">
               <MapPin size={16} className="text-[#64748b]" />
               Meeting Point Name <span className="text-[#dc3545]">*</span>
             </span>
           </label>
-          <input
-            type="text"
-            value={bookingRules.meetingPoint}
-            onChange={(e) => updateNested("bookingRules.meetingPoint", e.target.value)}
-            placeholder="e.g., Central Park South & 5th Avenue"
-            className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] ${
-              errors.meetingPoint ? "border-[#dc3545]" : "border-[#eaeaea]"
-            }`}
-          />
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9e9e9e]" />
+            <input
+              ref={meetingInputRef}
+              type="text"
+              value={meetingQuery}
+              onChange={handleMeetingInputChange}
+              onKeyDown={handleMeetingKeyDown}
+              onFocus={() => { if (results.length > 0) setShowSuggestions(true); }}
+              placeholder="Search for a location or type a meeting point name..."
+              className={`w-full pl-10 pr-10 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] ${
+                errors.meetingPoint ? "border-[#dc3545]" : "border-[#eaeaea]"
+              }`}
+            />
+            {meetingQuery && (
+              <button
+                type="button"
+                onClick={handleMeetingClear}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9e9e9e] hover:text-[#64748b]"
+                aria-label="Clear meeting point"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
           {errors.meetingPoint && <p className="mt-1 text-xs text-[#dc3545]">{errors.meetingPoint}</p>}
+
+          {/* Suggestion dropdown */}
+          {showSuggestions && (
+            <div className="absolute z-50 mt-1 w-full bg-white border border-[#eaeaea] rounded-lg shadow-lg max-h-64 overflow-y-auto">
+              {loading && (
+                <div className="flex items-center gap-2 px-4 py-3 text-sm text-[#64748b]">
+                  <Loader2 size={14} className="animate-spin" />
+                  Searching locations...
+                </div>
+              )}
+              {!loading && error && (
+                <div className="px-4 py-3 text-sm text-[#dc3545]">
+                  {error}
+                  <p className="text-xs text-[#9e9e9e] mt-1">You can still type a meeting point name manually.</p>
+                </div>
+              )}
+              {!loading && !error && results.length === 0 && meetingQuery.trim().length >= 2 && (
+                <div className="px-4 py-3 text-sm text-[#64748b]">
+                  No locations found.
+                  <p className="text-xs text-[#9e9e9e] mt-1">Try a different search or type the name manually.</p>
+                </div>
+              )}
+              {!loading && results.map((result, index) => (
+                <div
+                  key={`${result.source}-${index}`}
+                  onClick={() => handleMeetingSelect(result)}
+                  onMouseEnter={() => setHighlightedIdx(index)}
+                  className={`px-4 py-2.5 cursor-pointer text-sm border-b border-[#f1f5f9] last:border-0 ${
+                    index === highlightedIdx
+                      ? "bg-[#f0fdf4] text-[#044b3b]"
+                      : "text-[#1e293b] hover:bg-[#f8fafc]"
+                  }`}
+                >
+                  <div className="font-medium truncate">{result.formatted}</div>
+                  <div className="text-xs text-[#64748b] truncate">
+                    {[result.city, result.region, result.country].filter(Boolean).join(", ")}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>
@@ -229,12 +372,23 @@ export default function ProductBookingStep() {
             onSelect={(result) => {
               updateNested("bookingRules.meetingPointLat", result.latitude);
               updateNested("bookingRules.meetingPointLng", result.longitude);
-              if (!bookingRules.meetingPoint && result.formatted) {
-                updateNested("bookingRules.meetingPoint", result.formatted.split(",")[0]);
+              if (result.formatted) {
+                const name = result.formatted.split(",")[0];
+                updateNested("bookingRules.meetingPoint", name);
+                setMeetingQuery(name);
+                updateNested("bookingRules.meetingPointAddress", result.formatted);
               }
             }}
           />
         </div>
+
+        <p className="text-[10px] text-[#9e9e9e]">
+          Location data ©{" "}
+          <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#64748b]">
+            OpenStreetMap
+          </a>{" "}
+          contributors
+        </p>
       </div>
 
       {/* Pickup */}

@@ -106,7 +106,7 @@ export const buildProductPayload = (product) => {
       included: product.content?.included || [],
       excluded: product.content?.excluded || [],
       whatToBring: product.content?.whatToBring || [],
-      itinerary: product.content?.itinerary || "",
+      itinerary: product.content?.itinerary || [],
       meetingInstructions: product.content?.meetingInstructions || "",
       additionalInfo: product.content?.additionalInfo || "",
       uniqueSellingPoints: product.content?.uniqueSellingPoints || "",

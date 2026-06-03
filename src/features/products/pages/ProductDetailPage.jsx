@@ -523,12 +523,36 @@ export default function ProductDetailPage() {
           )}
 
           {/* Itinerary Section - Conditional: Only if itinerary exists */}
-          {content.itinerary && (
+          {content.itinerary?.length > 0 && Array.isArray(content.itinerary) && (
             <div className="bg-white rounded-lg border border-[#eaeaea] p-5">
-              <h2 className="text-base font-semibold text-[#1e293b] mb-3">Itinerary</h2>
-              <p className="text-sm text-[#475569] leading-relaxed whitespace-pre-wrap">
-                {content.itinerary}
-              </p>
+              <h2 className="text-base font-semibold text-[#1e293b] mb-4">Itinerary</h2>
+              <div className="space-y-4">
+                {content.itinerary.map((item, index) => (
+                  <div key={index} className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                      <div className="w-3 h-3 rounded-full bg-[#044b3b] flex-shrink-0 mt-1" />
+                      {index < content.itinerary.length - 1 && (
+                        <div className="w-0.5 flex-1 bg-[#eaeaea] mt-1" />
+                      )}
+                    </div>
+                    <div className="flex-1 pb-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        {(item.day || item.time) && (
+                          <span className="text-xs font-semibold text-[#044b3b] uppercase tracking-wider">
+                            {[item.day, item.time].filter(Boolean).join(" — ")}
+                          </span>
+                        )}
+                      </div>
+                      {item.title && (
+                        <h3 className="text-sm font-semibold text-[#1e293b]">{item.title}</h3>
+                      )}
+                      {item.description && (
+                        <p className="text-sm text-[#475569] leading-relaxed mt-1">{item.description}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

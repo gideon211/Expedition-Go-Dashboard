@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Globe, FileText, Star, MapPin, Check, ChevronRight, Users, Sparkles, Info, Plus, X } from "lucide-react";
+import { Globe, FileText, Star, MapPin, Check, ChevronRight, Users, Sparkles, Info, Plus, X, Clock, Pencil } from "lucide-react";
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
 import { normalizeHighlights } from "@/features/products/utils/normalizeHighlights";
 
@@ -44,7 +44,7 @@ export default function ProductContentStep() {
       case "meeting":
         return !!content.meetingInstructions?.trim() && !!content.pickupDescription?.trim();
       case "details":
-        return !!content.itinerary?.trim() && highlights.length > 0;
+        return content.itinerary?.length > 0 && highlights.length > 0;
       case "languages":
         return content.languages?.length > 0;
       case "inclusions":
@@ -98,23 +98,11 @@ export default function ProductContentStep() {
       case "details":
         return (
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-[#1e293b] mb-2">
-                Full Itinerary
-              </label>
-              <textarea
-                value={content.itinerary}
-                onChange={(e) => updateNested("content.itinerary", e.target.value)}
-                rows={6}
-                placeholder="Day 1: Arrival and welcome...\nDay 2: Morning game drive..."
-                className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] resize-none ${
-                  errors.itinerary ? "border-[#dc3545]" : "border-[#eaeaea]"
-                }`}
-              />
-              {errors.itinerary && (
-                <p className="mt-1 text-xs text-[#dc3545]">{errors.itinerary}</p>
-              )}
-            </div>
+            <ItineraryBuilder
+              items={content.itinerary || []}
+              onChange={(items) => updateNested("content.itinerary", items)}
+              error={errors.itinerary}
+            />
 
             <div>
               <label className="block text-sm font-medium text-[#1e293b] mb-2">
@@ -334,6 +322,205 @@ export default function ProductContentStep() {
             </h3>
           </div>
           {renderSectionContent()}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ItineraryBuilder({ items, onChange, error }) {
+  const [day, setDay] = useState("");
+  const [time, setTime] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [editingIndex, setEditingIndex] = useState(null);
+
+  const resetForm = () => {
+    setDay("");
+    setTime("");
+    setTitle("");
+    setDescription("");
+    setEditingIndex(null);
+  };
+
+  const saveItem = () => {
+    if (!title.trim() && !description.trim()) return;
+    const newItem = { day: day.trim(), time: time.trim(), title: title.trim(), description: description.trim() };
+
+    if (editingIndex !== null) {
+      const updated = [...items];
+      updated[editingIndex] = newItem;
+      onChange(updated);
+    } else {
+      onChange([...items, newItem]);
+    }
+    resetForm();
+  };
+
+  const startEdit = (index) => {
+    const item = items[index];
+    setDay(item.day || "");
+    setTime(item.time || "");
+    setTitle(item.title || "");
+    setDescription(item.description || "");
+    setEditingIndex(index);
+  };
+
+  const removeItem = (index) => {
+    if (editingIndex === index) resetForm();
+    onChange(items.filter((_, i) => i !== index));
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      saveItem();
+    }
+  };
+
+  const isEditing = editingIndex !== null;
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-[#1e293b] mb-2">Full Itinerary</label>
+      <p className="text-xs text-[#64748b] mb-3">Add time, title, and description for each itinerary stop.</p>
+
+      {error && <p className="mb-3 text-xs text-[#dc3545]">{error}</p>}
+
+      {/* Existing items */}
+      {items.length > 0 && (
+        <div className="space-y-3 mb-4">
+          {items.map((item, index) => (
+            <div key={index} className="flex gap-3 p-3 bg-[#f8fafc] border border-[#eaeaea] rounded-lg">
+              <div className="flex flex-col items-center">
+                <div className="w-2.5 h-2.5 rounded-full bg-[#044b3b] flex-shrink-0 mt-1.5" />
+                {index < items.length - 1 && <div className="w-0.5 flex-1 bg-[#eaeaea] my-1" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="space-y-0.5">
+                    {(item.day || item.time) && (
+                      <span className="text-xs font-semibold text-[#044b3b] uppercase tracking-wider">
+                        {[item.day, item.time].filter(Boolean).join(" — ")}
+                      </span>
+                    )}
+                    {item.title && (
+                      <p className="text-sm font-medium text-[#1e293b]">{item.title}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => startEdit(index)}
+                      className="p-1.5 text-[#9e9e9e] hover:text-[#044b3b] transition-colors flex-shrink-0"
+                      aria-label="Edit itinerary item"
+                    >
+                      <Pencil size={13} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(index)}
+                      className="p-1.5 text-[#9e9e9e] hover:text-[#dc3545] transition-colors flex-shrink-0"
+                      aria-label="Remove itinerary item"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
+                </div>
+                {item.description && (
+                  <p className="text-sm text-[#64748b] mt-0.5">{item.description}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add / Edit form */}
+      <div className="border border-[#eaeaea] rounded-lg p-4 bg-white space-y-3">
+        {isEditing && (
+          <div className="flex items-center justify-between pb-2 border-b border-[#eaeaea]">
+            <span className="text-xs font-semibold text-[#044b3b] uppercase tracking-wider">Editing Item {editingIndex + 1}</span>
+            <button
+              type="button"
+              onClick={resetForm}
+              className="text-xs text-[#64748b] hover:text-[#1e293b] transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-[#64748b] mb-1">
+              <span className="flex items-center gap-1">
+                <Clock size={12} />
+                Day
+              </span>
+            </label>
+            <input
+              type="text"
+              value={day}
+              onChange={(e) => setDay(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="e.g. Day 1"
+              className="w-full px-3 py-2 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[#64748b] mb-1">Time</label>
+            <input
+              type="text"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="e.g. 09:00"
+              className="w-full px-3 py-2 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-medium text-[#64748b] mb-1">Title</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="e.g. Morning Game Drive"
+              className="w-full px-3 py-2 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-[#64748b] mb-1">Description</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            onKeyDown={handleKeyDown}
+            rows={2}
+            placeholder="Describe what happens at this stop..."
+            className="w-full px-3 py-2 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] resize-none"
+          />
+        </div>
+        <div className="flex justify-end gap-2">
+          {isEditing && (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="flex items-center gap-1.5 px-4 py-2 border border-[#eaeaea] text-[#64748b] rounded-lg text-sm font-medium hover:bg-[#f8fafc] transition-colors"
+            >
+              <X size={16} />
+              Cancel
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={saveItem}
+            disabled={!title.trim() && !description.trim()}
+            className="flex items-center gap-1.5 px-4 py-2 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {isEditing ? <Pencil size={16} /> : <Plus size={16} />}
+            {isEditing ? "Save" : "Add Itinerary Item"}
+          </button>
         </div>
       </div>
     </div>

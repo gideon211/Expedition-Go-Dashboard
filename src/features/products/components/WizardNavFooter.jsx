@@ -74,7 +74,7 @@ function buildFormData(product) {
     included: product.content?.included || [],
     excluded: product.content?.excluded || [],
     whatToBring: product.content?.whatToBring || [],
-    itinerary: product.content?.itinerary || "",
+      itinerary: product.content?.itinerary || [],
     meetingInstructions: product.content?.meetingInstructions || "",
     additionalInfo: product.content?.additionalInfo || "",
     uniqueSellingPoints: product.content?.uniqueSellingPoints || "",
@@ -206,10 +206,7 @@ export default function WizardNavFooter() {
   const isEditing = id && id !== "new";
 
   const handleNext = () => {
-    const isValid = validateStep(currentStep);
-    if (isValid) {
-      nextStep();
-    }
+    nextStep();
   };
 
   const handleSave = () => {

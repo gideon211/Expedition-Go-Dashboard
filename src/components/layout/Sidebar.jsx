@@ -11,8 +11,10 @@ import {
   ChevronRight,
   Menu,
   X,
+  Building2,
 } from "lucide-react";
 import { useSidebarStore } from "@/stores/sidebarStore";
+import { useAuthStore } from "@/stores/authStore";
 
 const navItems = [
   { label: "Dashboard", path: "/", icon: LayoutDashboard },
@@ -26,7 +28,9 @@ const navItems = [
 
 export default function Sidebar() {
   const { isCollapsed, toggle, isMobileOpen, closeMobile } = useSidebarStore();
+  const user = useAuthStore((state) => state.user);
   const location = useLocation();
+  const logoUrl = user?.logoUrl;
 
   return (
     <>
@@ -49,9 +53,23 @@ export default function Sidebar() {
         {/* Logo Area */}
         <div className="h-16 flex items-center px-4 border-b border-white/10">
           <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center w-full" : ""}`}>
-            <div className="w-8 h-8 rounded-lg bg-[#044b3b] flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-bold text-sm">T</span>
-            </div>
+            {logoUrl ? (
+              <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 bg-white">
+                <img
+                  src={logoUrl}
+                  alt="Company logo"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                    e.target.parentElement.classList.add("bg-[#044b3b]");
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="w-8 h-8 rounded-lg bg-[#044b3b] flex items-center justify-center flex-shrink-0">
+                <Building2 size={16} className="text-white" />
+              </div>
+            )}
             {!isCollapsed && (
               <span className="font-bold text-white text-lg tracking-tight whitespace-nowrap">
                 TravioAfrica

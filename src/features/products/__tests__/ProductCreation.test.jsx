@@ -84,7 +84,7 @@ describe('Product Creation Flow', () => {
         exclusions: [],
       },
       content: {
-        itinerary: 'Day 1: Arrive',
+        itinerary: [{ day: "Day 1", time: "09:00", title: "Arrival", description: "Arrive and settle in" }],
         highlights: [],
         included: [],
         excluded: [],

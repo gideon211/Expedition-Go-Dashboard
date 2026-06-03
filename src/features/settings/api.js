@@ -8,3 +8,11 @@ export async function fetchCurrentUser() {
 export function updateCurrentUser(data) {
   return api.patch("/users/updateMe", data, { skipGlobalErrorHandler: true });
 }
+
+export async function uploadSupplierLogo(formData) {
+  const response = await api.post("/suppliers/logo", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    skipGlobalErrorHandler: true,
+  });
+  return response.data?.data || null;
+}

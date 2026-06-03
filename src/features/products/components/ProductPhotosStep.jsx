@@ -1,19 +1,59 @@
+import { useRef, useState, useCallback } from "react";
 import { Upload, X, Star } from "lucide-react";
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
 
 export default function ProductPhotosStep() {
   const { product, updateProduct } = useProductBuilderStore();
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef(null);
 
-  const handleFileSelect = (e) => {
-    const files = Array.from(e.target.files);
-    const newPhotos = files.map((file) => ({
+  const processFiles = useCallback((files) => {
+    const currentPhotos = useProductBuilderStore.getState().product.photos;
+    const newPhotos = Array.from(files).map((file) => ({
       id: Math.random().toString(36).substr(2, 9),
       name: file.name,
       url: URL.createObjectURL(file),
       file,
       alt: "",
     }));
-    updateProduct({ photos: [...product.photos, ...newPhotos] });
+    if (newPhotos.length > 0) {
+      updateProduct({ photos: [...currentPhotos, ...newPhotos] });
+    }
+  }, [updateProduct]);
+
+  const handleFileSelect = (e) => {
+    const files = e.target.files;
+    if (files?.length) {
+      processFiles(files);
+    }
+    e.target.value = "";
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const files = e.dataTransfer?.files;
+    if (files?.length) {
+      processFiles(files);
+    }
+  };
+
+  const handleClickUpload = () => {
+    fileInputRef.current?.click();
   };
 
   const removePhoto = (id) => {
@@ -40,16 +80,31 @@ export default function ProductPhotosStep() {
   return (
     <div className="space-y-6">
       {/* Upload Area */}
-      <div className="border-2 border-dashed border-[#eaeaea] rounded-lg p-8 text-center bg-[#f8fafc]">
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={handleClickUpload}
+        className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
+          isDragOver
+            ? "border-[#044b3b] bg-[#f0fdf4]"
+            : "border-[#eaeaea] bg-[#f8fafc] hover:border-[#044b3b] hover:bg-[#f0fdf4]/50"
+        }`}
+      >
         <Upload size={40} className="mx-auto text-[#9e9e9e] mb-3" />
         <p className="text-sm font-medium text-[#1e293b] mb-1">
           Drag and drop photos here, or{" "}
-          <label className="text-[#044b3b] cursor-pointer hover:underline">
-            browse
-            <input type="file" multiple accept="image/*" className="hidden" onChange={handleFileSelect} />
-          </label>
+          <span className="text-[#044b3b] hover:underline">browse</span> to choose files
         </p>
         <p className="text-xs text-[#64748b]">Supports JPG, PNG, WebP. Max 5MB per image.</p>
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileSelect}
+        />
       </div>
 
       {/* Photo Gallery */}

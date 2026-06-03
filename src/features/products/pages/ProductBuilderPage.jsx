@@ -174,7 +174,7 @@ function tourToProduct(tour) {
       exclusions: content.excluded || [],
     },
     content: {
-      itinerary: content.itinerary || "",
+      itinerary: content.itinerary || [],
       highlights: normalizeHighlights(content.highlights),
       included: content.included || [],
       excluded: content.excluded || [],

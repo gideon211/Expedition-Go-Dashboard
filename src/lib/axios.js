@@ -141,11 +141,10 @@ api.interceptors.response.use(
       localStorage.removeItem("auth_user");
       useAuthStore.getState().setUnauthenticated();
 
-      // DO NOT redirect automatically — that destroys the user's form data
-      // and prevents them from seeing what went wrong.
-      // Let the calling component (e.g. WizardNavFooter) handle the error
-      // gracefully and show a "Session expired" message inline.
-      console.error("🔒 401 Unauthorized - Session expired. Please log in again.");
+      // Redirect to login immediately so the supplier doesn't see a broken dashboard.
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
       return Promise.reject(error);
     }
 

@@ -67,7 +67,7 @@ export default function ProductReviewStep() {
         break;
 
       case 2: // Content
-        if (!product.content.itinerary?.trim()) stepErrors.itinerary = "Itinerary required";
+        if (!product.content.itinerary?.length) stepErrors.itinerary = "Itinerary required";
         if (normalizeHighlights(product.content.highlights).length === 0) {
           stepErrors.highlights = "At least one tour highlight is required";
         }
