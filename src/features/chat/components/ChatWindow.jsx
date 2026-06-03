@@ -117,7 +117,7 @@ export default function ChatWindow({ conversation, messages, messageStatuses, on
   const otherParticipant = conversation?.participants?.find(
     (p) => p.userId !== currentUserId
   )?.user || conversation?.participants?.[0]?.user;
-  const headerName = conversation?.title || otherParticipant?.name || otherParticipant?.email || "Chat";
+  const headerName = otherParticipant?.name || otherParticipant?.email || conversation?.title || "Chat";
 
   if (!conversation) {
     return (
