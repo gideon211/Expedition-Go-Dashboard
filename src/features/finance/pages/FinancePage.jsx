@@ -29,7 +29,6 @@ const TABS = [
 
 const METHOD_TYPES = [
   { value: "BANK_TRANSFER", label: "Bank Transfer" },
-  { value: "MOBILE_MONEY", label: "Mobile Money" },
   { value: "PAYPAL", label: "PayPal" },
 ];
 
@@ -104,11 +103,6 @@ export default function FinancePage() {
           bankName: methodForm.bankName,
           bankCountry: methodForm.bankCountry,
         });
-      } else if (methodForm.type === "MOBILE_MONEY") {
-        Object.assign(payload, {
-          mobileProvider: methodForm.mobileProvider,
-          mobileNumber: methodForm.mobileNumber,
-        });
       } else {
         payload.paypalEmail = methodForm.paypalEmail;
       }
@@ -122,8 +116,6 @@ export default function FinancePage() {
         accountNumber: "",
         bankName: "",
         bankCountry: "",
-        mobileProvider: "",
-        mobileNumber: "",
         paypalEmail: "",
         currency: "USD",
       });
@@ -338,25 +330,6 @@ export default function FinancePage() {
                     placeholder="Bank country code (e.g. GH, NG, US)"
                     value={methodForm.bankCountry}
                     onChange={(e) => setMethodForm((prev) => ({ ...prev, bankCountry: e.target.value }))}
-                    className="w-full px-3 py-2.5 border border-[#eaeaea] rounded-lg text-sm"
-                    required
-                  />
-                </>
-              )}
-
-              {methodForm.type === "MOBILE_MONEY" && (
-                <>
-                  <input
-                    placeholder="Mobile provider (e.g. MTN, Orange)"
-                    value={methodForm.mobileProvider}
-                    onChange={(e) => setMethodForm((prev) => ({ ...prev, mobileProvider: e.target.value }))}
-                    className="w-full px-3 py-2.5 border border-[#eaeaea] rounded-lg text-sm"
-                    required
-                  />
-                  <input
-                    placeholder="Mobile number"
-                    value={methodForm.mobileNumber}
-                    onChange={(e) => setMethodForm((prev) => ({ ...prev, mobileNumber: e.target.value }))}
                     className="w-full px-3 py-2.5 border border-[#eaeaea] rounded-lg text-sm"
                     required
                   />

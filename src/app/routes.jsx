@@ -12,6 +12,7 @@ import ReviewsPage from "@/features/reviews/pages/ReviewsPage";
 import FinancePage from "@/features/finance/pages/FinancePage";
 import NotificationsPage from "@/features/notifications/pages/NotificationsPage";
 import SettingsPage from "@/features/settings/pages/SettingsPage";
+import ChatPage from "@/features/chat/pages/ChatPage";
 
 import GuestRoute from "@/components/shared/GuestRoute";
 
@@ -64,6 +65,7 @@ export default function AppRoutes() {
           <Route path="/finance" element={<FinancePage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/chat" element={<ChatPage />} />
 
           {/* Catch-all route for 404 */}
           <Route path="*" element={<NotFoundPage />} />

@@ -81,15 +81,6 @@ api.interceptors.request.use(
       return Promise.reject(createAuthRequiredError());
     }
 
-    // Log requests in development
-    if (config.isDevelopment() && config.monitoring.debugMode) {
-      console.log("🌐 API Request:", {
-        method: requestConfig.method?.toUpperCase(),
-        url: requestConfig.url,
-        data: requestConfig.data,
-      });
-    }
-
     return requestConfig;
   },
   (error) => {
@@ -100,15 +91,6 @@ api.interceptors.request.use(
 // Response interceptor for error handling
 api.interceptors.response.use(
   (response) => {
-    // Log responses in development
-    if (config.isDevelopment() && config.monitoring.debugMode) {
-      console.log('✅ API Response:', {
-        status: response.status,
-        url: response.config.url,
-        data: response.data,
-      });
-    }
-    
     return response;
   },
   async (error) => {
