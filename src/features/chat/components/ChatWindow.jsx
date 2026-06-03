@@ -48,6 +48,7 @@ export default function ChatWindow({ conversation, messages, messageStatuses, on
   const fileInputRef = useRef(null);
   const prevCountRef = useRef(messages.length);
   const prevConvIdRef = useRef(null);
+  const pendingScrollRef = useRef(null);
 
   const { onNewMessage, emitTyping, emitMarkRead } = useChatSocket(conversation?.id, currentUserId);
 
@@ -66,6 +67,13 @@ export default function ChatWindow({ conversation, messages, messageStatuses, on
   useEffect(() => {
     if (conversation?.id && prevConvIdRef.current !== conversation?.id) {
       prevConvIdRef.current = conversation?.id;
+      pendingScrollRef.current = conversation?.id;
+    }
+  }, [conversation?.id]);
+
+  useEffect(() => {
+    if (pendingScrollRef.current === conversation?.id && messages.length > 0) {
+      pendingScrollRef.current = null;
       requestAnimationFrame(() => scrollToBottom(true));
     }
     prevCountRef.current = messages.length;
