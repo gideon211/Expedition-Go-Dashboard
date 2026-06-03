@@ -48,24 +48,28 @@ export default function ChatWindow({ conversation, messages, messageStatuses, on
   const fileInputRef = useRef(null);
   const prevCountRef = useRef(messages.length);
   const prevConvIdRef = useRef(null);
-  const justChangedRef = useRef(false);
+
+  const { onNewMessage, emitTyping, emitMarkRead } = useChatSocket(conversation?.id, currentUserId);
+
+  const isNearBottom = useCallback(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return true;
+    return el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+  }, []);
+
+  const scrollToBottom = useCallback((force) => {
+    if (force || isNearBottom()) {
+      messagesEndRef.current?.scrollIntoView({ behavior: force ? "auto" : "smooth" });
+    }
+  }, [isNearBottom]);
 
   useEffect(() => {
     if (conversation?.id && prevConvIdRef.current !== conversation?.id) {
       prevConvIdRef.current = conversation?.id;
-      justChangedRef.current = true;
-    }
-  }, [conversation?.id]);
-
-  useEffect(() => {
-    if (justChangedRef.current && messages.length > 0) {
-      justChangedRef.current = false;
       requestAnimationFrame(() => scrollToBottom(true));
-    } else if (messages.length > prevCountRef.current) {
-      scrollToBottom();
     }
     prevCountRef.current = messages.length;
-  }, [messages.length, scrollToBottom]);
+  }, [messages.length, conversation?.id, scrollToBottom]);
 
   const handleScroll = useCallback(() => {
     const el = messagesContainerRef.current;
