@@ -23,7 +23,7 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false);
   const isFetchingRef = useRef(false);
 
-  const { onNewMessage, onMarkRead, emitMarkRead } = useChatSocket(selectedConv?.id, currentUserId);
+  const { onNewMessage, onMarkRead, emitMarkRead, emitDelivered } = useChatSocket(selectedConv?.id, currentUserId);
 
   const loadConversations = useCallback(async () => {
     if (!currentUserId) return;
@@ -133,6 +133,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (!onNewMessage) return;
     const unsub = onNewMessage((msg, convId) => {
+      emitDelivered(convId, msg.id);
       if (convId === selectedConv?.id) {
         setMessages((prev) => {
           if (prev.some((m) => m.id === msg.id)) return prev;

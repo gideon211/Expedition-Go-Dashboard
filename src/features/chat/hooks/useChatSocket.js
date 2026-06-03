@@ -50,5 +50,12 @@ export function useChatSocket(conversationId, userId) {
     socketRef.current?.emit("chat:mark-read", { conversationId: convId });
   }, []);
 
-  return { onNewMessage, onMarkRead, emitTyping, emitMarkRead };
+  const emitDelivered = useCallback((convId, messageIds) => {
+    socketRef.current?.emit("chat:delivered", {
+      conversationId: convId,
+      messageIds: Array.isArray(messageIds) ? messageIds : [messageIds],
+    });
+  }, []);
+
+  return { onNewMessage, onMarkRead, emitTyping, emitMarkRead, emitDelivered };
 }
