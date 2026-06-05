@@ -251,12 +251,19 @@ export default function SupportFloating() {
       let conv = selectedConv;
 
       if (!conv) {
-        if (!ADMIN_SUPPORT_ID) {
+        let adminId = ADMIN_SUPPORT_ID;
+        if (!adminId) {
+          const adminParticipant = conversations
+            .flatMap((c) => c.participants || [])
+            .find((p) => p.user?.roles?.includes("admin"));
+          adminId = adminParticipant?.userId || "";
+        }
+        if (!adminId) {
           toast.error("Support is not configured yet");
           setSending(false);
           return;
         }
-        conv = await getOrCreateConversation(ADMIN_SUPPORT_ID);
+        conv = await getOrCreateConversation(adminId);
         setSelectedConv(conv);
         setConversations((prev) => [conv, ...prev]);
         if (socketRef.current) socketRef.current.emit("chat:join", conv.id);
@@ -274,7 +281,7 @@ export default function SupportFloating() {
     } finally {
       setSending(false);
     }
-  }, [selectedConv, sending, loadAndSetMessages]);
+  }, [selectedConv, sending, conversations, loadAndSetMessages]);
 
   const handleSubmit = useCallback(() => {
     if (!input.trim() || sending) return;
