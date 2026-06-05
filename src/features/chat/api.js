@@ -36,7 +36,7 @@ export async function markConversationAsRead(conversationId) {
 
 export async function getUnreadCount() {
   const res = await api.get("/chat/conversations/unread-count");
-  return res.data.data;
+  return res.data.data?.unreadCount ?? 0;
 }
 
 export async function uploadChatImage(file) {

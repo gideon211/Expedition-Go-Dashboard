@@ -215,8 +215,4 @@ export const config = {
   isStaging: () => env.VITE_APP_ENV === 'staging',
 };
 
-if (config.isDevelopment() && config.monitoring.debugMode) {
-  console.log('📋 Application Configuration:', config);
-}
-
 export default config;

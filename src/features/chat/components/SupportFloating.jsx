@@ -79,13 +79,17 @@ export default function SupportFloating() {
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const fileInputRef = useRef(null);
-  const unreadIntervalRef = useRef(null);
   const isFetchingRef = useRef(false);
   const selectedIdRef = useRef(null);
+  const conversationsRef = useRef([]);
 
   useEffect(() => {
     selectedIdRef.current = selectedConv?.id || null;
   }, [selectedConv?.id]);
+
+  useEffect(() => {
+    conversationsRef.current = conversations;
+  }, [conversations]);
 
   const loadAndSetMessages = useCallback(async (convId) => {
     if (!convId || isFetchingRef.current) return;
@@ -132,8 +136,9 @@ export default function SupportFloating() {
         const state = useChatFloatingStore.getState();
         const targetConvId = state.pendingConversationId;
         if (targetConvId) state.clearPendingConversation();
+        let target = null;
         if (convs.length > 0) {
-          const target = targetConvId
+          target = targetConvId
             ? convs.find((c) => c.id === targetConvId) || convs[0]
             : convs[0];
           if (target) {
@@ -145,8 +150,8 @@ export default function SupportFloating() {
           }
         }
         if (!cancelled) {
-          const unread = convs.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
-          if (unread > 0) setUnreadBadge(unread);
+          const badgeCount = convs.reduce((sum, c) => sum + (c.id === target?.id ? 0 : (c.unreadCount || 0)), 0);
+          setUnreadBadge(badgeCount);
         }
       } catch {} finally {
         if (!cancelled) setLoading(false);
@@ -178,11 +183,16 @@ export default function SupportFloating() {
           if (prev.some((m) => m.id === msg.id)) return prev;
           return [...prev, msg];
         });
+      } else {
+        const existing = conversationsRef.current.find((c) => c.id === conversationId);
+        if (!existing || !existing.unreadCount) {
+          setUnreadBadge((prev) => prev + 1);
+        }
       }
       setConversations((prev) => {
         if (prev.some((c) => c.id === conversationId)) {
           return prev.map((c) =>
-            c.id === conversationId ? { ...c, updatedAt: msg.createdAt, messages: [msg] } : c
+            c.id === conversationId ? { ...c, updatedAt: msg.createdAt, messages: [msg], unreadCount: 1 } : c
           );
         }
         return prev;
@@ -217,6 +227,19 @@ export default function SupportFloating() {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages.length]);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+    const poll = async () => {
+      try {
+        const count = await getUnreadCount();
+        setUnreadBadge(count);
+      } catch {}
+    };
+    poll();
+    const id = setInterval(poll, POLL_INTERVAL);
+    return () => clearInterval(id);
+  }, [currentUserId]);
 
   const handleSend = useCallback(async (content, attachment) => {
     const text = content?.trim();

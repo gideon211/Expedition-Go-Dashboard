@@ -1,21 +1,14 @@
+import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard,
-  CalendarCheck,
-  Package,
-  Star,
-  DollarSign,
-  Bell,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-  Menu,
-  X,
-  Building2,
-  MessageCircle,
+  LayoutDashboard, Package, MessageCircle,
+  DollarSign, Bell, Settings, ChevronLeft, ChevronRight,
+  Menu, X, CalendarCheck, Star, Compass
 } from "lucide-react";
 import { useSidebarStore } from "@/stores/sidebarStore";
 import { useAuthStore } from "@/stores/authStore";
+import { toast } from "sonner";
+import { loadSupplierProfile } from "@/features/auth/api";
 
 const navItems = [
   { label: "Dashboard", path: "/", icon: LayoutDashboard },
@@ -25,14 +18,32 @@ const navItems = [
   { label: "Finance", path: "/finance", icon: DollarSign },
   { label: "Notifications", path: "/notifications", icon: Bell },
   { label: "Settings", path: "/settings", icon: Settings },
-  { label: "Messages", path: "/chat", icon: MessageCircle },
+  { label: "Customer Conversations", path: "/chat", icon: MessageCircle, disabled: true },
 ];
+
+function extractBusinessName(businessInfo) {
+  if (!businessInfo) return null;
+  if (typeof businessInfo === "string") {
+    try { const p = JSON.parse(businessInfo); return p.businessName || p.legalBusinessName || null; } catch { return null; }
+  }
+  return businessInfo.businessName || businessInfo.legalBusinessName || null;
+}
 
 export default function Sidebar() {
   const { isCollapsed, toggle, isMobileOpen, closeMobile } = useSidebarStore();
   const user = useAuthStore((state) => state.user);
   const location = useLocation();
   const logoUrl = user?.logoUrl;
+  const [businessName, setBusinessName] = useState(null);
+
+  useEffect(() => {
+    if (!user?.roles?.includes("supplier")) return;
+    loadSupplierProfile().then((profile) => {
+      if (!profile) return;
+      const name = extractBusinessName(profile.businessInfo);
+      if (name) setBusinessName(name);
+    });
+  }, [user?.roles]);
 
   return (
     <>
@@ -55,23 +66,9 @@ export default function Sidebar() {
         {/* Logo Area */}
         <div className="h-16 flex items-center px-4 border-b border-white/10">
           <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center w-full" : ""}`}>
-            {logoUrl ? (
-              <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 bg-white">
-                <img
-                  src={logoUrl}
-                  alt="Company logo"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.style.display = "none";
-                    e.target.parentElement.classList.add("bg-[#044b3b]");
-                  }}
-                />
-              </div>
-            ) : (
-              <div className="w-8 h-8 rounded-lg bg-[#044b3b] flex items-center justify-center flex-shrink-0">
-                <Building2 size={16} className="text-white" />
-              </div>
-            )}
+            <div className="w-8 h-8 rounded-lg bg-[#044b3b] flex items-center justify-center flex-shrink-0">
+              <Compass size={16} className="text-white" />
+            </div>
             {!isCollapsed && (
               <span className="font-bold text-white text-lg tracking-tight whitespace-nowrap">
                 TravioAfrica
@@ -89,26 +86,65 @@ export default function Sidebar() {
 
               return (
                 <li key={item.path}>
-                  <NavLink
-                    to={item.path}
-                    onClick={closeMobile}
-                    className={({ isActive: navActive }) =>
-                      `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                        isActive || navActive
-                          ? "bg-[#044b3b] text-white"
-                          : "text-[#9e9e9e] hover:text-white hover:bg-white/5"
-                      } ${isCollapsed ? "justify-center" : ""}`
-                    }
-                    title={isCollapsed ? item.label : undefined}
-                  >
-                    <Icon size={20} className="flex-shrink-0" />
-                    {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
-                  </NavLink>
+                  {item.disabled ? (
+                    <button
+                      onClick={() => toast.info("Coming soon")}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium w-full text-left cursor-default text-[#6b6b6b] ${isCollapsed ? "justify-center" : ""}`}
+                      title={isCollapsed ? item.label : undefined}
+                    >
+                      <Icon size={20} className="flex-shrink-0 opacity-50" />
+                      {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
+                    </button>
+                  ) : (
+                    <NavLink
+                      to={item.path}
+                      onClick={closeMobile}
+                      className={({ isActive: navActive }) =>
+                        `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                          isActive || navActive
+                            ? "bg-[#044b3b] text-white"
+                            : "text-[#9e9e9e] hover:text-white hover:bg-white/5"
+                        } ${isCollapsed ? "justify-center" : ""}`
+                      }
+                      title={isCollapsed ? item.label : undefined}
+                    >
+                      <Icon size={20} className="flex-shrink-0" />
+                      {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
+                    </NavLink>
+                  )}
                 </li>
               );
             })}
           </ul>
         </nav>
+
+        {/* User / Supplier Section */}
+        <div className="border-t border-white/10 p-3">
+          <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center" : ""}`}>
+            {logoUrl ? (
+              <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-white">
+                <img
+                  src={logoUrl}
+                  alt="Company logo"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-[#044b3b] flex items-center justify-center flex-shrink-0">
+                <span className="text-xs font-bold text-white">
+                  {user?.name ? user.name.charAt(0).toUpperCase() : "S"}
+                </span>
+              </div>
+            )}
+            {!isCollapsed && (
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-white truncate">
+                  {businessName || user?.name || "Supplier"}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Collapse Toggle (desktop only) */}
         <div className="p-2 border-t border-white/10 hidden lg:block">

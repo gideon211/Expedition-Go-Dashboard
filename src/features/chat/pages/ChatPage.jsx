@@ -204,7 +204,7 @@ export default function ChatPage() {
     <div className="flex h-[calc(100vh-64px)]">
       <div className="flex w-[340px] shrink-0 flex-col border-r border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-4 py-3.5">
-          <h2 className="text-base font-semibold text-gray-900">Messages</h2>
+          <h2 className="text-base font-semibold text-gray-900">Customer Conversations</h2>
         </div>
         <div className="flex-1 overflow-y-auto">
           <ConversationList

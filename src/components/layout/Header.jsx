@@ -110,8 +110,14 @@ export default function Header() {
                   {supplierProfile ? (
                     <>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#044b3b] flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-                          {displayName?.charAt(0)?.toUpperCase() || "S"}
+                        <div className="w-10 h-10 rounded-full overflow-hidden bg-[#044b3b] flex-shrink-0">
+                          {user?.photoURL ? (
+                            <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-white text-sm font-medium">
+                              {avatarLetter}
+                            </div>
+                          )}
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-[#1e293b] truncate">{displayName}</p>
@@ -165,8 +171,14 @@ export default function Header() {
               <p className="text-sm font-medium text-[#1e293b]">{displayName}</p>
               <p className="text-xs text-[#64748b] capitalize">{displayRole}</p>
             </div>
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#044b3b] flex items-center justify-center text-white font-medium text-sm">
-              {avatarLetter}
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden bg-[#044b3b] flex-shrink-0">
+              {user?.photoURL ? (
+                <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white font-medium text-sm">
+                  {avatarLetter}
+                </div>
+              )}
             </div>
             <ChevronDown
               size={14}
@@ -178,8 +190,14 @@ export default function Header() {
               {/* Profile Info */}
               <div className="px-4 py-4 border-b border-[#eaeaea]">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#044b3b] flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-                    {avatarLetter}
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-[#044b3b] flex-shrink-0">
+                    {user?.photoURL ? (
+                      <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white text-sm font-medium">
+                        {avatarLetter}
+                      </div>
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-[#1e293b] truncate">{displayName}</p>
