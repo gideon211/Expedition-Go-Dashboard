@@ -171,16 +171,18 @@ export default function ProductContentStep() {
 
       case "inclusions":
         return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <TagList
                 label="What's Included"
+                accent="green"
                 items={content.included}
                 placeholder="e.g. Professional guide"
                 onChange={(items) => updateNested("content.included", items)}
               />
               <TagList
                 label="What's Excluded"
+                accent="red"
                 items={content.excluded}
                 placeholder="e.g. Personal expenses"
                 onChange={(items) => updateNested("content.excluded", items)}
@@ -527,8 +529,32 @@ function ItineraryBuilder({ items, onChange, error }) {
   );
 }
 
-function TagList({ label, items, placeholder, onChange }) {
+const accentColors = {
+  green: {
+    bg: "bg-[#f0fdf4]",
+    border: "border-[#bbf7d0]",
+    text: "text-[#166534]",
+    chipBg: "bg-white",
+    chipBorder: "border-[#e0f2fe]",
+    chipText: "text-[#1e293b]",
+    hoverBg: "hover:bg-[#dcfce7]",
+    removeHover: "hover:text-[#dc3545]",
+  },
+  red: {
+    bg: "bg-[#fef2f2]",
+    border: "border-[#fecaca]",
+    text: "text-[#991b1b]",
+    chipBg: "bg-white",
+    chipBorder: "border-[#fef2f2]",
+    chipText: "text-[#1e293b]",
+    hoverBg: "hover:bg-[#fee2e2]",
+    removeHover: "hover:text-[#dc3545]",
+  },
+};
+
+function TagList({ label, items, placeholder, onChange, accent = "green" }) {
   const [inputValue, setInputValue] = useState("");
+  const colors = accentColors[accent];
 
   const addItem = () => {
     const trimmed = inputValue.trim();
@@ -550,8 +576,16 @@ function TagList({ label, items, placeholder, onChange }) {
   };
 
   return (
-    <div>
-      <label className="block text-sm font-medium text-[#1e293b] mb-2">{label}</label>
+    <div className={`rounded-xl border ${colors.border} ${colors.bg} p-5`}>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold text-[#1e293b]">{label}</h3>
+        {items.length > 0 && (
+          <span className={`inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full text-[11px] font-semibold ${colors.text} ${colors.hoverBg}`}>
+            {items.length}
+          </span>
+        )}
+      </div>
+
       <div className="flex gap-2">
         <input
           type="text"
@@ -559,7 +593,7 @@ function TagList({ label, items, placeholder, onChange }) {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="flex-1 min-w-0 px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+          className="flex-1 min-w-0 px-4 py-2.5 bg-white border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] transition-shadow"
         />
         <button
           type="button"
@@ -568,28 +602,32 @@ function TagList({ label, items, placeholder, onChange }) {
           className="flex items-center gap-1.5 px-4 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
         >
           <Plus size={16} />
-          <span className="hidden sm:inline">Add</span>
+          <span>Add</span>
         </button>
       </div>
-      <p className="text-xs text-[#64748b] mt-1">Type an item and press Enter to add it</p>
+
       {items.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-2">
           {items.map((item, index) => (
             <span
               key={`${item}-${index}`}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white text-[#1e293b] border border-[#e0e0e0] rounded-md text-sm shadow-sm"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 ${colors.chipBg} text-[#1e293b] border ${colors.chipBorder} rounded-lg text-sm shadow-sm transition-shadow hover:shadow-md`}
             >
-              {item}
+              <span className="max-w-[240px] truncate">{item}</span>
               <button
                 type="button"
                 onClick={() => removeItem(index)}
-                className="text-[#9e9e9e] hover:text-[#dc3545] transition-colors"
+                className={`flex-shrink-0 text-[#9e9e9e] ${colors.removeHover} transition-colors ml-0.5`}
               >
                 <X size={14} />
               </button>
             </span>
           ))}
         </div>
+      )}
+
+      {items.length === 0 && (
+        <p className="text-xs text-[#9e9e9e] mt-3">No items added yet. Type above and press Enter or click Add.</p>
       )}
     </div>
   );
