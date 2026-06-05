@@ -13,6 +13,7 @@ import ProductBookingStep from "@/features/products/components/ProductBookingSte
 import ProductContentStep from "@/features/products/components/ProductContentStep";
 import ProductReviewStep from "@/features/products/components/ProductReviewStep";
 import { normalizeHighlights } from "@/features/products/utils/normalizeHighlights";
+import { normalizeItinerary } from "@/features/products/utils/normalizeItinerary";
 import {
   parseProductTypeFromCategorization,
 } from "@/features/products/utils/productTypeFromCategorization";
@@ -174,7 +175,7 @@ function tourToProduct(tour) {
       exclusions: content.excluded || [],
     },
     content: {
-      itinerary: content.itinerary || [],
+      itinerary: normalizeItinerary(content.itinerary),
       highlights: normalizeHighlights(content.highlights),
       included: content.included || [],
       excluded: content.excluded || [],

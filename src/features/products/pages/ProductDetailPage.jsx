@@ -31,6 +31,7 @@ import StatusBadge from "@/components/shared/StatusBadge";
 import { PRODUCT_STATUSES } from "@/lib/constants";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import config from "@/config";
+import { normalizeItinerary } from "@/features/products/utils/normalizeItinerary";
 
 export default function ProductDetailPage() {
   // ============================================================================
@@ -351,7 +352,10 @@ export default function ProductDetailPage() {
    * - bookingAndTickets: Booking rules, cancellation policy, meeting point
    */
   const categorization = tour.categorization || {};
-  const content = tour.productContent || {};
+  const content = {
+    ...tour.productContent,
+    itinerary: normalizeItinerary(tour.productContent?.itinerary),
+  };
   const schedules = tour.schedulesAndPricing || {};
   const booking = tour.bookingAndTickets || {};
   const pricingSchedules = schedules.pricingSchedules || {};
