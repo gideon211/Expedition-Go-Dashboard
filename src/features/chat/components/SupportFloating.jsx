@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { io } from "socket.io-client";
 import config from "@/config";
 import { useAuthStore } from "@/stores/authStore";
+import { useChatFloatingStore } from "@/stores/chatFloatingStore";
 import MessageBubble from "./MessageBubble";
 import {
   getConversations,
@@ -59,7 +60,7 @@ export default function SupportFloating() {
   const user = useAuthStore((state) => state.user);
   const currentUserId = user?.id;
 
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, pendingConversationId, open: openStore, close: closeStore, clearPendingConversation } = useChatFloatingStore();
   const [conversations, setConversations] = useState([]);
   const [selectedConv, setSelectedConv] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -107,47 +108,52 @@ export default function SupportFloating() {
     }
   }, []);
 
-  const openModal = useCallback(async () => {
-    setIsOpen(true);
-    setLoading(true);
-    setInput("");
-    setWelcomePage("main");
-    setSelectedConv(null);
-    setMessages([]);
-    try {
-      const convs = await getConversations();
-      setConversations(convs);
-      if (convs.length > 0) {
-        const target = convs[0];
-        setSelectedConv(target);
-        await loadAndSetMessages(target.id);
-        try { await markConversationAsRead(target.id); } catch {}
-      }
-      const unread = convs.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
-      if (unread > 0) setUnreadBadge(unread);
-    } catch {} finally {
-      setLoading(false);
-    }
-  }, [loadAndSetMessages]);
+  const openModal = useCallback(() => {
+    openStore();
+  }, [openStore]);
 
   const closeModal = useCallback(() => {
-    setIsOpen(false);
-  }, []);
+    closeStore();
+  }, [closeStore]);
 
   useEffect(() => {
-    if (!currentUserId) return;
-    const fetchUnread = async () => {
+    if (!isOpen || !currentUserId) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setInput("");
+      setWelcomePage("main");
+      setSelectedConv(null);
+      setMessages([]);
       try {
-        const data = await getUnreadCount();
-        setUnreadBadge(data?.unreadCount ?? 0);
-      } catch {}
-    };
-    fetchUnread();
-    unreadIntervalRef.current = setInterval(fetchUnread, POLL_INTERVAL);
-    return () => {
-      if (unreadIntervalRef.current) clearInterval(unreadIntervalRef.current);
-    };
-  }, [currentUserId]);
+        const convs = await getConversations();
+        if (cancelled) return;
+        setConversations(convs);
+        const state = useChatFloatingStore.getState();
+        const targetConvId = state.pendingConversationId;
+        if (targetConvId) state.clearPendingConversation();
+        if (convs.length > 0) {
+          const target = targetConvId
+            ? convs.find((c) => c.id === targetConvId) || convs[0]
+            : convs[0];
+          if (target) {
+            setSelectedConv(target);
+            await loadAndSetMessages(target.id);
+            if (!cancelled) {
+              try { await markConversationAsRead(target.id); } catch {}
+            }
+          }
+        }
+        if (!cancelled) {
+          const unread = convs.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+          if (unread > 0) setUnreadBadge(unread);
+        }
+      } catch {} finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [isOpen, loadAndSetMessages]);
 
   useEffect(() => {
     if (!isOpen || !currentUserId) return;
@@ -199,7 +205,6 @@ export default function SupportFloating() {
       socketRef.current = null;
     };
   }, [isOpen, currentUserId]);
-
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket || !selectedConv?.id) return;
@@ -623,3 +628,9 @@ function InputBar({ value, onChange, onSend, onKeyDown, onFileChange, sending, f
     </div>
   );
 }
+
+
+
+
+
+

@@ -1,10 +1,11 @@
-import {
+﻿import {
   Package,
   CalendarCheck,
   Star,
   AlertTriangle,
   Info,
   DollarSign,
+  MessageSquare,
 } from "lucide-react";
 
 export const NOTIFICATION_TYPES = {
@@ -14,6 +15,11 @@ export const NOTIFICATION_TYPES = {
   payment: { icon: DollarSign, color: "bg-[#f0fdf4] text-[#044b3b]", label: "Payment" },
   alert: { icon: AlertTriangle, color: "bg-[#ffebeb] text-[#b91c1c]", label: "Alert" },
   system: { icon: Info, color: "bg-[#ecfeff] text-[#0e7490]", label: "System" },
+  message: { icon: MessageSquare, color: "bg-[#ebfcf5] text-[#044b3b]", label: "Message" },
 };
 
 export const NOTIFICATIONS_QUERY_KEY = "notifications";
+
+
+
+

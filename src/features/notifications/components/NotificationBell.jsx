@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { Bell, Check, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { useChatFloatingStore } from "@/stores/chatFloatingStore";
 import { formatDateTime } from "@/lib/utils";
 import { NOTIFICATION_TYPES } from "../constants";
 import {
@@ -38,6 +39,11 @@ export default function NotificationBell() {
     }
 
     setOpen(false);
+
+    if (notification.backendType === "NEW_MESSAGE") {
+      useChatFloatingStore.getState().open(notification.data?.conversationId);
+      return;
+    }
 
     if (notification.action) {
       navigate(notification.action);
@@ -159,3 +165,5 @@ export default function NotificationBell() {
     </div>
   );
 }
+
+

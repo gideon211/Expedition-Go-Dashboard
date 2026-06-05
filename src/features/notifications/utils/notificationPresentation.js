@@ -1,4 +1,4 @@
-const BACKEND_TYPE_TO_UI = {
+﻿const BACKEND_TYPE_TO_UI = {
   BOOKING_CONFIRMED: "booking",
   BOOKING_CANCELLED: "booking",
   PAYMENT_RECEIVED: "payment",
@@ -8,6 +8,7 @@ const BACKEND_TYPE_TO_UI = {
   PAYOUT_PROCESSED: "payment",
   PAYOUT_APPROVED: "payment",
   SYSTEM_ALERT: "system",
+  NEW_MESSAGE: "message",
 };
 
 function getNotificationRoute(type, data = {}) {
@@ -37,6 +38,8 @@ function getNotificationRoute(type, data = {}) {
     case "SUPPLIER_APPROVED":
     case "SUPPLIER_REJECTED":
       return { path: "/supplier/status", label: "View Status" };
+    case "NEW_MESSAGE":
+      return { path: "/chat", label: "View Message" };
     default:
       return { path: null, label: null };
   }
@@ -69,3 +72,4 @@ export function parseNotificationsResponse(response) {
     pagination: payload.pagination ?? null,
   };
 }
+
