@@ -576,30 +576,30 @@ function TagList({ label, items, placeholder, onChange, accent = "green" }) {
   };
 
   return (
-    <div className={`rounded-xl border ${colors.border} ${colors.bg} p-5`}>
-      <div className="flex items-center justify-between mb-4">
+    <div className={`rounded-xl border ${colors.border} ${colors.bg} p-6`}>
+      <div className="flex items-center justify-between mb-5">
         <h3 className="text-sm font-semibold text-[#1e293b]">{label}</h3>
         {items.length > 0 && (
-          <span className={`inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full text-[11px] font-semibold ${colors.text} ${colors.hoverBg}`}>
+          <span className={`inline-flex items-center justify-center min-w-[24px] h-[24px] px-1.5 rounded-full text-[11px] font-semibold ${colors.text} ${colors.hoverBg}`}>
             {items.length}
           </span>
         )}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex gap-3">
         <input
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="flex-1 min-w-0 px-4 py-2.5 bg-white border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] transition-shadow"
+          className="flex-1 min-w-0 px-4 py-3 bg-white border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] transition-shadow"
         />
         <button
           type="button"
           onClick={addItem}
           disabled={!inputValue.trim()}
-          className="flex items-center gap-1.5 px-4 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+          className="flex items-center gap-1.5 px-5 py-3 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
         >
           <Plus size={16} />
           <span>Add</span>
