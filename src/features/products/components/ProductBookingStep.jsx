@@ -98,36 +98,6 @@ export default function ProductBookingStep() {
     meetingInputRef.current?.focus();
   };
 
-  const handleInclusionChange = (index, value) => {
-    const newInclusions = [...bookingRules.inclusions];
-    newInclusions[index] = value;
-    updateNested("bookingRules.inclusions", newInclusions);
-  };
-
-  const addInclusion = () => {
-    updateNested("bookingRules.inclusions", [...bookingRules.inclusions, ""]);
-  };
-
-  const removeInclusion = (index) => {
-    const newInclusions = bookingRules.inclusions.filter((_, i) => i !== index);
-    updateNested("bookingRules.inclusions", newInclusions);
-  };
-
-  const handleExclusionChange = (index, value) => {
-    const newExclusions = [...bookingRules.exclusions];
-    newExclusions[index] = value;
-    updateNested("bookingRules.exclusions", newExclusions);
-  };
-
-  const addExclusion = () => {
-    updateNested("bookingRules.exclusions", [...bookingRules.exclusions, ""]);
-  };
-
-  const removeExclusion = (index) => {
-    const newExclusions = bookingRules.exclusions.filter((_, i) => i !== index);
-    updateNested("bookingRules.exclusions", newExclusions);
-  };
-
   return (
     <div className="space-y-6">
       {/* Confirmation Type */}
@@ -417,75 +387,6 @@ export default function ProductBookingStep() {
         )}
       </div>
 
-      {/* Inclusions */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-[#1e293b]">What's Included</h3>
-          <button
-            onClick={addInclusion}
-            className="px-3 py-1.5 text-xs font-medium text-[#044b3b] bg-[#f0fdf4] rounded-md hover:bg-[#dcfce7] transition-colors"
-          >
-            + Add Item
-          </button>
-        </div>
-        <div className="space-y-2">
-          {bookingRules.inclusions.map((item, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <input
-                type="text"
-                value={item}
-                onChange={(e) => handleInclusionChange(index, e.target.value)}
-                placeholder={`Inclusion ${index + 1}`}
-                className="flex-1 px-4 py-2 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
-              />
-              <button
-                onClick={() => removeInclusion(index)}
-                className="p-2 text-[#9e9e9e] hover:text-[#dc3545] transition-colors"
-              >
-                ×
-              </button>
-            </div>
-          ))}
-          {bookingRules.inclusions.length === 0 && (
-            <p className="text-sm text-[#64748b] italic">No inclusions added yet</p>
-          )}
-        </div>
-      </div>
-
-      {/* Exclusions */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-[#1e293b]">What's Excluded</h3>
-          <button
-            onClick={addExclusion}
-            className="px-3 py-1.5 text-xs font-medium text-[#044b3b] bg-[#f0fdf4] rounded-md hover:bg-[#dcfce7] transition-colors"
-          >
-            + Add Item
-          </button>
-        </div>
-        <div className="space-y-2">
-          {bookingRules.exclusions.map((item, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <input
-                type="text"
-                value={item}
-                onChange={(e) => handleExclusionChange(index, e.target.value)}
-                placeholder={`Exclusion ${index + 1}`}
-                className="flex-1 px-4 py-2 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
-              />
-              <button
-                onClick={() => removeExclusion(index)}
-                className="p-2 text-[#9e9e9e] hover:text-[#dc3545] transition-colors"
-              >
-                ×
-              </button>
-            </div>
-          ))}
-          {bookingRules.exclusions.length === 0 && (
-            <p className="text-sm text-[#64748b] italic">No exclusions added yet</p>
-          )}
-        </div>
-      </div>
     </div>
   );
 }
