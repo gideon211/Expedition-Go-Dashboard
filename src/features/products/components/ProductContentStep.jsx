@@ -586,20 +586,20 @@ function TagList({ label, items, placeholder, onChange, accent = "green" }) {
         )}
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-2">
         <input
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="flex-1 min-w-0 px-4 py-3 bg-white border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] transition-shadow"
+          className="w-full px-4 py-3 bg-white border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] transition-shadow"
         />
         <button
           type="button"
           onClick={addItem}
           disabled={!inputValue.trim()}
-          className="flex items-center gap-1.5 px-5 py-3 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+          className="sm:self-start flex items-center justify-center gap-1.5 px-6 py-3 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
         >
           <Plus size={16} />
           <span>Add</span>
