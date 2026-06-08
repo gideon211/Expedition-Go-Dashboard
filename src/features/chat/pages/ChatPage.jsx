@@ -1,6 +1,7 @@
 ﻿import { useState, useCallback, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
+import { useChatStore } from "@/stores/chatStore";
 import ConversationList from "../components/ConversationList";
 import ChatWindow from "../components/ChatWindow";
 import CustomerDetailsPanel from "../components/CustomerDetailsPanel";
@@ -22,19 +23,37 @@ export default function ChatPage() {
   const customerIdParam = searchParams.get("customerId");
 
   const [activeTab, setActiveTab] = useState(tabParam);
-  const [conversations, setConversations] = useState([]);
-  const [selectedConv, setSelectedConv] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [messageStatuses, setMessageStatuses] = useState({});
-  const [cursor, setCursor] = useState(null);
-  const [hasMore, setHasMore] = useState(false);
-  const [loadingConvs, setLoadingConvs] = useState(true);
-  const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [sending, setSending] = useState(false);
   const [showDetailsPanel, setShowDetailsPanel] = useState(false);
   const isFetchingRef = useRef(false);
   const lastProcessedCustomerId = useRef(null);
+
+  const conversations = useChatStore((s) => s.conversations);
+  const selectedConv = useChatStore((s) => s.selectedConv);
+  const messages = useChatStore((s) => s.messages);
+  const messageStatuses = useChatStore((s) => s.messageStatuses);
+  const cursor = useChatStore((s) => s.cursor);
+  const hasMore = useChatStore((s) => s.hasMore);
+  const loadingConvs = useChatStore((s) => s.loadingConvs);
+  const loadingMsgs = useChatStore((s) => s.loadingMsgs);
+  const loaded = useChatStore((s) => s.loaded);
+
+  const setConversations = useChatStore((s) => s.setConversations);
+  const appendConversation = useChatStore((s) => s.appendConversation);
+  const touchConversation = useChatStore((s) => s.touchConversation);
+  const removeConversation = useChatStore((s) => s.removeConversation);
+  const setSelectedConv = useChatStore((s) => s.setSelectedConv);
+  const setMessages = useChatStore((s) => s.setMessages);
+  const addMessage = useChatStore((s) => s.addMessage);
+  const appendMessages = useChatStore((s) => s.appendMessages);
+  const setMessageStatuses = useChatStore((s) => s.setMessageStatuses);
+  const updateMessageStatuses = useChatStore((s) => s.updateMessageStatuses);
+  const setCursor = useChatStore((s) => s.setCursor);
+  const setHasMore = useChatStore((s) => s.setHasMore);
+  const setLoadingMsgs = useChatStore((s) => s.setLoadingMsgs);
+  const markAsRead = useChatStore((s) => s.markAsRead);
+  const resetChat = useChatStore((s) => s.resetChat);
 
   const { onNewMessage, onMarkRead, onDelivered, emitMarkRead, emitDelivered } = useChatSocket(selectedConv?.id, currentUserId);
 
@@ -45,16 +64,16 @@ export default function ChatPage() {
       setConversations(data);
     } catch {
       // handled globally
-    } finally {
-      setLoadingConvs(false);
     }
-  }, [currentUserId]);
+  }, [currentUserId, setConversations]);
 
+  // Initial fetch only if store is empty
   useEffect(() => {
-    loadConversations();
-    const interval = setInterval(loadConversations, 30000);
-    return () => clearInterval(interval);
-  }, [loadConversations]);
+    if (!currentUserId) return;
+    if (!loaded) {
+      loadConversations();
+    }
+  }, [currentUserId, loaded, loadConversations]);
 
   // Auto-create conversation from customerId param
   useEffect(() => {
@@ -74,10 +93,7 @@ export default function ChatPage() {
 
     getOrCreateConversation(customerIdParam)
       .then((conv) => {
-        setConversations((prev) => {
-          if (prev.some((c) => c.id === conv.id)) return prev;
-          return [...prev, conv];
-        });
+        appendConversation(conv);
         handleSelectConversation(conv);
       })
       .catch(() => {});
@@ -112,7 +128,7 @@ export default function ChatPage() {
       setLoadingMsgs(false);
       isFetchingRef.current = false;
     }
-  }, [currentUserId]);
+  }, [currentUserId, setMessages, setCursor, setHasMore, setMessageStatuses, setLoadingMsgs]);
 
   const handleSelectConversation = useCallback(async (conv) => {
     setSelectedConv(conv);
@@ -124,15 +140,12 @@ export default function ChatPage() {
     } catch {
       // silent
     }
-    setConversations((prev) =>
-      prev.map((c) => (c.id === conv.id ? { ...c, unreadCount: 0 } : c))
-    );
-  }, [loadMessages, emitMarkRead]);
+    markAsRead(conv.id);
+  }, [loadMessages, emitMarkRead, setSelectedConv, markAsRead]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    setSelectedConv(null);
-    setMessages([]);
+    resetChat();
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       next.set("tab", tab);
@@ -147,7 +160,7 @@ export default function ChatPage() {
     try {
       const data = await getMessages(selectedConv.id, cursor, PAGE_SIZE);
       const msgs = data.messages || [];
-      setMessages((prev) => [...msgs, ...prev]);
+      appendMessages(msgs);
       setCursor(data.cursor || null);
       setHasMore(data.hasMore || false);
       const otherParticipant = selectedConv?.participants?.find(
@@ -161,7 +174,7 @@ export default function ChatPage() {
         }
       });
       if (Object.keys(statusUpdates).length > 0) {
-        setMessageStatuses((prev) => ({ ...prev, ...statusUpdates }));
+        updateMessageStatuses((prev) => ({ ...prev, ...statusUpdates }));
       }
     } catch {
       // handled globally
@@ -169,73 +182,53 @@ export default function ChatPage() {
       setLoadingMore(false);
       isFetchingRef.current = false;
     }
-  }, [selectedConv?.id, hasMore, loadingMore, cursor, messageStatuses]);
+  }, [selectedConv?.id, hasMore, loadingMore, cursor, messageStatuses, appendMessages, setCursor, setHasMore, updateMessageStatuses, currentUserId]);
 
   const handleSend = useCallback(async (content, attachment) => {
     if (!selectedConv?.id || sending) return;
     setSending(true);
     try {
       const msg = await sendMessage(selectedConv.id, content, attachment);
-      setMessages((prev) => [...prev, msg]);
-      setMessageStatuses((prev) => ({ ...prev, [msg.id]: "sent" }));
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === selectedConv.id ? { ...c, updatedAt: msg.createdAt, messages: [msg] } : c
-        )
-      );
+      addMessage(msg);
+      updateMessageStatuses((prev) => ({ ...prev, [msg.id]: "sent" }));
+      touchConversation(selectedConv.id, msg);
     } catch {
       // handled globally
     } finally {
       setSending(false);
     }
-  }, [selectedConv?.id, sending]);
+  }, [selectedConv?.id, sending, addMessage, updateMessageStatuses, touchConversation]);
 
   const handleDeleteConversation = useCallback(async (conv) => {
     try {
       await deleteConversation(conv.id);
-      setConversations((prev) => prev.filter((c) => c.id !== conv.id));
+      removeConversation(conv.id);
       if (selectedConv?.id === conv.id) {
-        setSelectedConv(null);
-        setMessages([]);
+        resetChat();
       }
     } catch {
       // handled globally
     }
-  }, [selectedConv?.id]);
+  }, [selectedConv?.id, removeConversation, resetChat]);
 
   useEffect(() => {
     if (!onNewMessage) return;
     const unsub = onNewMessage((msg, convId) => {
       emitDelivered(convId, msg.id);
       if (convId === selectedConv?.id) {
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === msg.id)) return prev;
-          return [...prev, msg];
-        });
-        setConversations((prev) =>
-          prev.map((c) =>
-            c.id === convId ? { ...c, updatedAt: msg.createdAt, messages: [msg] } : c
-          )
-        );
+        addMessage(msg);
+        touchConversation(convId, msg);
       } else {
-        setConversations((prev) => {
-          if (prev.some((c) => c.id === convId)) {
-            return prev.map((c) =>
-              c.id === convId ? { ...c, updatedAt: msg.createdAt, messages: [msg] } : c
-            );
-          }
-          return prev;
-        });
-        loadConversations();
+        touchConversation(convId, msg);
       }
     });
     return unsub;
-  }, [onNewMessage, selectedConv?.id, loadConversations]);
+  }, [onNewMessage, selectedConv?.id, addMessage, touchConversation, emitDelivered]);
 
   useEffect(() => {
     if (!onMarkRead) return;
     const unsub = onMarkRead((data) => {
-      setMessageStatuses((prev) => {
+      updateMessageStatuses((prev) => {
         const next = { ...prev };
         (data.messageIds || []).forEach((id) => {
           if (next[id]) next[id] = "read";
@@ -244,12 +237,12 @@ export default function ChatPage() {
       });
     });
     return unsub;
-  }, [onMarkRead]);
+  }, [onMarkRead, updateMessageStatuses]);
 
   useEffect(() => {
     if (!onDelivered) return;
     const unsub = onDelivered((data) => {
-      setMessageStatuses((prev) => {
+      updateMessageStatuses((prev) => {
         const next = { ...prev };
         (data.messageIds || []).forEach((id) => {
           if (next[id] === "sent") next[id] = "delivered";
@@ -258,7 +251,7 @@ export default function ChatPage() {
       });
     });
     return unsub;
-  }, [onDelivered]);
+  }, [onDelivered, updateMessageStatuses]);
 
   useEffect(() => {
     if (!selectedConv?.id || !currentUserId) return;
@@ -275,10 +268,11 @@ export default function ChatPage() {
   const isCustomerConv = Boolean(otherParticipant?.roles?.includes("customer"));
 
   return (
-    <div className="flex h-[calc(100vh-64px)]">
+    <div className="p-4 h-[calc(100vh-64px)]">
+      <div className="flex h-full rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
       <div className="flex w-[340px] shrink-0 flex-col border-r border-gray-200 bg-white">
         <div className="px-4 pt-4 pb-3">
-          <div className="flex items-center gap-1.5 bg-gray-100 rounded-xl p-1">
+          <div className="flex items-center gap-1.5 bg-white rounded-xl p-1 border border-gray-200">
             {TABS.map((tab) => {
               const isActive = activeTab === tab.key;
               const unreadCount = conversations.filter((c) => (c.unreadCount ?? 0) > 0).length;
@@ -288,13 +282,17 @@ export default function ChatPage() {
                   onClick={() => handleTabChange(tab.key)}
                   className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg transition-all duration-200 ${
                     isActive
-                      ? "bg-white text-gray-900 shadow-sm"
+                      ? "bg-[#044b3b] text-white shadow-sm"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
                   {tab.label}
                   {tab.key === "unread" && unreadCount > 0 && (
-                    <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full px-1.5 bg-[#044b3b] text-white text-[10px] font-bold">
+                    <span className={`inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full px-1.5 text-[10px] font-bold ${
+                      isActive
+                        ? "bg-white text-[#044b3b]"
+                        : "bg-gray-200 text-gray-600"
+                    }`}>
                       {unreadCount}
                     </span>
                   )}
@@ -338,6 +336,7 @@ export default function ChatPage() {
           onClose={() => setShowDetailsPanel(false)}
         />
       )}
+      </div>
     </div>
   );
 }

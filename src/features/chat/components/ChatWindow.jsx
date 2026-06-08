@@ -162,7 +162,7 @@ export default function ChatWindow({ conversation, messages, messageStatuses, on
   return (
     <div className="flex h-full flex-col">
       <style>{`@keyframes chatSlideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
-      <div className="flex items-center gap-3 border-b border-gray-200 bg-white px-5 py-3">
+      <div className="flex items-center gap-3 border-b border-gray-200 bg-white px-5 py-4">
         <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#044b3b] text-sm font-bold text-white shadow-sm">
           <span>{headerName.charAt(0).toUpperCase()}</span>
           {otherParticipant?.photoURL && (

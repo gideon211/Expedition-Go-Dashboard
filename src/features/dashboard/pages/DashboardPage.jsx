@@ -214,42 +214,66 @@ export default function DashboardPage() {
         {/* Right Column */}
         <div className="space-y-4">
           {/* Notifications */}
-          <div className="bg-white border border-emerald-100/60 rounded-xl p-5 hover:border-emerald-200 transition-all">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-slate-800">Notifications</h3>
+          <div className="bg-white border border-emerald-100/60 rounded-xl hover:border-emerald-200 transition-all overflow-hidden">
+            <div className="flex items-center justify-between px-5 pt-4 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                <h3 className="text-sm font-semibold text-slate-800">Notifications</h3>
+              </div>
               <button onClick={() => navigate("/notifications")} className="text-xs font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition-colors">
                 View all <ArrowUpRight size={11} />
               </button>
             </div>
-            <div className="space-y-2.5">
+            <div className="divide-y divide-gray-50">
               {loading ? (
                 Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex items-start gap-2.5 pb-2.5 border-b border-emerald-100/40 last:border-0 last:pb-0">
-                    <div className="w-7 h-7 rounded-lg bg-emerald-100/40 animate-pulse" />
-                    <div className="flex-1 space-y-1">
-                      <div className="h-3 w-3/4 bg-emerald-100/40 rounded animate-pulse" />
-                      <div className="h-2 w-1/3 bg-emerald-100/40 rounded animate-pulse" />
+                  <div key={i} className="flex items-start gap-3 px-5 py-3">
+                    <div className="w-8 h-8 rounded-xl bg-gray-100 animate-pulse shrink-0" />
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-3 w-3/4 bg-gray-100 rounded animate-pulse" />
+                      <div className="h-2 w-1/4 bg-gray-100 rounded animate-pulse" />
                     </div>
                   </div>
                 ))
               ) : notifications.length > 0 ? (
-                notifications.slice(0, 5).map((n) => {
+                notifications.slice(0, 5).map((n, i) => {
                   const iconConfig = NOTIFICATION_ICONS[n.type] || { icon: MessageCircle, color: "text-slate-600", bg: "bg-slate-50" };
                   const Icon = iconConfig.icon;
+                  const isUnread = !n.readAt;
                   return (
-                    <div key={n.id} className="flex items-start gap-2.5 pb-2.5 border-b border-emerald-100/40 last:border-0 last:pb-0">
-                      <div className={`w-7 h-7 rounded-lg ${iconConfig.bg} flex items-center justify-center shrink-0 mt-0.5`}>
-                        <Icon size={13} className={iconConfig.color} />
+                    <div
+                      key={n.id}
+                      className={`flex items-start gap-3 px-5 py-3 hover:bg-gray-50/80 transition-colors cursor-pointer relative ${
+                        isUnread ? "bg-emerald-50/30" : ""
+                      }`}
+                      onClick={() => navigate("/notifications")}
+                    >
+                      {isUnread && (
+                        <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-emerald-500 rounded-r-full" />
+                      )}
+                      <div className={`w-8 h-8 rounded-xl ${iconConfig.bg} flex items-center justify-center shrink-0 shadow-sm`}>
+                        <Icon size={14} className={iconConfig.color} />
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-medium text-slate-700">{n.message || n.title || "Notification"}</p>
-                        <p className="text-[10px] font-medium text-slate-400 mt-0.5">{timeAgo(n.createdAt)}</p>
+                      <div className="min-w-0 flex-1 pt-0.5">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className={`text-xs leading-relaxed ${isUnread ? "font-semibold text-slate-800" : "font-medium text-slate-600"}`}>
+                            {n.message || n.title || "Notification"}
+                          </p>
+                          <span className="shrink-0 text-[10px] font-medium text-slate-400 mt-0.5 whitespace-nowrap">
+                            {timeAgo(n.createdAt)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   );
                 })
               ) : (
-                <div className="flex items-center justify-center py-4 text-xs font-medium text-slate-400">No notifications yet</div>
+                <div className="flex flex-col items-center justify-center py-8 px-5 text-center">
+                  <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center mb-2.5">
+                    <MessageCircle size={16} className="text-gray-300" />
+                  </div>
+                  <p className="text-xs font-medium text-slate-400">No notifications yet</p>
+                </div>
               )}
             </div>
           </div>

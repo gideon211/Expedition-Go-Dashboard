@@ -22,7 +22,7 @@ export default function AppShell() {
           isCollapsed ? "lg:ml-[60px]" : "lg:ml-[220px]"
         }`}
       >
-        <div className="min-h-[calc(100vh-56px)]">
+        <div className="min-h-[calc(100vh-64px)]">
           <Outlet />
         </div>
       </main>

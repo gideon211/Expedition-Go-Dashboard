@@ -79,21 +79,19 @@ export default function CustomerDetailsPanel({ conversation, currentUserId, onCl
       }`}
     >
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#044b3b] to-emerald-700 px-5 pt-5 pb-12 relative">
+      <div className="bg-gradient-to-r from-[#044b3b] to-emerald-700 px-5 h-16 flex items-center justify-between relative">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-40" />
-        <div className="relative flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-white/90">Customer Profile</h3>
-          <button
-            onClick={handleClose}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-          >
-            <X size={15} />
-          </button>
-        </div>
+        <h3 className="relative text-sm font-semibold text-white/90">Customer Profile</h3>
+        <button
+          onClick={handleClose}
+          className="relative flex h-7 w-7 items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+        >
+          <X size={15} />
+        </button>
       </div>
 
       {/* Customer card */}
-      <div className="relative -mt-10 px-4">
+      <div className="relative -mt-4 px-4">
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
           <div className="flex items-center gap-3">
             <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[#044b3b] to-emerald-500 text-xl font-bold text-white shadow-sm ring-2 ring-white/80">
@@ -120,10 +118,10 @@ export default function CustomerDetailsPanel({ conversation, currentUserId, onCl
                 )}
               </div>
               <div className="mt-1 space-y-0.5">
-                {cu.email && (
+                {(cu.email || bookings[0]?.customerEmail) && (
                   <div className="flex items-center gap-1.5 text-[11px] text-gray-500">
                     <Mail size={10} className="shrink-0 text-gray-400" />
-                    <span className="truncate">{cu.email}</span>
+                    <span className="truncate">{cu.email || bookings[0]?.customerEmail}</span>
                   </div>
                 )}
                 {(cu.phone || bookings[0]?.customerPhone) && (

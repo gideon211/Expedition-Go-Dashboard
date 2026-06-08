@@ -65,12 +65,12 @@ export default function Sidebar() {
           w-[240px]`}
       >
         {/* Brand */}
-        <div className={`flex items-center gap-2.5 h-14 border-b border-emerald-800 ${isCollapsed ? "justify-center px-2" : "px-4"}`}>
-          <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
-            <Compass size={14} className="text-white" />
+        <div className={`flex items-center gap-3 h-16 border-b border-emerald-800 ${isCollapsed ? "justify-center px-2" : "px-4"}`}>
+          <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center shrink-0 shadow-sm shadow-emerald-950/20">
+            <Compass size={16} className="text-white" />
           </div>
           {!isCollapsed && (
-            <span className="text-sm font-bold text-white tracking-tight">Travio Africa</span>
+            <span className="text-base font-bold text-white tracking-tight">Travio Africa</span>
           )}
         </div>
 

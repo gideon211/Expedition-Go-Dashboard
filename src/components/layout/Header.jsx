@@ -52,21 +52,12 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 right-0 h-14 bg-white border-b border-emerald-100/60 flex items-center justify-between px-4 lg:px-6 z-40 transition-all duration-300 ${
+      className={`fixed top-0 right-0 h-16 bg-white border-b border-emerald-100/60 flex items-center justify-between px-4 lg:px-6 z-40 transition-all duration-300 ${
         isCollapsed ? "lg:left-[60px]" : "lg:left-[220px]"
       } left-0`}
     >
-      {/* Left: Search */}
-      <div className="flex items-center gap-4 flex-1 min-w-0 ml-10 lg:ml-0">
-        <div className="relative w-full max-w-xs">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-emerald-200/60 rounded-lg text-xs text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-900/15 focus:border-emerald-400 focus:bg-white transition-all"
-          />
-        </div>
-      </div>
+      {/* Left spacer */}
+      <div className="flex-1 min-w-0 ml-10 lg:ml-0" />
 
       {/* Right */}
       <div className="flex items-center gap-2 sm:gap-3">
