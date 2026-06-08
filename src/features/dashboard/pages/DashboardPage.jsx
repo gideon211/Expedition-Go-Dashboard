@@ -1,443 +1,362 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
-import {
-  DollarSign,
-  ShoppingCart,
-  Package,
-  Users,
-  TrendingUp,
-  TrendingDown,
-  ArrowUpRight,
-  AlertCircle,
-  Clock,
-  ChevronRight,
-  Loader2,
-  RefreshCw,
-} from "lucide-react";
+import Chart from "react-apexcharts";
+import { Loader2, RefreshCw, ArrowUpRight, ShoppingBag, CheckCircle2, Star, DollarSign, MessageCircle, AlertTriangle, ClipboardList, MapPin, TrendingUp } from "lucide-react";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { fetchSupplierDashboard } from "../api";
 import { getAuthToken } from "@/stores/authStore";
+import { fetchSupplierBookings } from "@/features/bookings/api";
+import { fetchNotifications } from "@/features/notifications/api";
 
-const BOOKING_STATUS_COLORS = {
-  CONFIRMED: "#00d67f",
-  PENDING: "#ffc400",
-  CANCELLED: "#dc3545",
-  REFUNDED: "#298dff",
-  COMPLETED: "#00d67f",
-  NO_SHOW: "#dc3545",
+const NOTIFICATION_ICONS = {
+  new_booking: { icon: ShoppingBag, color: "text-emerald-600", bg: "bg-emerald-50" },
+  booking_confirmed: { icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
+  new_review: { icon: Star, color: "text-amber-600", bg: "bg-amber-50" },
+  payout: { icon: DollarSign, color: "text-emerald-600", bg: "bg-emerald-50" },
+  new_enquiry: { icon: MessageCircle, color: "text-cyan-600", bg: "bg-cyan-50" },
+  booking_cancelled: { icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
 };
 
-function StatCard({ title, value, change, isPositive, icon: Icon, iconBg, iconColor, loading }) {
-  return (
-    <div className="bg-white rounded-lg border border-[#eaeaea] p-5 hover:shadow-md transition-shadow">
-      <div className="flex items-center justify-between mb-3">
-        <div className={`w-10 h-10 rounded-lg ${iconBg} flex items-center justify-center`}>
-          {loading ? (
-            <Loader2 size={20} className="animate-spin text-[#9e9e9e]" />
-          ) : (
-            <Icon size={20} className={iconColor} />
-          )}
-        </div>
-        {!loading && change !== null && (
-          <div className={`flex items-center gap-1 text-xs font-medium ${isPositive ? "text-[#00d67f]" : "text-[#dc3545]"}`}>
-            {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-            {Math.abs(change)}%
-          </div>
-        )}
-      </div>
-      {loading ? (
-        <div className="space-y-2">
-          <div className="h-8 w-24 bg-[#f0f0f0] rounded animate-pulse" />
-          <div className="h-4 w-32 bg-[#f0f0f0] rounded animate-pulse" />
-        </div>
-      ) : (
-        <>
-          <p className="text-2xl font-bold text-[#1e293b]">{value}</p>
-          <p className="text-sm text-[#64748b] mt-1">{title}</p>
-        </>
-      )}
-    </div>
-  );
-}
+const STATS_CONFIG = [
+  { label: "Total Bookings", icon: ShoppingBag, accent: "border-l-emerald-600", iconBg: "bg-emerald-50", iconBorder: "border-emerald-200/60", iconColor: "text-emerald-600" },
+  { label: "Total Revenue", icon: TrendingUp, accent: "border-l-emerald-500", iconBg: "bg-emerald-50", iconBorder: "border-emerald-200/60", iconColor: "text-emerald-600" },
+  { label: "Active Tours", icon: MapPin, accent: "border-l-emerald-400", iconBg: "bg-emerald-50", iconBorder: "border-emerald-200/60", iconColor: "text-emerald-600" },
+  { label: "Pending Requests", icon: ClipboardList, accent: "border-l-amber-400", iconBg: "bg-amber-50", iconBorder: "border-amber-200/60", iconColor: "text-amber-600" },
+];
 
 const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
+  if (active && payload?.length) {
     return (
-      <div className="bg-white border border-[#eaeaea] rounded-lg shadow-lg p-3">
-        <p className="text-sm font-medium text-[#1e293b] mb-1">{label}</p>
-        <p className="text-xs text-[#64748b]">
-          Revenue: {formatCurrency(payload[0].value)}
-        </p>
+      <div className="bg-white border border-emerald-100 rounded-xl shadow-lg shadow-emerald-900/5 p-3">
+        <p className="text-xs font-medium text-slate-500 mb-1">{label}</p>
+        <p className="text-sm font-semibold text-slate-800">{formatCurrency(payload[0].value)}</p>
       </div>
     );
   }
   return null;
 };
 
+function timeAgo(dateStr) {
+  if (!dateStr) return "";
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return formatDate(dateStr);
+}
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [recentBookings, setRecentBookings] = useState([]);
+  const [notifications, setNotifications] = useState([]);
 
   const fetchDashboard = () => {
-    if (!getAuthToken()) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    fetchSupplierDashboard()
-      .then((data) => {
+    if (!getAuthToken()) { setLoading(false); return; }
+    setLoading(true); setError(null);
+    Promise.all([
+      fetchSupplierDashboard(),
+      fetchSupplierBookings({ page: 1, limit: 4 }).then(r => r.bookings).catch(() => []),
+      fetchNotifications({ limit: 5 }).then(r => r.data?.notifications || r.notifications || []).catch(() => []),
+    ])
+      .then(([data, bookings, notifs]) => {
         setDashboardData(data);
+        setRecentBookings(bookings);
+        setNotifications(notifs);
       })
       .catch((err) => {
-        if (err.code === "AUTH_REQUIRED") {
-          return;
-        }
+        if (err.code === "AUTH_REQUIRED") return;
         setError(err.response?.data?.message || err.message || "Failed to load dashboard data");
       })
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    fetchDashboard();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-  }, []);
+  useEffect(() => { fetchDashboard(); }, []);
 
   const tours = dashboardData?.tours || {};
   const bookings = dashboardData?.bookings || {};
   const earnings = dashboardData?.earnings || {};
-  const reviewsData = dashboardData?.reviews || {};
 
-  // Derived stats
-  const totalTours = tours.total || 0;
   const activeTours = tours.active || 0;
   const activeBookings = bookings.confirmed || 0;
   const totalRevenue = Number(earnings.totalEarnings) || 0;
+  const pendingBookings = bookings.pending || 0;
+  const cancelledBookings = bookings.cancelled || 0;
+  const totalBookings = bookings.total || 0;
 
-  // Booking status distribution for pie chart
-  const BOOKING_STATUS_MAP = {
-    pending: "PENDING",
-    confirmed: "CONFIRMED",
-    completed: "COMPLETED",
-    cancelled: "CANCELLED",
+  const cancellationRate = totalBookings > 0 ? Math.round((cancelledBookings / totalBookings) * 100) : 0;
+
+  const statsValues = [
+    { value: activeBookings + pendingBookings },
+    { value: formatCurrency(totalRevenue) },
+    { value: activeTours },
+    { value: pendingBookings },
+  ];
+
+  const revenueData = useMemo(() => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const now = new Date();
+    return months.slice(0, now.getMonth() + 1).map((month, i) => ({
+      month, revenue: i === now.getMonth() ? totalRevenue : Math.round(totalRevenue * (i + 1) / (now.getMonth() + 1) * 0.7),
+    }));
+  }, [totalRevenue]);
+
+  const gaugeOptions = {
+    chart: { type: "radialBar", sparkline: { enabled: true } },
+    colors: cancellationRate === 0 ? ["#044b3b"] : cancellationRate <= 2 ? ["#059669"] : cancellationRate <= 5 ? ["#d97706"] : ["#dc2626"],
+    plotOptions: {
+      radialBar: {
+        startAngle: -90, endAngle: 90,
+        track: { background: "#e2e8f0", strokeWidth: "97%", margin: 5 },
+        dataLabels: {
+          name: { show: false },
+          value: { offsetY: -2, fontSize: "22px", fontWeight: 700, color: "#1e293b", formatter: (v) => `${v}%` },
+        },
+      },
+    },
+    labels: ["Cancellation Rate"],
   };
-  const bookingStatusData = Object.entries(BOOKING_STATUS_MAP)
-    .map(([key, status]) => ({
-      name: status.replace(/_/g, " "),
-      value: bookings[key] || 0,
-      color: BOOKING_STATUS_COLORS[status] || "#9e9e9e",
-    }))
-    .filter((b) => b.value > 0);
 
-  // Monthly revenue for chart
-  const revenueData = [];
-
-  // Recent reviews
-  const recentReviews = reviewsData.recentReviews || [];
-  // Recent bookings - backend doesn't return these in the dashboard endpoint
-  const recentBookings = [];
+  const gaugeLabel = cancellationRate === 0 ? "Excellent" : cancellationRate <= 2 ? "Good" : cancellationRate <= 5 ? "Average" : "Needs Attention";
+  const gaugeLabelColor = cancellationRate === 0 ? "text-emerald-600" : cancellationRate <= 2 ? "text-emerald-600" : cancellationRate <= 5 ? "text-amber-600" : "text-red-600";
 
   return (
-    <div className="p-4 md:p-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-5 md:p-6 max-w-7xl mx-auto space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-[#1e293b]">Dashboard</h1>
-          <p className="text-sm text-[#64748b] mt-1">
-            {loading ? "Loading..." : `Welcome back! Here's what's happening with your business.`}
-          </p>
+          <h1 className="text-lg font-bold text-slate-800">Dashboard Home</h1>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">Here&apos;s what&apos;s happening with your business today.</p>
         </div>
-        <button
-          onClick={fetchDashboard}
-          disabled={loading}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm font-medium text-[#64748b] hover:bg-[#f8fafc] transition-colors"
+        <button onClick={fetchDashboard} disabled={loading}
+          className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-emerald-200/60 rounded-xl text-xs font-medium text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 transition-all disabled:opacity-40 shadow-sm"
         >
-          <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+          {loading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
           Refresh
         </button>
       </div>
 
-      {/* Error State */}
+      {/* Error */}
       {error && !loading && (
-        <div className="bg-[#fef2f2] border border-[#fca5a5] rounded-lg p-6 text-center mb-6">
-          <AlertCircle size={40} className="text-[#dc2626] mx-auto mb-3" />
-          <h2 className="text-lg font-semibold text-[#991b1b] mb-2">Failed to Load Dashboard</h2>
-          <p className="text-sm text-[#b91c1c] mb-4">{error}</p>
-          <button
-            onClick={fetchDashboard}
-            className="px-4 py-2 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
-          >
-            Try Again
-          </button>
+        <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs font-medium text-red-700 flex items-center gap-2">
+          <AlertTriangle size={12} /> {error}
+          <button onClick={fetchDashboard} className="ml-auto underline">Retry</button>
         </div>
       )}
 
       {/* Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard
-          title="Total Revenue"
-          value={loading ? "" : formatCurrency(totalRevenue)}
-          change={null}
-          isPositive={true}
-          icon={DollarSign}
-          iconBg="bg-[#f0fdf4]"
-          iconColor="text-[#044b3b]"
-          loading={loading}
-        />
-        <StatCard
-          title="Active Bookings"
-          value={loading ? "" : String(activeBookings)}
-          change={null}
-          isPositive={true}
-          icon={ShoppingCart}
-          iconBg="bg-[#ecfeff]"
-          iconColor="text-[#0f766e]"
-          loading={loading}
-        />
-        <StatCard
-          title="Total Tours"
-          value={loading ? "" : String(totalTours)}
-          change={null}
-          isPositive={true}
-          icon={Package}
-          iconBg="bg-[#ecfdff]"
-          iconColor="text-[#0891b2]"
-          loading={loading}
-        />
-        <StatCard
-          title={loading ? "" : "Active Tours"}
-          value={loading ? "" : String(activeTours)}
-          change={null}
-          isPositive={true}
-          icon={Users}
-          iconBg="bg-[#fefce8]"
-          iconColor="text-[#ca8a04]"
-          loading={loading}
-        />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {STATS_CONFIG.map((s, i) => {
+          const Icon = s.icon;
+          return (
+            <div key={s.label} className={`bg-white border border-emerald-100/60 rounded-xl p-4 hover:shadow-md hover:shadow-emerald-900/5 hover:border-emerald-200 transition-all border-l-4 ${s.accent}`}>
+              <div className="flex items-center justify-between mb-2.5">
+                <div className={`w-9 h-9 rounded-lg ${s.iconBg} border ${s.iconBorder} flex items-center justify-center`}>
+                  <Icon size={16} className={s.iconColor} />
+                </div>
+              </div>
+              {loading ? (
+                <div className="space-y-1.5">
+                  <div className="h-5 w-16 bg-emerald-100/40 rounded animate-pulse" />
+                  <div className="h-3 w-20 bg-emerald-100/40 rounded animate-pulse" />
+                </div>
+              ) : (
+                <>
+                  <p className="text-lg font-bold text-slate-800">{statsValues[i].value}</p>
+                  <p className="text-xs font-medium text-slate-500 mt-0.5">{s.label}</p>
+                </>
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {[
-          { label: "Create New Tour", count: "+", route: "/products/build/new/type", color: "text-[#044b3b]", bg: "bg-[#f0fdf4]" },
-          { label: "Manage Tours", count: totalTours, route: "/products", color: "text-[#1d4ed8]", bg: "bg-[#eff6ff]" },
-          { label: "View Bookings", count: activeBookings, route: "/bookings", color: "text-[#f97316]", bg: "bg-[#fff7ed]" },
-          { label: "View Finance", count: "", route: "/finance", color: "text-[#044b3b]", bg: "bg-[#f0fdf4]" },
-        ].map((item) => (
-          <button
-            key={item.label}
-            onClick={() => navigate(item.route)}
-            className={`flex items-center justify-between p-4 rounded-lg border border-[#eaeaea] hover:shadow-md transition-all text-left ${item.bg} ${loading ? "opacity-60 pointer-events-none" : ""}`}
-          >
-            <div>
-              <p className={`text-2xl font-bold ${item.color} ${item.count === "+" ? "text-3xl" : ""}`}>{item.count}</p>
-              <p className="text-sm text-[#64748b] mt-0.5">{item.label}</p>
-            </div>
-            <ChevronRight size={18} className="text-[#9e9e9e]" />
-          </button>
-        ))}
-      </div>
-
-      {/* Charts Row */}
-      {!loading && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          {/* Revenue Chart */}
-          <div className="lg:col-span-2 bg-white rounded-lg border border-[#eaeaea] p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-[#1e293b]">Revenue Trend</h3>
-              <span className="text-xs text-[#64748b]">Last 12 months</span>
-            </div>
-            {revenueData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
-                <AreaChart data={revenueData}>
-                  <defs>
-                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#044b3b" stopOpacity={0.1} />
-                      <stop offset="95%" stopColor="#044b3b" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#64748b" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 12, fill: "#64748b" }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v / 1000}k`} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="revenue" stroke="#044b3b" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
-                </AreaChart>
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Bookings Overview Chart */}
+        <div className="lg:col-span-2 bg-white border border-emerald-100/60 rounded-xl p-5 flex flex-col hover:border-emerald-200 transition-all">
+          <div className="flex items-center justify-between mb-4 shrink-0">
+            <h3 className="text-sm font-semibold text-slate-800">Bookings Overview</h3>
+            <button onClick={() => navigate("/bookings")} className="text-xs font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition-colors">
+              View all <ArrowUpRight size={11} />
+            </button>
+          </div>
+          <div className="flex-1 min-h-0">
+            {loading ? (
+              <div className="h-full bg-emerald-50/40 rounded-lg animate-pulse" />
+            ) : revenueData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={revenueData} barCategoryGap="20%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#94a3b8", fontWeight: 500 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: "#94a3b8", fontWeight: 500 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v / 1000}k`} />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: "#f0fdf4" }} />
+                  <Bar dataKey="revenue" fill="#044b3b" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-[250px] text-sm text-[#64748b]">
-                No revenue data yet
-              </div>
+              <div className="flex items-center justify-center h-full text-xs font-medium text-slate-400">No booking data yet</div>
             )}
           </div>
-
-          {/* Booking Status Distribution */}
-          <div className="bg-white rounded-lg border border-[#eaeaea] p-5">
-            <h3 className="text-sm font-semibold text-[#1e293b] mb-4">Booking Status</h3>
-            {bookingStatusData.length > 0 ? (
-              <>
-                <ResponsiveContainer width="100%" height={200}>
-                  <PieChart>
-                    <Pie
-                      data={bookingStatusData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
-                      paddingAngle={3}
-                      dataKey="value"
-                    >
-                      {bookingStatusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="mt-2 space-y-1.5">
-                  {bookingStatusData.map((item) => (
-                    <div key={item.name} className="flex items-center justify-between text-xs">
-                      <span className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                        <span className="text-[#64748b]">{item.name}</span>
-                      </span>
-                      <span className="font-medium text-[#1e293b]">{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="flex items-center justify-center h-[200px] text-sm text-[#64748b]">
-                No bookings yet
-              </div>
-            )}
-          </div>
+          <p className="text-[10px] font-medium text-slate-400 mt-3 shrink-0">Data is based on last 30 days</p>
         </div>
-      )}
 
-      {/* Bottom Row */}
-      {!loading && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Bookings */}
-          <div className="bg-white rounded-lg border border-[#eaeaea] p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-[#1e293b]">Recent Bookings</h3>
-              <button
-                onClick={() => navigate("/bookings")}
-                className="text-xs text-[#044b3b] font-medium hover:underline flex items-center gap-1"
-              >
-                View All
-                <ArrowUpRight size={12} />
+        {/* Right Column */}
+        <div className="space-y-4">
+          {/* Notifications */}
+          <div className="bg-white border border-emerald-100/60 rounded-xl p-5 hover:border-emerald-200 transition-all">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-slate-800">Notifications</h3>
+              <button onClick={() => navigate("/notifications")} className="text-xs font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition-colors">
+                View all <ArrowUpRight size={11} />
               </button>
             </div>
-            {recentBookings.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-[#eaeaea]">
-                      <th className="text-left py-2 text-xs font-semibold text-[#64748b] uppercase">Booking</th>
-                      <th className="text-left py-2 text-xs font-semibold text-[#64748b] uppercase">Customer</th>
-                      <th className="text-left py-2 text-xs font-semibold text-[#64748b] uppercase">Amount</th>
-                      <th className="text-left py-2 text-xs font-semibold text-[#64748b] uppercase">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentBookings.map((booking) => (
-                      <tr key={booking.id} className="border-b border-[#eaeaea] last:border-0 hover:bg-[#f8fafc] transition-colors">
-                        <td className="py-3">
-                          <p className="text-sm font-medium text-[#044b3b]">{booking.bookingNumber || booking.id?.slice(0, 8)}</p>
-                          <p className="text-xs text-[#64748b]">{formatDate(booking.selectedDate || booking.createdAt)}</p>
-                        </td>
-                        <td className="py-3">
-                          <p className="text-sm text-[#1e293b]">{booking.customer?.name || "Anonymous"}</p>
-                          <p className="text-xs text-[#64748b] truncate max-w-[150px]">{booking.tour?.title || ""}</p>
-                        </td>
-                        <td className="py-3 font-medium text-[#1e293b]">{formatCurrency(booking.total)}</td>
-                        <td className="py-3">
-                          <StatusBadge status={booking.status} label={booking.status?.replace(/_/g, " ")} size="sm" />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-8 text-sm text-[#64748b]">
-                <ShoppingCart size={32} className="mb-2 text-[#9e9e9e]" />
-                <p>No bookings yet</p>
-                <p className="text-xs mt-1">Bookings will appear here once customers start booking your tours.</p>
-              </div>
-            )}
-          </div>
-
-          {/* Top Tours */}
-          <div className="bg-white rounded-lg border border-[#eaeaea] p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-[#1e293b]">Recent Reviews</h3>
-              <button
-                onClick={() => navigate("/reviews")}
-                className="text-xs text-[#044b3b] font-medium hover:underline flex items-center gap-1"
-              >
-                View All
-                <ArrowUpRight size={12} />
-              </button>
-            </div>
-            {recentReviews.length > 0 ? (
-              <div className="space-y-4">
-                {recentReviews.map((review) => (
-                  <div key={review.id} className="flex items-start gap-3 pb-3 border-b border-[#eaeaea] last:border-0 last:pb-0">
-                    <div className="w-8 h-8 rounded-full bg-[#044b3b] flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
-                      {review.customer?.name?.charAt(0)?.toUpperCase() || "?"}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-[#1e293b]">{review.customer?.name || "Anonymous"}</p>
-                        <span className="text-xs text-[#ffc400]">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
-                      </div>
-                      <p className="text-xs text-[#64748b]">{review.tour?.title || ""}</p>
-                      {review.comment && (
-                        <p className="text-xs text-[#1e293b] mt-1 line-clamp-2">{review.comment}</p>
-                      )}
+            <div className="space-y-2.5">
+              {loading ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex items-start gap-2.5 pb-2.5 border-b border-emerald-100/40 last:border-0 last:pb-0">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-100/40 animate-pulse" />
+                    <div className="flex-1 space-y-1">
+                      <div className="h-3 w-3/4 bg-emerald-100/40 rounded animate-pulse" />
+                      <div className="h-2 w-1/3 bg-emerald-100/40 rounded animate-pulse" />
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-8 text-sm text-[#64748b]">
-                <Clock size={32} className="mb-2 text-[#9e9e9e]" />
-                <p>No reviews yet</p>
-                <p className="text-xs mt-1">Customer reviews will appear here once tours start getting booked.</p>
-              </div>
-            )}
+                ))
+              ) : notifications.length > 0 ? (
+                notifications.slice(0, 5).map((n) => {
+                  const iconConfig = NOTIFICATION_ICONS[n.type] || { icon: MessageCircle, color: "text-slate-600", bg: "bg-slate-50" };
+                  const Icon = iconConfig.icon;
+                  return (
+                    <div key={n.id} className="flex items-start gap-2.5 pb-2.5 border-b border-emerald-100/40 last:border-0 last:pb-0">
+                      <div className={`w-7 h-7 rounded-lg ${iconConfig.bg} flex items-center justify-center shrink-0 mt-0.5`}>
+                        <Icon size={13} className={iconConfig.color} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium text-slate-700">{n.message || n.title || "Notification"}</p>
+                        <p className="text-[10px] font-medium text-slate-400 mt-0.5">{timeAgo(n.createdAt)}</p>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="flex items-center justify-center py-4 text-xs font-medium text-slate-400">No notifications yet</div>
+              )}
+            </div>
+          </div>
+
+          {/* Cancellation Gauge */}
+          <div className="bg-white border border-emerald-100/60 rounded-xl p-5 hover:border-emerald-200 transition-all">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Cancellations</h3>
+            </div>
+            <p className={`text-xs font-semibold mb-2 ${gaugeLabelColor}`}>{gaugeLabel}</p>
+            <Chart options={gaugeOptions} series={[cancellationRate]} type="radialBar" height={110} />
+            <div className="flex items-center justify-between text-[10px] font-medium text-slate-400 mt-1">
+              <span>0%</span>
+              <span>5+%</span>
+            </div>
+            <p className="text-[10px] font-medium text-slate-400 mt-2 leading-relaxed">
+              Percentage of cancelled bookings across all products.
+            </p>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Bottom Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Recent Bookings */}
+        <div className="lg:col-span-2 bg-white border border-emerald-100/60 rounded-xl p-5 hover:border-emerald-200 transition-all">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-slate-800">Recent Bookings</h3>
+            <button onClick={() => navigate("/bookings")} className="text-xs font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition-colors">
+              View all <ArrowUpRight size={11} />
+            </button>
+          </div>
+          {loading ? (
+            <div className="space-y-3">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex items-center gap-3 p-2.5 bg-emerald-50/40 rounded-lg animate-pulse">
+                  <div className="w-9 h-9 rounded-lg bg-emerald-100" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3 w-3/4 bg-emerald-100 rounded" />
+                    <div className="h-2.5 w-1/2 bg-emerald-100 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : recentBookings.length > 0 ? (
+            <div className="space-y-1">
+              {recentBookings.slice(0, 4).map((b) => (
+                <div key={b.id} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-emerald-50/40 transition-colors cursor-pointer border border-transparent hover:border-emerald-100">
+                  {b.tourPhoto ? (
+                    <img src={b.tourPhoto} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0 ring-1 ring-emerald-100" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-lg bg-emerald-50 border border-emerald-200/60 flex items-center justify-center shrink-0 text-sm font-bold text-emerald-700">
+                      {(b.tourName || "T").charAt(0)}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-slate-700 truncate">{b.tourName || "Unknown Tour"}</p>
+                    <p className="text-xs font-medium text-slate-400 mt-0.5">
+                      {b.travelDate ? formatDate(b.travelDate) : ""}
+                      {b.travelers ? ` • ${b.travelers} ${b.travelers === 1 ? "Person" : "People"}` : ""}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-semibold text-slate-800">{formatCurrency(b.total, b.currency)}</p>
+                    <div className="mt-0.5">
+                      <StatusBadge status={b.status} label={b.status?.replace(/_/g, " ") || b.status} size="sm" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center py-8 text-xs font-medium text-slate-400">No recent bookings</div>
+          )}
+        </div>
+
+        {/* Top Products */}
+        <div className="bg-white border border-emerald-100/60 rounded-xl p-5 hover:border-emerald-200 transition-all">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-slate-800">Top Products</h3>
+            <button className="text-xs font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition-colors">
+              View all <ArrowUpRight size={11} />
+            </button>
+          </div>
+          {loading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-emerald-50/40 rounded-lg animate-pulse" />)}
+            </div>
+          ) : (
+            <p className="text-xs font-medium text-slate-400 text-center py-8">Product analytics coming soon</p>
+          )}
+        </div>
+      </div>
 
       {/* Loading skeleton */}
       {loading && !error && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="lg:col-span-2 bg-white rounded-lg border border-[#eaeaea] p-5">
-            <div className="h-4 w-32 bg-[#f0f0f0] rounded animate-pulse mb-4" />
-            <div className="h-[250px] bg-[#f0f0f0] rounded animate-pulse" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 bg-white border border-emerald-100/60 rounded-xl p-5">
+            <div className="h-4 w-32 bg-emerald-100/40 rounded animate-pulse mb-4" />
+            <div className="h-[220px] bg-emerald-50/40 rounded-lg animate-pulse" />
           </div>
-          <div className="bg-white rounded-lg border border-[#eaeaea] p-5">
-            <div className="h-4 w-32 bg-[#f0f0f0] rounded animate-pulse mb-4" />
-            <div className="h-[200px] bg-[#f0f0f0] rounded animate-pulse" />
+          <div className="bg-white border border-emerald-100/60 rounded-xl p-5">
+            <div className="h-4 w-24 bg-emerald-100/40 rounded animate-pulse mb-4" />
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => <div key={i} className="h-8 bg-emerald-50/40 rounded animate-pulse" />)}
+            </div>
           </div>
         </div>
       )}

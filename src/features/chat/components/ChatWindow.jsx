@@ -39,7 +39,23 @@ function formatLastSeen(dateStr) {
   return "last seen " + date + " at " + time;
 }
 
-export default function ChatWindow({ conversation, messages, messageStatuses, onSendMessage, onLoadMore, hasMore, loadingMore, sending, currentUserId }) {
+const MessageSkeleton = ({ align = "left" }) => (
+  <div className={`flex ${align === "right" ? "justify-end" : "justify-start"} py-1`}>
+    <div className={`flex items-end gap-2 ${align === "right" ? "flex-row-reverse" : ""}`}>
+      {align === "left" && <div className="h-7 w-7 shrink-0 rounded-full bg-gray-100 animate-pulse" />}
+      <div className="flex flex-col gap-2">
+        <div className="rounded-2xl bg-gray-100 animate-pulse"
+          style={{ width: `${140 + Math.random() * 100}px`, height: `${30 + Math.random() * 16}px` }}
+        />
+        <div className="rounded-2xl bg-gray-100 animate-pulse"
+          style={{ width: `${90 + Math.random() * 80}px`, height: `${30 + Math.random() * 16}px` }}
+        />
+      </div>
+    </div>
+  </div>
+);
+
+export default function ChatWindow({ conversation, messages, messageStatuses, onSendMessage, onLoadMore, hasMore, loading, loadingMore, sending, currentUserId, onOpenDetails, showDetailsButton }) {
   const [input, setInput] = useState("");
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const messagesEndRef = useRef(null);
@@ -145,6 +161,7 @@ export default function ChatWindow({ conversation, messages, messageStatuses, on
 
   return (
     <div className="flex h-full flex-col">
+      <style>{`@keyframes chatSlideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
       <div className="flex items-center gap-3 border-b border-gray-200 bg-white px-5 py-3">
         <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#044b3b] text-sm font-bold text-white shadow-sm">
           <span>{headerName.charAt(0).toUpperCase()}</span>
@@ -161,47 +178,74 @@ export default function ChatWindow({ conversation, messages, messageStatuses, on
           <p className="truncate text-sm font-semibold text-gray-900">{headerName}</p>
           <p className="text-xs text-gray-400">{formatLastSeen(otherParticipant?.lastLoginAt)}</p>
         </div>
+        {showDetailsButton && (
+          <button
+            onClick={onOpenDetails}
+            className="shrink-0 rounded-full border border-emerald-200 bg-white px-4 py-1.5 text-xs font-semibold text-[#044b3b] hover:bg-emerald-50 transition-all"
+          >
+            Open Details
+          </button>
+        )}
       </div>
 
+      <div key={conversation?.id} style={{ animation: "chatSlideIn 0.25s ease-out" }} className="flex flex-1 flex-col min-h-0">
       <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto bg-gray-50/50">
         <div className="px-4 py-3">
-          {hasMore && (
-            <div className="mb-4 flex justify-center">
-              <button onClick={onLoadMore} disabled={loadingMore} className="rounded-full bg-white px-4 py-1.5 text-xs text-[#044b3b] shadow-sm hover:bg-gray-50 disabled:opacity-50 transition-colors">
-                {loadingMore ? "Loading..." : "Load older messages"}
-              </button>
+          {loading ? (
+            <div className="space-y-2 pt-4">
+              <div className="my-4 flex items-center gap-3">
+                <div className="flex-1 border-t border-gray-200" />
+                <div className="h-3 w-24 rounded bg-gray-100 animate-pulse" />
+                <div className="flex-1 border-t border-gray-200" />
+              </div>
+              <MessageSkeleton align="left" />
+              <MessageSkeleton align="left" />
+              <MessageSkeleton align="right" />
+              <MessageSkeleton align="left" />
+              <MessageSkeleton align="right" />
+              <MessageSkeleton align="right" />
             </div>
-          )}
-          <div className="space-y-1">
-            {messages.map((msg, idx) => {
-              const isOwn = currentUserId ? msg.senderId === currentUserId : false;
-              const prevMsg = idx > 0 ? messages[idx - 1] : null;
-              const showDateSep = prevMsg && isNewDay(prevMsg.createdAt, msg.createdAt);
-              const showAvatar = !prevMsg || prevMsg.senderId !== msg.senderId || isNewDay(prevMsg.createdAt, msg.createdAt);
-              return (
-                <div key={msg.id}>
-                  {(showDateSep || idx === 0) && (
-                    <div className="my-4 flex items-center gap-3">
-                      <div className="flex-1 border-t border-gray-200" />
-                      <span className="shrink-0 text-[11px] font-medium text-gray-400">{formatDateSeparator(msg.createdAt)}</span>
-                      <div className="flex-1 border-t border-gray-200" />
-                    </div>
-                  )}
-                  <div className="py-0.5">
-                    <MessageBubble
-                      message={msg}
-                      isOwn={isOwn}
-                      status={isOwn ? messageStatuses[msg.id] : undefined}
-                      showAvatar={showAvatar && !isOwn}
-                      senderAvatar={isOwn ? undefined : (msg.sender?.photoURL || otherParticipant?.photoURL)}
-                      senderName={isOwn ? "You" : headerName}
-                    />
-                  </div>
+          ) : (
+            <>
+              {hasMore && (
+                <div className="mb-4 flex justify-center">
+                  <button onClick={onLoadMore} disabled={loadingMore} className="rounded-full bg-white px-4 py-1.5 text-xs text-[#044b3b] shadow-sm hover:bg-gray-50 disabled:opacity-50 transition-colors">
+                    {loadingMore ? "Loading..." : "Load older messages"}
+                  </button>
                 </div>
-              );
-            })}
-            <div ref={messagesEndRef} />
-          </div>
+              )}
+              <div className="space-y-1">
+                {messages.map((msg, idx) => {
+                  const isOwn = currentUserId ? msg.senderId === currentUserId : false;
+                  const prevMsg = idx > 0 ? messages[idx - 1] : null;
+                  const showDateSep = prevMsg && isNewDay(prevMsg.createdAt, msg.createdAt);
+                  const showAvatar = !prevMsg || prevMsg.senderId !== msg.senderId || isNewDay(prevMsg.createdAt, msg.createdAt);
+                  return (
+                    <div key={msg.id}>
+                      {(showDateSep || idx === 0) && (
+                        <div className="my-4 flex items-center gap-3">
+                          <div className="flex-1 border-t border-gray-200" />
+                          <span className="shrink-0 text-[11px] font-medium text-gray-400">{formatDateSeparator(msg.createdAt)}</span>
+                          <div className="flex-1 border-t border-gray-200" />
+                        </div>
+                      )}
+                      <div className="py-0.5">
+                        <MessageBubble
+                          message={msg}
+                          isOwn={isOwn}
+                          status={isOwn ? messageStatuses[msg.id] : undefined}
+                          showAvatar={showAvatar && !isOwn}
+                          senderAvatar={isOwn ? undefined : (msg.sender?.photoURL || otherParticipant?.photoURL)}
+                          senderName={isOwn ? "You" : headerName}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -231,19 +275,20 @@ export default function ChatWindow({ conversation, messages, messageStatuses, on
               onKeyDown={handleKeyDown}
               placeholder="Type a message..."
               rows={1}
-              disabled={sending}
+              disabled={loading || sending}
               className="w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:outline-none focus-visible:border-[#044b3b] focus-visible:bg-white transition-colors disabled:opacity-50"
               style={{ maxHeight: "120px" }}
             />
           </div>
           <button
             onClick={handleSend}
-            disabled={!input.trim() || sending}
+            disabled={!input.trim() || loading || sending}
             className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full bg-[#044b3b] text-white transition-all hover:bg-[#033a2e] disabled:opacity-40 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
           >
             <Send className="h-[18px] w-[18px]" />
           </button>
         </div>
+      </div>
       </div>
     </div>
   );

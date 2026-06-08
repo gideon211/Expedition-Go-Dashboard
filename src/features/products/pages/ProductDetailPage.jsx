@@ -23,10 +23,11 @@
  */
 
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { ArrowLeft, Edit, Trash2, Loader2, AlertCircle, MapPin, Clock, Users, Star, Globe, DollarSign, Calendar, Check, X as XIcon, Languages, Camera, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { getMyProduct, deleteProduct } from "@/features/products/api";
+import { fetchTourAvailability } from "@/features/availability/api";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { PRODUCT_STATUSES } from "@/lib/constants";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -45,6 +46,14 @@ export default function ProductDetailPage() {
   const [tour, setTour] = useState(null); // Main product/tour data
   const [loading, setLoading] = useState(true); // Loading state for initial data fetch
   const [error, setError] = useState(null); // Error message for failed data fetch
+
+  // Availability state
+  const [availability, setAvailability] = useState([]);
+  const [availLoading, setAvailLoading] = useState(false);
+  const [availMonth, setAvailMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  });
   
   // UI interaction states
   const [deleting, setDeleting] = useState(false); // Loading state for delete operation
@@ -90,6 +99,21 @@ export default function ProductDetailPage() {
       })
       .finally(() => setLoading(false));
   }, [id]);
+
+  // Fetch availability when tour id or month changes
+  useEffect(() => {
+    if (!id) return;
+    const [year, month] = availMonth.split("-").map(Number);
+    const startDate = `${availMonth}-01`;
+    const lastDay = new Date(year, month, 0).getDate();
+    const endDate = `${availMonth}-${String(lastDay).padStart(2, "0")}`;
+
+    setAvailLoading(true);
+    fetchTourAvailability(id, startDate, endDate)
+      .then((res) => setAvailability(res.calendar || []))
+      .catch(() => {})
+      .finally(() => setAvailLoading(false));
+  }, [id, availMonth]);
 
   // ============================================================================
   // EVENT HANDLERS
@@ -775,13 +799,110 @@ export default function ProductDetailPage() {
             </div>
           )}
 
-          {/* Schedule Card - Conditional: Only if operating days exist */}
+          {/* Availability Calendar Card */}
+          <div className="bg-white rounded-lg border border-[#eaeaea] p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-[#1e293b]">Availability</h3>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => {
+                    const [y, m] = availMonth.split("-").map(Number);
+                    const prev = new Date(y, m - 2, 1);
+                    setAvailMonth(`${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`);
+                  }}
+                  className="p-1 text-[#64748b] hover:text-[#1e293b] hover:bg-[#f8fafc] rounded transition-colors"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                <span className="text-xs font-medium text-[#64748b] min-w-[70px] text-center">
+                  {(() => {
+                    const [y, m] = availMonth.split("-").map(Number);
+                    return new Date(y, m - 1).toLocaleString("default", { month: "short", year: "numeric" });
+                  })()}
+                </span>
+                <button
+                  onClick={() => {
+                    const [y, m] = availMonth.split("-").map(Number);
+                    const next = new Date(y, m, 1);
+                    setAvailMonth(`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`);
+                  }}
+                  className="p-1 text-[#64748b] hover:text-[#1e293b] hover:bg-[#f8fafc] rounded transition-colors"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+
+            {availLoading ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 size={16} className="animate-spin text-[#64748b]" />
+              </div>
+            ) : availability.length > 0 ? (
+              <>
+                <div className="grid grid-cols-7 gap-0.5 mb-2">
+                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+                    <div key={d} className="text-[10px] text-[#9e9e9e] text-center font-medium py-1">{d}</div>
+                  ))}
+                </div>
+                {(() => {
+                  const [y, m] = availMonth.split("-").map(Number);
+                  const firstDay = new Date(y, m - 1, 1).getDay();
+                  const daysInMonth = new Date(y, m, 0).getDate();
+                  const availMap = {};
+                  availability.forEach((a) => { availMap[a.date] = a; });
+
+                  const cells = [];
+                  for (let i = 0; i < firstDay; i++) {
+                    cells.push(<div key={`empty-${i}`} />);
+                  }
+                  for (let d = 1; d <= daysInMonth; d++) {
+                    const dateStr = `${availMonth}-${String(d).padStart(2, "0")}`;
+                    const day = availMap[dateStr];
+                    const status = day?.status?.toLowerCase() || "available";
+                    const isPast = new Date(dateStr) < new Date(new Date().toDateString());
+                    const colorMap = {
+                      available: "bg-emerald-100 text-emerald-700",
+                      limited: "bg-amber-100 text-amber-700",
+                      full: "bg-red-100 text-red-700",
+                      blocked: "bg-slate-100 text-slate-400",
+                    };
+                    cells.push(
+                      <div
+                        key={dateStr}
+                        className={`text-center text-[11px] py-1 rounded ${isPast ? "opacity-40" : ""} ${colorMap[status] || "bg-slate-50 text-slate-400"}`}
+                        title={`${dateStr}: ${status}${day ? ` (${day.booked}/${day.capacity})` : ""}`}
+                      >
+                        {d}
+                      </div>
+                    );
+                  }
+                  return cells;
+                })()}
+              </>
+            ) : (
+              <p className="text-xs text-[#9e9e9e] text-center py-4">No availability data</p>
+            )}
+
+            <div className="flex items-center justify-center gap-2.5 mt-2 pt-2 border-t border-[#eaeaea]">
+              {[
+                { label: "Available", color: "bg-emerald-100" },
+                { label: "Limited", color: "bg-amber-100" },
+                { label: "Full", color: "bg-red-100" },
+                { label: "Blocked", color: "bg-slate-100" },
+              ].map((l) => (
+                <div key={l.label} className="flex items-center gap-1">
+                  <div className={`w-2 h-2 rounded ${l.color}`} />
+                  <span className="text-[10px] text-[#64748b]">{l.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Operating Days & Time Slots */}
           {schedules.operatingDays?.length > 0 && (
             <div className="bg-white rounded-lg border border-[#eaeaea] p-5">
               <h3 className="text-sm font-semibold text-[#1e293b] mb-3">Schedule</h3>
               <div className="space-y-2">
-                
-                {/* Operating Days (e.g., Mon, Tue, Wed) */}
                 <div>
                   <p className="text-xs text-[#9e9e9e] mb-1">Operating Days</p>
                   <div className="flex flex-wrap gap-1">
@@ -790,19 +911,16 @@ export default function ProductDetailPage() {
                         key={day} 
                         className="text-xs px-2 py-0.5 bg-[#f8fafc] rounded text-[#64748b] capitalize"
                       >
-                        {day.slice(0, 3)} {/* Show first 3 letters: Mon, Tue, etc. */}
+                        {day.slice(0, 3)}
                       </span>
                     ))}
                   </div>
                 </div>
-                
-                {/* Time Slots (e.g., "09:00 - 12:00", "14:00 - 17:00") */}
                 {schedules.timeSlots?.length > 0 && (
                   <div>
                     <p className="text-xs text-[#9e9e9e] mb-1">Time Slots</p>
                     <div className="flex flex-wrap gap-1">
                       {schedules.timeSlots.map((slot, i) => {
-                        // Handle both string format ("09:00") and object format ({startTime, endTime})
                         const start = typeof slot === "string" ? slot : slot.startTime;
                         const end = slot.endTime;
                         return (
@@ -814,8 +932,6 @@ export default function ProductDetailPage() {
                     </div>
                   </div>
                 )}
-                
-                {/* Capacity per time slot */}
                 {schedules.capacityPerSlot && (
                   <div className="flex items-center gap-2 text-sm text-[#64748b]">
                     <Users size={14} />

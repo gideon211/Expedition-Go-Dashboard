@@ -1,24 +1,21 @@
 import { useState, useEffect } from "react";
-import { NavLink, useLocation } from "react-router-dom";
-import {
-  LayoutDashboard, Package, MessageCircle,
-  DollarSign, Bell, Settings, ChevronLeft, ChevronRight,
-  Menu, X, CalendarCheck, Star, Compass
-} from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useSidebarStore } from "@/stores/sidebarStore";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
 import { loadSupplierProfile } from "@/features/auth/api";
+import { Compass, LogOut, ChevronLeft, ChevronRight, Menu, X, LayoutDashboard, Package, Ticket, CalendarDays, Users, DollarSign, Star, Bell, BarChart3 } from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard", path: "/", icon: LayoutDashboard },
-  { label: "Bookings", path: "/bookings", icon: CalendarCheck },
-  { label: "Products", path: "/products", icon: Package },
-  { label: "Reviews", path: "/reviews", icon: Star },
-  { label: "Finance", path: "/finance", icon: DollarSign },
-  { label: "Notifications", path: "/notifications", icon: Bell },
-  { label: "Settings", path: "/settings", icon: Settings },
-  { label: "Customer Conversations", path: "/chat", icon: MessageCircle, disabled: true },
+  { label: "Dashboard", path: "/", icon: <LayoutDashboard size={18} /> },
+  { label: "Products", path: "/products", icon: <Package size={18} /> },
+  { label: "Bookings", path: "/bookings", icon: <Ticket size={18} /> },
+  { label: "Availability", path: "/availability", icon: <CalendarDays size={18} /> },
+  { label: "Customers", path: "/chat", icon: <Users size={18} /> },
+  { label: "Finance", path: "/finance", icon: <DollarSign size={18} /> },
+  { label: "Reviews", path: "/reviews", icon: <Star size={18} /> },
+  { label: "Notifications", path: "/notifications", icon: <Bell size={18} /> },
+  { label: "Analytics", path: "/analytics", icon: <BarChart3 size={18} /> },
 ];
 
 function extractBusinessName(businessInfo) {
@@ -33,6 +30,7 @@ export default function Sidebar() {
   const { isCollapsed, toggle, isMobileOpen, closeMobile } = useSidebarStore();
   const user = useAuthStore((state) => state.user);
   const location = useLocation();
+  const navigate = useNavigate();
   const logoUrl = user?.logoUrl;
   const [businessName, setBusinessName] = useState(null);
 
@@ -45,43 +43,41 @@ export default function Sidebar() {
     });
   }, [user?.roles]);
 
+  const handleLogout = async () => {
+    await useAuthStore.getState().logout();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <>
-      {/* Mobile Toggle Button (fixed, visible only on mobile) */}
       <button
         onClick={() => useSidebarStore.getState().toggleMobile()}
-        className="fixed top-4 left-4 z-[60] p-2.5 rounded-lg bg-[#044b3b] text-white shadow-lg lg:hidden"
+        className="fixed top-3 left-3 z-[60] p-2 rounded-lg bg-emerald-900 text-white shadow-lg shadow-emerald-900/20 lg:hidden"
         aria-label="Toggle menu"
       >
-        {isMobileOpen ? <X size={20} /> : <Menu size={20} />}
+        {isMobileOpen ? <X size={18} /> : <Menu size={18} />}
       </button>
 
-      {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen bg-[#262a2e] text-white transition-all duration-300 z-50 flex flex-col
+        className={`fixed left-0 top-0 h-screen bg-emerald-900 border-r border-emerald-800 transition-all duration-300 z-50 flex flex-col
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
-          ${isCollapsed ? "lg:w-[70px] lg:translate-x-0" : "lg:w-[260px] lg:translate-x-0"}
-          w-[280px]`}
+          ${isCollapsed ? "lg:w-[60px] lg:translate-x-0" : "lg:w-[220px] lg:translate-x-0"}
+          w-[240px]`}
       >
-        {/* Logo Area */}
-        <div className="h-16 flex items-center px-4 border-b border-white/10">
-          <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center w-full" : ""}`}>
-            <div className="w-8 h-8 rounded-lg bg-[#044b3b] flex items-center justify-center flex-shrink-0">
-              <Compass size={16} className="text-white" />
-            </div>
-            {!isCollapsed && (
-              <span className="font-bold text-white text-lg tracking-tight whitespace-nowrap">
-                TravioAfrica
-              </span>
-            )}
+        {/* Brand */}
+        <div className={`flex items-center gap-2.5 h-14 border-b border-emerald-800 ${isCollapsed ? "justify-center px-2" : "px-4"}`}>
+          <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
+            <Compass size={14} className="text-white" />
           </div>
+          {!isCollapsed && (
+            <span className="text-sm font-bold text-white tracking-tight">Travio Africa</span>
+          )}
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 py-4 overflow-y-auto overflow-x-hidden">
-          <ul className="space-y-1 px-2">
+          <ul className={`space-y-0.5 ${isCollapsed ? "px-1.5" : "px-2"}`}>
             {navItems.map((item) => {
-              const Icon = item.icon;
               const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + "/");
 
               return (
@@ -89,27 +85,27 @@ export default function Sidebar() {
                   {item.disabled ? (
                     <button
                       onClick={() => toast.info("Coming soon")}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium w-full text-left cursor-default text-[#6b6b6b] ${isCollapsed ? "justify-center" : ""}`}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium w-full text-left text-emerald-300/40 cursor-default ${isCollapsed ? "justify-center" : ""}`}
                       title={isCollapsed ? item.label : undefined}
                     >
-                      <Icon size={20} className="flex-shrink-0 opacity-50" />
-                      {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
+                      <span className="shrink-0 opacity-50">{item.icon}</span>
+                      {!isCollapsed && <span className="whitespace-nowrap text-sm font-medium">{item.label}</span>}
                     </button>
                   ) : (
                     <NavLink
                       to={item.path}
                       onClick={closeMobile}
                       className={({ isActive: navActive }) =>
-                        `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                        `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                           isActive || navActive
-                            ? "bg-[#044b3b] text-white"
-                            : "text-[#9e9e9e] hover:text-white hover:bg-white/5"
+                            ? "bg-emerald-600 text-white shadow-sm shadow-emerald-950/30"
+                            : "text-emerald-200/70 hover:text-white hover:bg-emerald-800"
                         } ${isCollapsed ? "justify-center" : ""}`
                       }
                       title={isCollapsed ? item.label : undefined}
                     >
-                      <Icon size={20} className="flex-shrink-0" />
-                      {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
+                      <span className="shrink-0">{item.icon}</span>
+                      {!isCollapsed && <span className="whitespace-nowrap text-sm font-medium tracking-wide">{item.label}</span>}
                     </NavLink>
                   )}
                 </li>
@@ -118,42 +114,40 @@ export default function Sidebar() {
           </ul>
         </nav>
 
-        {/* User / Supplier Section */}
-        <div className="border-t border-white/10 p-3">
-          <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center" : ""}`}>
+        {/* Supplier Info */}
+        <div className={`border-t border-emerald-800 p-3 ${isCollapsed ? "text-center" : ""}`}>
+          <div className={`flex items-center gap-2.5 ${isCollapsed ? "justify-center" : ""}`}>
             {logoUrl ? (
-              <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-white">
-                <img
-                  src={logoUrl}
-                  alt="Company logo"
-                  className="w-full h-full object-cover"
-                />
+              <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 ring-1 ring-emerald-500">
+                <img src={logoUrl} alt="" className="w-full h-full object-cover" />
               </div>
             ) : (
-              <div className="w-8 h-8 rounded-full bg-[#044b3b] flex items-center justify-center flex-shrink-0">
-                <span className="text-xs font-bold text-white">
-                  {user?.name ? user.name.charAt(0).toUpperCase() : "S"}
+              <div className="w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center shrink-0">
+                <span className="text-[11px] font-bold text-white">
+                  {(businessName || user?.name || "S").charAt(0)}
                 </span>
               </div>
             )}
             {!isCollapsed && (
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-white truncate">
+                <p className="text-xs font-semibold text-emerald-100 truncate leading-tight">
                   {businessName || user?.name || "Supplier"}
                 </p>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <span className="text-[9px] font-medium text-emerald-300">✓ Verified Supplier</span>
+                </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Collapse Toggle (desktop only) */}
-        <div className="p-2 border-t border-white/10 hidden lg:block">
-          <button
-            onClick={toggle}
-            className="w-full flex items-center justify-center p-2 text-[#9e9e9e] hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+        {/* Collapse + Logout */}
+        <div className="border-t border-emerald-800 p-2 flex items-center gap-1">
+          <button onClick={toggle} className="flex-1 flex items-center justify-center p-1.5 text-emerald-300 hover:text-white hover:bg-emerald-800 rounded-lg transition-colors" title={isCollapsed ? "Expand" : "Collapse"}>
+            {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          </button>
+          <button onClick={handleLogout} className={`flex items-center p-1.5 text-emerald-300 hover:text-red-400 hover:bg-red-900/40 rounded-lg transition-colors ${isCollapsed ? "justify-center flex-1" : ""}`} title="Logout">
+            <LogOut size={14} />
           </button>
         </div>
       </aside>

@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Filter, Grid3X3, List, Plus, Eye, Edit, Trash2, Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Search, Grid3X3, List, Plus, Eye, Edit, Trash2, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { PRODUCT_STATUSES } from "@/lib/constants";
@@ -65,60 +66,45 @@ const CATEGORIES = [
 
 export default function ProductsListPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
   const [viewMode, setViewMode] = useState("grid");
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [imgErrors, setImgErrors] = useState({});
+  const [imgLoaded, setImgLoaded] = useState({});
 
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [deletingId, setDeletingId] = useState(null);
-  const [usingSupplierEndpoint, setUsingSupplierEndpoint] = useState(false);
+  const { data, isLoading, isError, error, refetch, isRefetching } = useQuery({
+    queryKey: ["products", "list"],
+    queryFn: async () => {
+      const useSupplier = Boolean(getAuthToken());
+      const apiCall = useSupplier
+        ? listMyProducts({ limit: 100 })
+        : listProducts({ limit: 100 });
+      const res = await apiCall;
+      return { tours: res.data?.data?.tours || [], useSupplier };
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
 
-  const fetchProducts = () => {
-    setLoading(true);
-    setError(null);
+  const deleteMut = useMutation({
+    mutationFn: (id) => deleteProduct(id),
+    onSuccess: (_, id) => {
+      toast.success("Product deleted successfully");
+      queryClient.setQueryData(["products", "list"], (old) => {
+        if (!old) return old;
+        return { ...old, tours: old.tours.filter((p) => p.id !== id) };
+      });
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || err.message || "Failed to delete product");
+    },
+  });
 
-    const useSupplier = Boolean(getAuthToken());
-    const apiCall = useSupplier
-      ? listMyProducts({ limit: 100 })
-      : listProducts({ limit: 100 });
-
-    apiCall
-      .then((res) => {
-        const tours = res.data?.data?.tours || [];
-        setProducts(tours);
-        setUsingSupplierEndpoint(useSupplier);
-      })
-      .catch((err) => {
-        if (err.code === "AUTH_REQUIRED") {
-          return;
-        }
-        setError(err.response?.data?.message || err.message || "Failed to load products");
-      })
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const handleDelete = (id, title) => {
-    if (!window.confirm(`Are you sure you want to delete "${title || "this product"}"? This action cannot be undone.`)) return;
-
-    setDeletingId(id);
-    deleteProduct(id)
-      .then(() => {
-        toast.success("Product deleted successfully");
-        setProducts((prev) => prev.filter((p) => p.id !== id));
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || err.message || "Failed to delete product");
-      })
-      .finally(() => setDeletingId(null));
-  };
+  const products = data?.tours || [];
+  const usingSupplierEndpoint = data?.useSupplier ?? Boolean(getAuthToken());
 
   const getSupplierLabel = (product) => {
     const name = extractSupplierName(product) || (usingSupplierEndpoint ? user?.name : "");
@@ -134,6 +120,13 @@ export default function ProductsListPage() {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
+  const getPhotoSrc = useCallback((product) => {
+    const photoUrl = product.coverPhoto || product.photos?.find(p => p);
+    if (!photoUrl) return null;
+    if (photoUrl.startsWith('http://') || photoUrl.startsWith('https://')) return photoUrl;
+    return `${config.api.baseURL}/tours/${product.id}/photo`;
+  }, []);
+
   return (
     <div className="p-4 md:p-6">
       {/* Page Header */}
@@ -144,11 +137,11 @@ export default function ProductsListPage() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={fetchProducts}
-            disabled={loading}
+            onClick={() => refetch()}
+            disabled={isRefetching}
             className="flex items-center justify-center gap-2 px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm font-medium text-[#64748b] hover:bg-[#f8fafc] transition-colors"
           >
-            <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+            <RefreshCw size={16} className={isRefetching ? "animate-spin" : ""} />
             Refresh
           </button>
           <button
@@ -216,24 +209,66 @@ export default function ProductsListPage() {
         </div>
       </div>
 
-      {/* Loading State */}
-      {loading && products.length === 0 && (
-        <div className="flex items-center justify-center min-h-[300px]">
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 size={32} className="animate-spin text-[#044b3b]" />
-            <p className="text-sm text-[#64748b]">Loading products...</p>
-          </div>
-        </div>
+      {/* Skeleton Loading */}
+      {isLoading && (
+        <>
+          {viewMode === "table" ? (
+            <div className="bg-white rounded-lg border border-[#eaeaea] overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-[#eaeaea] bg-[#f8fafc]">
+                      {["Product", "Category", "Status", "Price", "Bookings", "Rating", "Last Updated", "Actions"].map((h) => (
+                        <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-[#64748b] uppercase">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <tr key={i} className="border-b border-[#eaeaea]">
+                        {Array.from({ length: 8 }).map((_, j) => (
+                          <td key={j} className="px-4 py-3">
+                            <div className="h-4 bg-[#eaeaea] rounded animate-pulse" style={{ width: j === 0 ? "70%" : j === 7 ? "40%" : "55%" }} />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-lg border border-[#eaeaea] overflow-hidden">
+                  <div className="h-48 bg-[#f0f0f0] animate-pulse" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-4 bg-[#eaeaea] rounded animate-pulse w-3/4" />
+                    <div className="h-3 bg-[#eaeaea] rounded animate-pulse w-1/2" />
+                    <div className="h-5 bg-[#eaeaea] rounded animate-pulse w-1/3" />
+                    <div className="pt-3 border-t border-[#eaeaea] flex items-center justify-between">
+                      <div className="h-3 bg-[#eaeaea] rounded animate-pulse w-1/4" />
+                      <div className="flex gap-1">
+                        <div className="h-6 w-6 bg-[#eaeaea] rounded animate-pulse" />
+                        <div className="h-6 w-6 bg-[#eaeaea] rounded animate-pulse" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* Error State */}
-      {error && !loading && (
+      {isError && !isLoading && (
         <div className="bg-[#fef2f2] border border-[#fca5a5] rounded-lg p-6 text-center">
           <AlertCircle size={40} className="text-[#dc2626] mx-auto mb-3" />
           <h2 className="text-lg font-semibold text-[#991b1b] mb-2">Failed to Load Products</h2>
-          <p className="text-sm text-[#b91c1c] mb-4">{error}</p>
+          <p className="text-sm text-[#b91c1c] mb-4">{error?.response?.data?.message || error?.message || "Failed to load products"}</p>
           <button
-            onClick={fetchProducts}
+            onClick={() => refetch()}
             className="px-4 py-2 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
           >
             Try Again
@@ -242,7 +277,7 @@ export default function ProductsListPage() {
       )}
 
       {/* Auth Mode Banner */}
-      {!loading && !error && !usingSupplierEndpoint && (
+      {!isLoading && !isError && !usingSupplierEndpoint && (
         <div className="mb-4 p-3 bg-[#fffbeb] border border-[#fcd34d] rounded-lg flex items-start gap-3">
           <AlertCircle size={18} className="text-[#b45309] mt-0.5 flex-shrink-0" />
           <div className="flex-1">
@@ -255,14 +290,14 @@ export default function ProductsListPage() {
       )}
 
       {/* Results Count */}
-      {!loading && !error && (
+      {!isLoading && !isError && (
         <p className="text-sm text-[#64748b] mb-4">
           Showing {filteredProducts.length} of {products.length} product{products.length !== 1 ? "s" : ""}
         </p>
       )}
 
       {/* Grid View */}
-      {!loading && !error && viewMode === "grid" && (
+      {!isLoading && !isError && viewMode === "grid" && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredProducts.map((product) => (
               <div
@@ -273,36 +308,39 @@ export default function ProductsListPage() {
                   className="h-48 bg-[#f8fafc] relative cursor-pointer overflow-hidden"
                   onClick={() => navigate(`/products/${product.id}`)}
                 >
-                  {/* Placeholder always rendered underneath */}
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-12 h-12 rounded-full bg-[#eaeaea] flex items-center justify-center text-2xl text-[#9e9e9e]">
                       <span>🏞️</span>
                     </div>
                   </div>
 
-                  {/* Image overlaid on top — falls back through Cloudinary → proxy → placeholder */}
                   {(() => {
-                    const photoUrl = product.coverPhoto || product.photos?.find(p => p);
-                    if (!photoUrl) return null;
-                    const src = photoUrl.startsWith('http://') || photoUrl.startsWith('https://')
-                      ? photoUrl
-                      : `${config.api.baseURL}/tours/${product.id}/photo`;
+                    const src = getPhotoSrc(product);
+                    if (!src) return null;
+                    const pid = product.id;
+                    const showSkeleton = !imgLoaded[pid] && !imgErrors[pid];
                     return (
-                      <img
-                        src={src}
-                        alt={product.title}
-                        className="absolute inset-0 w-full h-full object-cover"
-                        loading="lazy"
-                        onError={(e) => {
-                          console.error('ProductsListPage thumbnail failed:', e.target.src);
-                          const proxy = `${config.api.baseURL}/tours/${product.id}/photo`;
-                          if (e.target.src !== proxy) {
-                            e.target.src = proxy;
-                          } else {
-                            e.target.style.display = "none";
-                          }
-                        }}
-                      />
+                      <>
+                        {showSkeleton && (
+                          <div className="absolute inset-0 bg-[#f0f0f0] animate-pulse" />
+                        )}
+                        <img
+                          src={src}
+                          alt={product.title}
+                          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${imgLoaded[pid] ? "opacity-100" : "opacity-0"}`}
+                          loading="lazy"
+                          onLoad={() => setImgLoaded((prev) => ({ ...prev, [pid]: true }))}
+                          onError={(e) => {
+                            setImgErrors((prev) => ({ ...prev, [pid]: true }));
+                            const proxy = `${config.api.baseURL}/tours/${product.id}/photo`;
+                            if (e.target.src !== proxy) {
+                              e.target.src = proxy;
+                            } else {
+                              e.target.style.display = "none";
+                            }
+                          }}
+                        />
+                      </>
                     );
                   })()}
 
@@ -361,12 +399,15 @@ export default function ProductsListPage() {
                           <Edit size={14} />
                         </button>
                         <button
-                          onClick={() => handleDelete(product.id, product.title)}
-                          disabled={deletingId === product.id}
+                          onClick={() => {
+                            if (!window.confirm(`Are you sure you want to delete "${product.title || "this product"}"? This action cannot be undone.`)) return;
+                            deleteMut.mutate(product.id);
+                          }}
+                          disabled={deleteMut.isPending && deleteMut.variables === product.id}
                           className="p-1.5 text-[#64748b] hover:text-[#dc3545] hover:bg-[#ffebeb] rounded-md transition-colors disabled:opacity-40"
                           title="Delete"
                         >
-                          {deletingId === product.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                          {deleteMut.isPending && deleteMut.variables === product.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                         </button>
                       </>
                     )}
@@ -379,7 +420,7 @@ export default function ProductsListPage() {
       )}
 
       {/* Table View */}
-      {!loading && !error && viewMode === "table" && (
+      {!isLoading && !isError && viewMode === "table" && (
         <div className="bg-white rounded-lg border border-[#eaeaea] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -450,12 +491,15 @@ export default function ProductsListPage() {
                               <Edit size={14} />
                             </button>
                             <button
-                              onClick={() => handleDelete(product.id, product.title)}
-                              disabled={deletingId === product.id}
+                              onClick={() => {
+                                if (!window.confirm(`Are you sure you want to delete "${product.title || "this product"}"? This action cannot be undone.`)) return;
+                                deleteMut.mutate(product.id);
+                              }}
+                              disabled={deleteMut.isPending && deleteMut.variables === product.id}
                               className="p-1.5 text-[#64748b] hover:text-[#dc3545] hover:bg-[#ffebeb] rounded-md transition-colors disabled:opacity-40"
                               title="Delete"
                             >
-                              {deletingId === product.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                              {deleteMut.isPending && deleteMut.variables === product.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                             </button>
                           </>
                         )}
@@ -470,7 +514,7 @@ export default function ProductsListPage() {
       )}
 
       {/* Empty State */}
-      {!loading && !error && filteredProducts.length === 0 && (
+      {!isLoading && !isError && filteredProducts.length === 0 && (
         <EmptyState
           icon="products"
           title={products.length === 0 ? "No products yet" : "No products match your filters"}

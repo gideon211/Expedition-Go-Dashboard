@@ -1,10 +1,11 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import AppShell from "@/components/layout/AppShell";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
 
 // Pages
 import DashboardPage from "@/features/dashboard/pages/DashboardPage";
 import BookingsPage from "@/features/bookings/pages/BookingsPage";
+import AvailabilityPage from "@/features/availability/pages/AvailabilityPage";
 import ProductsListPage from "@/features/products/pages/ProductsListPage";
 import ProductDetailPage from "@/features/products/pages/ProductDetailPage";
 import ProductBuilderPage from "@/features/products/pages/ProductBuilderPage";
@@ -13,6 +14,7 @@ import FinancePage from "@/features/finance/pages/FinancePage";
 import NotificationsPage from "@/features/notifications/pages/NotificationsPage";
 import SettingsPage from "@/features/settings/pages/SettingsPage";
 import ChatPage from "@/features/chat/pages/ChatPage";
+import AnalyticsPage from "@/features/analytics/pages/AnalyticsPage";
 
 import GuestRoute from "@/components/shared/GuestRoute";
 
@@ -58,6 +60,7 @@ export default function AppRoutes() {
         <Route element={<AppShell />}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/bookings" element={<BookingsPage />} />
+          <Route path="/availability" element={<AvailabilityPage />} />
           <Route path="/products" element={<ProductsListPage />} />
           <Route path="/products/:id" element={<ProductDetailPage />} />
           <Route path="/products/build/:id?/:step?" element={<ProductBuilderPage />} />
@@ -66,6 +69,8 @@ export default function AppRoutes() {
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/chat" element={<ChatPage />} />
+          <Route path="/customers" element={<Navigate to="/chat" replace />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
 
           {/* Catch-all route for 404 */}
           <Route path="*" element={<NotFoundPage />} />

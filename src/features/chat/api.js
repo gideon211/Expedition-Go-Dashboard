@@ -47,3 +47,8 @@ export async function uploadChatImage(file) {
   });
   return res.data.data;
 }
+
+export async function deleteConversation(conversationId) {
+  const res = await api.delete(`/chat/conversations/${conversationId}`);
+  return res.data;
+}

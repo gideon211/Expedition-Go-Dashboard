@@ -8,22 +8,21 @@ export default function AppShell() {
   const { isCollapsed, isMobileOpen } = useSidebarStore();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-50">
       <Sidebar />
       <Header />
-      {/* Mobile overlay */}
       {isMobileOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/20 z-40 lg:hidden"
           onClick={() => useSidebarStore.getState().closeMobile()}
         />
       )}
       <main
-        className={`pt-16 min-h-screen transition-all duration-300 ${
-          isCollapsed ? "lg:ml-[70px]" : "lg:ml-[260px]"
+        className={`pt-14 min-h-screen transition-all duration-300 ${
+          isCollapsed ? "lg:ml-[60px]" : "lg:ml-[220px]"
         }`}
       >
-        <div className="bg-white min-h-[calc(100vh-64px)]">
+        <div className="min-h-[calc(100vh-56px)]">
           <Outlet />
         </div>
       </main>

@@ -6,21 +6,30 @@ export function getTravelerCount(travelers) {
 }
 
 export function mapBookingRow(booking) {
+  const travelers = booking.travelers || {};
   return {
     id: booking.id,
     bookingNumber: booking.bookingNumber,
+    customerId: booking.customer?.id || "",
     customerName: booking.customer?.name || "—",
     customerEmail: booking.customer?.email || "",
+    customerPhone: booking.customer?.phone || "",
+    customerPhoto: booking.customer?.photoURL || "",
     tourName: booking.tour?.title || "—",
+    tourId: booking.tourId,
+    tourPhoto: booking.tour?.photos?.[0] || "",
     travelDate: booking.selectedDate,
     bookingDate: booking.createdAt,
-    travelers: getTravelerCount(booking.travelers),
+    travelers: getTravelerCount(travelers),
+    travelersRaw: travelers,
     total: Number(booking.total) || 0,
+    subtotal: Number(booking.subtotal) || 0,
     status: booking.status,
     paymentStatus: booking.paymentStatus,
     currency: booking.currency || "USD",
     supplierNotes: booking.supplierNotes || "",
-    tourId: booking.tourId,
+    specialRequests: booking.specialRequests || "",
+    selectedTime: booking.selectedTime || "",
   };
 }
 
@@ -29,7 +38,6 @@ export async function fetchSupplierBookings(params = {}) {
     params,
     skipGlobalErrorHandler: true,
   });
-
   const payload = response.data?.data || {};
   return {
     bookings: (payload.bookings || []).map(mapBookingRow),
@@ -43,4 +51,13 @@ export function updateBookingStatus(id, { status, supplierNotes }) {
     { status, supplierNotes },
     { skipGlobalErrorHandler: true }
   );
+}
+
+export async function fetchCustomerBookings(customerId) {
+  const response = await api.get("/bookings/supplier/bookings", {
+    params: { customerId },
+    skipGlobalErrorHandler: true,
+  });
+  const payload = response.data?.data || {};
+  return (payload.bookings || []).map(mapBookingRow);
 }

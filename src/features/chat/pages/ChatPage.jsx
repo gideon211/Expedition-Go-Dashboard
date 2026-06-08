@@ -1,16 +1,27 @@
 ﻿import { useState, useCallback, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import ConversationList from "../components/ConversationList";
 import ChatWindow from "../components/ChatWindow";
-import { getConversations, getMessages, sendMessage, markConversationAsRead } from "../api";
+import CustomerDetailsPanel from "../components/CustomerDetailsPanel";
+import { getConversations, getOrCreateConversation, getMessages, sendMessage, markConversationAsRead, deleteConversation } from "../api";
 import { useChatSocket } from "../hooks/useChatSocket";
 
 const PAGE_SIZE = 50;
+const TABS = [
+  { key: "all", label: "All Messages" },
+  { key: "unread", label: "Unread" },
+];
 
 export default function ChatPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const user = useAuthStore((state) => state.user);
-  const currentUserId = user?.id; // DB CUID, not Firebase UID
+  const currentUserId = user?.id;
 
+  const tabParam = searchParams.get("tab") === "unread" ? "unread" : "all";
+  const customerIdParam = searchParams.get("customerId");
+
+  const [activeTab, setActiveTab] = useState(tabParam);
   const [conversations, setConversations] = useState([]);
   const [selectedConv, setSelectedConv] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -21,7 +32,9 @@ export default function ChatPage() {
   const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [sending, setSending] = useState(false);
+  const [showDetailsPanel, setShowDetailsPanel] = useState(false);
   const isFetchingRef = useRef(false);
+  const lastProcessedCustomerId = useRef(null);
 
   const { onNewMessage, onMarkRead, onDelivered, emitMarkRead, emitDelivered } = useChatSocket(selectedConv?.id, currentUserId);
 
@@ -42,6 +55,33 @@ export default function ChatPage() {
     const interval = setInterval(loadConversations, 30000);
     return () => clearInterval(interval);
   }, [loadConversations]);
+
+  // Auto-create conversation from customerId param
+  useEffect(() => {
+    if (!customerIdParam || !currentUserId) return;
+    if (lastProcessedCustomerId.current === customerIdParam) return;
+    lastProcessedCustomerId.current = customerIdParam;
+
+    const existing = conversations.find(
+      (c) =>
+        c.participants?.some((p) => p.userId === customerIdParam)
+    );
+
+    if (existing) {
+      handleSelectConversation(existing);
+      return;
+    }
+
+    getOrCreateConversation(customerIdParam)
+      .then((conv) => {
+        setConversations((prev) => {
+          if (prev.some((c) => c.id === conv.id)) return prev;
+          return [...prev, conv];
+        });
+        handleSelectConversation(conv);
+      })
+      .catch(() => {});
+  }, [customerIdParam, currentUserId, conversations]);
 
   const loadMessages = useCallback(async (convId, conv) => {
     if (!convId || isFetchingRef.current) return;
@@ -76,6 +116,7 @@ export default function ChatPage() {
 
   const handleSelectConversation = useCallback(async (conv) => {
     setSelectedConv(conv);
+    setShowDetailsPanel(false);
     await loadMessages(conv.id, conv);
     try {
       await markConversationAsRead(conv.id);
@@ -87,6 +128,17 @@ export default function ChatPage() {
       prev.map((c) => (c.id === conv.id ? { ...c, unreadCount: 0 } : c))
     );
   }, [loadMessages, emitMarkRead]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSelectedConv(null);
+    setMessages([]);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("tab", tab);
+      return next;
+    }, { replace: true });
+  };
 
   const handleLoadMore = useCallback(async () => {
     if (!selectedConv?.id || !hasMore || loadingMore || isFetchingRef.current) return;
@@ -137,6 +189,19 @@ export default function ChatPage() {
       setSending(false);
     }
   }, [selectedConv?.id, sending]);
+
+  const handleDeleteConversation = useCallback(async (conv) => {
+    try {
+      await deleteConversation(conv.id);
+      setConversations((prev) => prev.filter((c) => c.id !== conv.id));
+      if (selectedConv?.id === conv.id) {
+        setSelectedConv(null);
+        setMessages([]);
+      }
+    } catch {
+      // handled globally
+    }
+  }, [selectedConv?.id]);
 
   useEffect(() => {
     if (!onNewMessage) return;
@@ -200,47 +265,79 @@ export default function ChatPage() {
     emitMarkRead(selectedConv.id);
   }, [selectedConv?.id, currentUserId, emitMarkRead]);
 
+  const filteredConversations = activeTab === "unread"
+    ? conversations.filter((c) => (c.unreadCount ?? 0) > 0)
+    : conversations;
+
+  const otherParticipant = selectedConv?.participants?.find(
+    (p) => currentUserId ? p.userId !== currentUserId : false
+  )?.user;
+  const isCustomerConv = Boolean(otherParticipant?.roles?.includes("customer"));
+
   return (
     <div className="flex h-[calc(100vh-64px)]">
       <div className="flex w-[340px] shrink-0 flex-col border-r border-gray-200 bg-white">
-        <div className="border-b border-gray-200 px-4 py-3.5">
-          <h2 className="text-base font-semibold text-gray-900">Customer Conversations</h2>
+        <div className="px-4 pt-4 pb-3">
+          <div className="flex items-center gap-1.5 bg-gray-100 rounded-xl p-1">
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab.key;
+              const unreadCount = conversations.filter((c) => (c.unreadCount ?? 0) > 0).length;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => handleTabChange(tab.key)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg transition-all duration-200 ${
+                    isActive
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  {tab.label}
+                  {tab.key === "unread" && unreadCount > 0 && (
+                    <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full px-1.5 bg-[#044b3b] text-white text-[10px] font-bold">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto">
           <ConversationList
-            conversations={conversations}
+            conversations={filteredConversations}
             selectedId={selectedConv?.id}
             onSelect={handleSelectConversation}
+            onDelete={handleDeleteConversation}
             loading={loadingConvs}
             currentUserId={currentUserId}
+            emptyMessage={activeTab === "unread" ? "No unread messages" : "No conversations yet"}
           />
         </div>
       </div>
       <div className="relative flex-1">
-        {loadingMsgs ? (
-          <div className="flex h-full items-center justify-center bg-gray-50">
-            <div className="flex flex-col items-center gap-3">
-              <svg className="h-6 w-6 animate-spin text-[#044b3b]" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              <span className="text-sm text-gray-500">Loading messages...</span>
-            </div>
-          </div>
-        ) : (
-          <ChatWindow
-            conversation={selectedConv}
-            messages={messages}
-            messageStatuses={messageStatuses}
-            onSendMessage={handleSend}
-            onLoadMore={handleLoadMore}
-            hasMore={hasMore}
-            loadingMore={loadingMore}
-            sending={sending}
-            currentUserId={currentUserId}
-          />
-        )}
+        <ChatWindow
+          conversation={selectedConv}
+          messages={messages}
+          messageStatuses={messageStatuses}
+          onSendMessage={handleSend}
+          onLoadMore={handleLoadMore}
+          hasMore={hasMore}
+          loading={loadingMsgs}
+          loadingMore={loadingMore}
+          sending={sending}
+          currentUserId={currentUserId}
+          onOpenDetails={() => setShowDetailsPanel((v) => !v)}
+          showDetailsButton={isCustomerConv}
+        />
       </div>
+      {showDetailsPanel && isCustomerConv && (
+        <CustomerDetailsPanel
+          conversation={selectedConv}
+          currentUserId={currentUserId}
+          onClose={() => setShowDetailsPanel(false)}
+        />
+      )}
     </div>
   );
 }

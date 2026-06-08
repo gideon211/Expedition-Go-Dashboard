@@ -31,6 +31,15 @@ export function formatDate(date) {
   return d.toLocaleDateString("en-GB", DATE_FORMAT_OPTIONS);
 }
 
+export function formatTime(timeString) {
+  if (!timeString) return "";
+  const [hours, minutes] = timeString.split(":").map(Number);
+  if (isNaN(hours) || isNaN(minutes)) return timeString;
+  const period = hours >= 12 ? "PM" : "AM";
+  const h = hours % 12 || 12;
+  return `${h}:${String(minutes).padStart(2, "0")} ${period}`;
+}
+
 export function formatDateTime(date) {
   if (!date) return "";
   const d = new Date(date);
