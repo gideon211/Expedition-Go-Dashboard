@@ -266,7 +266,7 @@ export default function LoginPage() {
               type="button"
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="w-1/2 mx-auto flex items-center justify-center gap-3 px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-emerald-50 hover:border-emerald-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-slate-900/5"
+              className="w-1/2 mx-auto flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:bg-emerald-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-slate-900/5"
             >
               {loading ? (
                 <Loader2 size={20} className="animate-spin text-emerald-600" />
