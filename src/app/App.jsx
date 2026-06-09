@@ -7,6 +7,7 @@ import { auth, onAuthStateChanged } from "@/lib/firebase";
 
 function App() {
   const tokenListenerSetup = useRef(false);
+  const wasAuthenticated = useRef(false);
 
   // Hydrate auth state from localStorage on first mount so the user
   // isn't treated as logged-out while the cookie is being verified.
@@ -40,6 +41,7 @@ function App() {
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        wasAuthenticated.current = true;
         try {
           const newToken = await firebaseUser.getIdToken(false);
           const { token: storedToken, isAuthenticated } = useAuthStore.getState();
@@ -49,6 +51,12 @@ function App() {
         } catch {
           // Token refresh failed — will be caught by axios 401 handler
         }
+      } else if (wasAuthenticated.current) {
+        wasAuthenticated.current = false;
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("auth_user");
+        useAuthStore.getState().setUnauthenticated();
+        window.location.href = "/login";
       }
     });
 

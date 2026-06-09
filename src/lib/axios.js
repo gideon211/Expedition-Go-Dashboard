@@ -174,6 +174,15 @@ api.interceptors.response.use(
     if (!originalRequest?.skipGlobalErrorHandler) {
       handleApiError(error);
     }
+
+    // Fallback: redirect to login on any 401 that wasn't caught above
+    if (error.response?.status === 401 && typeof window !== "undefined" && window.location.pathname !== "/login") {
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("auth_user");
+      useAuthStore.getState().setUnauthenticated();
+      window.location.href = "/login";
+    }
+
     return Promise.reject(error);
   }
 );

@@ -1,5 +1,6 @@
 ﻿import { useState, useCallback, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/authStore";
 import { useChatStore } from "@/stores/chatStore";
 import ConversationList from "../components/ConversationList";
@@ -15,6 +16,7 @@ const TABS = [
 ];
 
 export default function ChatPage() {
+  const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const user = useAuthStore((state) => state.user);
   const currentUserId = user?.id;
@@ -136,12 +138,13 @@ export default function ChatPage() {
     await loadMessages(conv.id, conv);
     try {
       await markConversationAsRead(conv.id);
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
       emitMarkRead(conv.id);
     } catch {
       // silent
     }
     markAsRead(conv.id);
-  }, [loadMessages, emitMarkRead, setSelectedConv, markAsRead]);
+  }, [loadMessages, emitMarkRead, setSelectedConv, markAsRead, queryClient]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);

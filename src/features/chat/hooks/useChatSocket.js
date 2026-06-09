@@ -24,9 +24,9 @@ export function useChatSocket(conversationId, userId) {
 
   useEffect(() => {
     if (!conversationId || !socketRef.current) return;
-    socketRef.current.emit("chat:join", conversationId);
+    socketRef.current.emit("chat:join", { conversationId });
     return () => {
-      socketRef.current?.emit("chat:leave", conversationId);
+      socketRef.current?.emit("chat:leave", { conversationId });
     };
   }, [conversationId]);
 

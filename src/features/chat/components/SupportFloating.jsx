@@ -72,6 +72,7 @@ export default function SupportFloating() {
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [input, setInput] = useState("");
+  const [adminTyping, setAdminTyping] = useState(false);
   const [welcomePage, setWelcomePage] = useState("main");
   const [slideDir, setSlideDir] = useState("right");
 
@@ -82,6 +83,7 @@ export default function SupportFloating() {
   const isFetchingRef = useRef(false);
   const selectedIdRef = useRef(null);
   const conversationsRef = useRef([]);
+  const typingTimeoutRef = useRef(null);
 
   useEffect(() => {
     selectedIdRef.current = selectedConv?.id || null;
@@ -137,16 +139,16 @@ export default function SupportFloating() {
         const targetConvId = state.pendingConversationId;
         if (targetConvId) state.clearPendingConversation();
         let target = null;
-        if (convs.length > 0) {
-          target = targetConvId
-            ? convs.find((c) => c.id === targetConvId) || convs[0]
-            : convs[0];
-          if (target) {
-            setSelectedConv(target);
-            await loadAndSetMessages(target.id);
-            if (!cancelled) {
-              try { await markConversationAsRead(target.id); } catch {}
-            }
+        if (targetConvId) {
+          target = convs.find((c) => c.id === targetConvId) || null;
+        } else {
+          target = convs.find((c) => c.type === "SUPPLIER_ADMIN") || null;
+        }
+        if (target) {
+          setSelectedConv(target);
+          await loadAndSetMessages(target.id);
+          if (!cancelled) {
+            try { await markConversationAsRead(target.id); } catch {}
           }
         }
         if (!cancelled) {
@@ -172,7 +174,7 @@ export default function SupportFloating() {
     socketRef.current = socket;
 
     socket.on("connect", () => {
-      if (selectedIdRef.current) socket.emit("chat:join", selectedIdRef.current);
+      if (selectedIdRef.current) socket.emit("chat:join", { conversationId: selectedIdRef.current });
     });
 
     socket.on("chat:message", (data) => {
@@ -199,18 +201,32 @@ export default function SupportFloating() {
       });
     });
 
+    socket.on("chat:typing", (data) => {
+      if (data.conversationId === selectedIdRef.current && data.isTyping) {
+        setAdminTyping(true);
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = setTimeout(() => setAdminTyping(false), 3000);
+      } else {
+        setAdminTyping(false);
+      }
+    });
+
     socket.on("chat:mark-read", (data) => {
       if (data.conversationId === selectedIdRef.current) {
         setMessageStatuses((prev) => {
           const next = { ...prev };
-          (data.messageIds || []).forEach((id) => { if (next[id]) next[id] = "read"; });
+          for (const id of Object.keys(next)) {
+            if (next[id] === "sent" || next[id] === "delivered") {
+              next[id] = "read";
+            }
+          }
           return next;
         });
       }
     });
 
     return () => {
-      if (selectedIdRef.current) socket.emit("chat:leave", selectedIdRef.current);
+      if (selectedIdRef.current) socket.emit("chat:leave", { conversationId: selectedIdRef.current });
       socket.disconnect();
       socketRef.current = null;
     };
@@ -218,8 +234,8 @@ export default function SupportFloating() {
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket || !selectedConv?.id) return;
-    socket.emit("chat:join", selectedConv.id);
-    return () => { socket.emit("chat:leave", selectedConv.id); };
+    socket.emit("chat:join", { conversationId: selectedConv.id });
+    return () => { socket.emit("chat:leave", { conversationId: selectedConv.id }); };
   }, [selectedConv?.id]);
 
   useEffect(() => {
@@ -263,14 +279,17 @@ export default function SupportFloating() {
           setSending(false);
           return;
         }
-        conv = await getOrCreateConversation(adminId);
+        conv = await getOrCreateConversation(adminId, "SUPPLIER_ADMIN");
         setSelectedConv(conv);
         setConversations((prev) => [conv, ...prev]);
-        if (socketRef.current) socketRef.current.emit("chat:join", conv.id);
+        if (socketRef.current) socketRef.current.emit("chat:join", { conversationId: conv.id });
       }
 
       const msg = await sendMessage(conv.id, text || "", attachment);
-      setMessages((prev) => [...prev, msg]);
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === msg.id)) return prev;
+        return [...prev, msg];
+      });
       setMessageStatuses((prev) => ({ ...prev, [msg.id]: "sent" }));
       setConversations((prev) =>
         prev.map((c) => c.id === conv.id ? { ...c, updatedAt: msg.createdAt, messages: [msg] } : c)
@@ -392,7 +411,18 @@ export default function SupportFloating() {
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold leading-tight">Admin Support</p>
-                  <p className="truncate text-[10px] text-white/70 leading-tight">We typically reply in minutes</p>
+                  <p className="truncate text-[10px] text-white/70 leading-tight">
+                    {adminTyping ? (
+                      <span className="flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/70" style={{ animationDelay: "0ms" }} />
+                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/70" style={{ animationDelay: "150ms" }} />
+                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/70" style={{ animationDelay: "300ms" }} />
+                        <span className="ml-1">typing...</span>
+                      </span>
+                    ) : (
+                      "We typically reply in minutes"
+                    )}
+                  </p>
                 </div>
               </div>
               <button

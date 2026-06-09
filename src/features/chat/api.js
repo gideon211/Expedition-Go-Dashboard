@@ -5,8 +5,10 @@ export async function getConversations() {
   return res.data.data?.conversations || [];
 }
 
-export async function getOrCreateConversation(recipientId) {
-  const res = await api.post("/chat/conversations", { recipientId });
+export async function getOrCreateConversation(recipientId, type) {
+  const body = { recipientId };
+  if (type) body.type = type;
+  const res = await api.post("/chat/conversations", body);
   return res.data.data.conversation;
 }
 
