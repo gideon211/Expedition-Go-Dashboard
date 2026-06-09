@@ -4,7 +4,7 @@ import { useSidebarStore } from "@/stores/sidebarStore";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
 import { loadSupplierProfile } from "@/features/auth/api";
-import { Compass, LogOut, ChevronLeft, ChevronRight, Menu, X, LayoutDashboard, Package, Ticket, CalendarDays, Users, DollarSign, Star, Bell, BarChart3 } from "lucide-react";
+import { Compass, LogOut, ChevronLeft, ChevronRight, Menu, X, LayoutDashboard, Package, Ticket, CalendarDays, Users, DollarSign, Star, Bell, BarChart3, BadgeCheck } from "lucide-react";
 
 const navGroups = [
   {
@@ -45,7 +45,7 @@ const SIDEBAR_STATUS_STYLES = {
   PENDING: { dot: "bg-amber-400", text: "text-amber-300/80", label: "Pending" },
   UNDER_REVIEW: { dot: "bg-blue-400", text: "text-blue-300/80", label: "Under Review" },
   APPROVED: { dot: "bg-blue-400", text: "text-blue-300/80", label: "Approved" },
-  ACTIVE: { dot: "bg-slate-400", text: "text-slate-300/70", label: "Verified" },
+  ACTIVE: { dot: "bg-emerald-400", text: "text-emerald-300/80", label: "Verified" },
   SUSPENDED: { dot: "bg-red-400", text: "text-red-300/80", label: "Suspended" },
   REJECTED: { dot: "bg-red-400", text: "text-red-300/80", label: "Rejected" },
 };
@@ -199,8 +199,12 @@ export default function Sidebar() {
                   {businessName || user?.name || "Supplier"}
                 </p>
                 {statusStyle && (
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} />
+                  <div className="flex items-center gap-1.5 mt-2">
+                    {statusStyle.label === "Verified" ? (
+                      <BadgeCheck size={13} className="text-emerald-400" />
+                    ) : (
+                      <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} />
+                    )}
                     <span className={`text-xs font-medium ${statusStyle.text}`}>{statusStyle.label}</span>
                   </div>
                 )}

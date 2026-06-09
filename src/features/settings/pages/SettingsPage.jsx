@@ -1,10 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { User, Save, Loader2, Building2, Upload, Trash2, X } from "lucide-react";
+import { Check, Loader2, ImagePlus, Upload, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 import { fetchCurrentUser, updateCurrentUser, uploadSupplierLogo } from "../api";
 import { getAuthToken } from "@/stores/authStore";
 import { useAuthStore } from "@/stores/authStore";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { config } from "@/config";
+
+const FADE_UP = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
+};
 
 export default function SettingsPage() {
   const authUser = useAuthStore((state) => state.user);
@@ -42,11 +49,11 @@ export default function SettingsPage() {
           });
           setCurrentLogoUrl(user.logoUrl || null);
         }
-      } catch (err) {
-        if (err.code !== "AUTH_REQUIRED") {
-          toast.error("Failed to load profile");
-        }
-      } finally {
+    } catch (err) {
+      if (err?.code !== "AUTH_REQUIRED") {
+        toast.error("Failed to load profile");
+      }
+    } finally {
         setLoading(false);
       }
     }
@@ -113,7 +120,7 @@ export default function SettingsPage() {
         user: { ...state.user, logoUrl: null },
       }));
       toast.success("Logo removed");
-    } catch (err) {
+    } catch {
       toast.error("Failed to remove logo");
     }
   };
@@ -148,83 +155,98 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="p-4 md:p-6 flex items-center justify-center min-h-[40vh]">
-        <Loader2 size={28} className="animate-spin text-[#044b3b]" />
+        <Loader2 size={28} className="animate-spin text-emerald-600" />
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-6">
-      <div className="mb-6">
-        <h1 className="text-xl md:text-2xl font-bold text-[#1e293b]">Settings</h1>
-        <p className="text-sm text-[#64748b] mt-1">Manage your account profile</p>
+    <div className="p-5 md:p-6 max-w-3xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-8">
+        <div className="w-1 h-10 bg-gradient-to-b from-emerald-500 to-emerald-300 rounded-full" />
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-800">Settings</h1>
+          <p className="text-sm text-slate-500 mt-0.5">Manage your account profile</p>
+        </div>
       </div>
 
-      <div className="max-w-2xl">
-        <div className="bg-white rounded-lg border border-[#eaeaea] p-4 md:p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-[#f0fdf4] flex items-center justify-center">
-              <User size={20} className="text-[#044b3b]" />
+      <div className="space-y-6">
+        {/* Profile Card */}
+        <motion.div variants={FADE_UP} initial="initial" animate="animate"
+          className="bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden"
+        >
+          <form onSubmit={handleSave} className="px-6 py-6 space-y-5">
+            <div className="flex flex-col items-center">
+              <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg bg-slate-50">
+                {(authUser?.photoURL || authUser?.avatar) ? (
+                  <img src={authUser.photoURL || authUser.avatar} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-2xl font-bold text-emerald-600">{(authUser?.name || "S").charAt(0).toUpperCase()}</span>
+                  </div>
+                )}
+              </div>
+              <h2 className="text-base font-semibold text-slate-800 mt-3">Profile</h2>
+              <p className="text-xs text-slate-500 mt-0.5">Update your personal information</p>
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-[#1e293b]">Profile</h2>
-              <p className="text-sm text-[#64748b]">Update your personal information</p>
-            </div>
-          </div>
 
-          <form onSubmit={handleSave} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-[#1e293b] mb-1.5">Full Name</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Full Name</label>
               <input
                 type="text"
                 value={form.name}
                 onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-                className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-300 transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#1e293b] mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
               <input
                 type="email"
                 value={form.email || authUser?.email || ""}
                 disabled
-                className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm bg-[#f8fafc] text-[#64748b] cursor-not-allowed"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 text-slate-500 cursor-not-allowed"
               />
-              <p className="text-xs text-[#9e9e9e] mt-1">Email is managed through your login provider</p>
+              <p className="text-xs text-slate-400 mt-1.5">Email is managed through your login provider</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#1e293b] mb-1.5">Phone</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Phone</label>
               <input
                 type="tel"
                 value={form.phone}
                 onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
-                className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-300 transition-all"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-[#1e293b] mb-1.5">Language</label>
-                <select
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Language</label>
+                <Select
                   value={form.language}
-                  onChange={(e) => setForm((prev) => ({ ...prev, language: e.target.value }))}
-                  className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20"
+                  onValueChange={(value) => setForm((prev) => ({ ...prev, language: value }))}
                 >
-                  <option value="en">English</option>
-                  <option value="fr">French</option>
-                  <option value="sw">Swahili</option>
-                </select>
+                  <SelectTrigger className="w-full h-[42px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="fr">French</SelectItem>
+                    <SelectItem value="sw">Swahili</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#1e293b] mb-1.5">Timezone</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Timezone</label>
                 <input
                   type="text"
                   value={form.timezone}
                   onChange={(e) => setForm((prev) => ({ ...prev, timezone: e.target.value }))}
                   placeholder="e.g. Africa/Nairobi"
-                  className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-300 transition-all"
                 />
               </div>
             </div>
@@ -233,124 +255,102 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-all disabled:opacity-50 "
               >
-                {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
                 Save Changes
               </button>
             </div>
           </form>
-        </div>
+        </motion.div>
 
-        {/* Company Logo */}
-        <div className="bg-white rounded-lg border border-[#eaeaea] p-4 md:p-6 mt-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-[#f0fdf4] flex items-center justify-center">
-              <Building2 size={20} className="text-[#044b3b]" />
-            </div>
+        {/* Company Logo Card */}
+        <motion.div variants={FADE_UP} initial="initial" animate="animate"
+          className="bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden"
+        >
+          <div className="px-6 py-5 border-b border-slate-100">
             <div>
-              <h2 className="text-lg font-semibold text-[#1e293b]">Company Logo</h2>
-              <p className="text-sm text-[#64748b]">Upload your business logo</p>
+              <h2 className="text-base font-semibold text-slate-800">Company Logo</h2>
+              <p className="text-xs text-slate-500">Upload your business logo</p>
             </div>
           </div>
 
-          <div className="flex items-start gap-6">
-            <div className="flex-shrink-0">
-              {logoPreview ? (
-                <div className="relative w-24 h-24 rounded-lg border border-[#eaeaea] overflow-hidden">
-                  <img
-                    src={logoPreview}
-                    alt="Logo preview"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ) : currentLogoUrl ? (
-                <div className="relative w-24 h-24 rounded-lg border border-[#eaeaea] overflow-hidden">
-                  <img
-                    src={currentLogoUrl}
-                    alt="Company logo"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="w-24 h-24 rounded-lg border-2 border-dashed border-[#eaeaea] flex items-center justify-center bg-[#f8fafc]">
-                  <Building2 size={32} className="text-[#9e9e9e]" />
-                </div>
-              )}
-            </div>
+          <div className="px-6 py-5">
+            <div className="flex items-start gap-6">
+              <div className="flex-shrink-0">
+                {logoPreview ? (
+                  <div className="relative w-24 h-24 rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                    <img src={logoPreview} alt="Logo preview" className="w-full h-full object-cover" />
+                  </div>
+                ) : currentLogoUrl ? (
+                  <div className="relative w-24 h-24 rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                    <img
+                      src={currentLogoUrl}
+                      alt="Company logo"
+                      className="w-full h-full object-cover"
+                      onError={(e) => { e.target.style.display = "none"; }}
+                    />
+                  </div>
+                ) : (
+                  <div className="w-24 h-24 rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center bg-slate-50">
+                    <ImagePlus size={32} className="text-slate-300" />
+                  </div>
+                )}
+              </div>
 
-            <div className="flex-1 space-y-3">
-              {logoPreview ? (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleUploadLogo}
-                    disabled={uploadingLogo}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors disabled:opacity-50"
-                  >
-                    {uploadingLogo ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <Upload size={16} />
-                    )}
-                    {uploadingLogo ? "Uploading..." : "Upload Logo"}
-                  </button>
-                  <button
-                    onClick={handleRemoveSelected}
-                    className="flex items-center gap-2 px-4 py-2 text-[#64748b] rounded-lg text-sm font-medium hover:bg-[#f8fafc] transition-colors"
-                  >
-                    <X size={16} />
-                    Cancel
-                  </button>
-                </div>
-              ) : currentLogoUrl ? (
-                <div className="flex items-center gap-2">
+              <div className="flex-1 space-y-3">
+                {logoPreview ? (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleUploadLogo}
+                      disabled={uploadingLogo}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-medium hover:bg-emerald-700 transition-all disabled:opacity-50 "
+                    >
+                      {uploadingLogo ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+                      {uploadingLogo ? "Uploading..." : "Upload Logo"}
+                    </button>
+                    <button
+                      onClick={handleRemoveSelected}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-slate-600 rounded-xl text-xs font-medium hover:bg-slate-50 transition-all"
+                    >
+                      <X size={16} /> Cancel
+                    </button>
+                  </div>
+                ) : currentLogoUrl ? (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-medium hover:bg-emerald-700 transition-all "
+                    >
+                      <Upload size={13} /> Change Logo
+                    </button>
+                    <button
+                      onClick={handleRemoveLogo}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-red-600 rounded-xl text-xs font-medium hover:bg-red-50 transition-all"
+                    >
+                      <Trash2 size={16} /> Remove
+                    </button>
+                  </div>
+                ) : (
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-medium hover:bg-emerald-700 transition-all "
                   >
-                    <Upload size={16} />
-                    Change Logo
+                    <Upload size={13} /> Select Logo
                   </button>
-                  <button
-                    onClick={handleRemoveLogo}
-                    className="flex items-center gap-2 px-4 py-2 text-[#dc2626] rounded-lg text-sm font-medium hover:bg-[#fef2f2] transition-colors"
-                  >
-                    <Trash2 size={16} />
-                    Remove
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
-                  >
-                    <Upload size={16} />
-                    Select Logo
-                  </button>
-                </div>
-              )}
+                )}
 
-              <p className="text-xs text-[#64748b]">
-                Supports JPG, PNG, WebP. Max 5MB. Square images work best.
-              </p>
+                <p className="text-xs text-slate-400">Supports JPG, PNG, WebP. Max 5MB. Square images work best.</p>
+              </div>
             </div>
+
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoSelect} />
           </div>
+        </motion.div>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleLogoSelect}
-          />
-        </div>
-
-        <p className="text-xs text-[#64748b] mt-4">
-          Manage payout methods under Finance → Payout Methods. Tour availability is configured in each product&apos;s schedule step.
+        <p className="text-xs text-slate-400">
+          Manage payout methods under Finance → Payout Methods. Tour availability is configured in each
+          product&apos;s schedule step.
         </p>
       </div>
     </div>
