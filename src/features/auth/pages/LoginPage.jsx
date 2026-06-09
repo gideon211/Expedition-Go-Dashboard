@@ -116,43 +116,34 @@ export default function LoginPage() {
             className="absolute inset-0 w-full h-full object-cover"
           />
           {/* Lighter overlay — image shows through more */}
-          <div className="absolute inset-0 bg-gradient-to-t from-emerald-700/50 via-emerald-800/30 to-emerald-900/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-emerald-700/30 via-emerald-800/15 to-emerald-900/5" />
 
-          <div className="relative z-10 flex flex-col justify-between p-10 xl:p-12 text-white flex-1">
-            <motion.div variants={stagger} initial="initial" animate="animate">
-              <motion.div variants={fadeUp} className="flex items-center gap-3 mb-14">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-950/40">
-                  <Compass size={19} className="text-white" />
+          <div className="relative z-10 flex flex-col justify-between p-8 xl:p-10 text-white flex-1">
+            <div>
+              <motion.div variants={fadeUp} className="flex items-center gap-2.5 mb-8">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-950/40">
+                  <Compass size={15} className="text-white" />
                 </div>
-                <span className="font-bold text-xl tracking-tight" style={{ fontFamily: "'DM Sans', system-ui, sans-serif", letterSpacing: "-0.02em" }}>TravioAfrica</span>
+                <span className="text-sm font-bold tracking-tight" style={{ fontFamily: "'DM Sans', system-ui, sans-serif", letterSpacing: "-0.02em" }}>TravioAfrica</span>
               </motion.div>
 
               <motion.div variants={fadeUp}>
-                <h1 className="text-3xl xl:text-4xl font-bold leading-tight mb-4 text-white drop-shadow-sm">
+                <h1 className="text-xl xl:text-2xl font-bold leading-snug mb-3 text-white drop-shadow-sm">
                   Supplier Dashboard
                 </h1>
-                <p className="text-white/80 text-base leading-relaxed max-w-md">
+                <p className="text-white/70 text-sm leading-relaxed max-w-sm">
                   Sign in to create tours, manage bookings, and grow your travel business across Africa.
                 </p>
               </motion.div>
-            </motion.div>
+            </div>
 
-            <motion.ul
-              variants={stagger}
-              initial="initial"
-              animate="animate"
-              className="space-y-4"
-            >
+            <motion.ul variants={stagger} initial="initial" animate="animate" className="space-y-2.5">
               {FEATURES.map(({ icon: Icon, label }) => (
-                <motion.li
-                  key={label}
-                  variants={fadeUp}
-                  className="flex items-center gap-3 text-white/85"
-                >
-                  <span className="w-9 h-9 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center flex-shrink-0 ring-1 ring-white/20">
-                    <Icon size={18} />
+                <motion.li key={label} variants={fadeUp} className="flex items-center gap-2.5 text-white/80">
+                  <span className="w-7 h-7 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center flex-shrink-0 ring-1 ring-white/15">
+                    <Icon size={13} />
                   </span>
-                  <span className="text-sm font-medium">{label}</span>
+                  <span className="text-xs font-medium">{label}</span>
                 </motion.li>
               ))}
             </motion.ul>
@@ -161,7 +152,7 @@ export default function LoginPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.4 }}
-              className="text-xs text-white/40"
+              className="text-[10px] text-white/35"
             >
               Access is limited to approved and active suppliers.
             </motion.p>
@@ -255,7 +246,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all shadow-sm shadow-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? <Loader2 size={18} className="animate-spin" /> : null}
                 {loading ? "Signing in..." : "Sign in"}
