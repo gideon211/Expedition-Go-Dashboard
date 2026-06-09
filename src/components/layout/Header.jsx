@@ -1,10 +1,17 @@
-import { Search, ChevronDown, Building2, Shield, Clock, FileText, LogOut, User, Mail, Loader2 } from "lucide-react";
+import { ChevronDown, Building2, Shield, Clock, FileText, LogOut, User, Mail, Loader2 } from "lucide-react";
 import NotificationBell from "@/features/notifications/components/NotificationBell";
 import { useSidebarStore } from "@/stores/sidebarStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+
+const popIn = {
+  initial: { opacity: 0, scale: 0.95, y: -4 },
+  animate: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.15, ease: [0.25, 0.1, 0.25, 1] } },
+  exit: { opacity: 0, scale: 0.95, y: -4, transition: { duration: 0.1, ease: [0.25, 0.1, 0.25, 1] } },
+};
 
 const STATUS_STYLES = {
   PENDING: { bg: "bg-amber-50", text: "text-amber-700", label: "Pending" },
@@ -46,7 +53,7 @@ export default function Header() {
   const handleLogout = async () => {
     if (logoutLoading) return;
     setLogoutLoading(true);
-    await Promise.all([useAuthStore.getState().logout(), new Promise((resolve) => setTimeout(resolve, 4000))]);
+    await Promise.all([useAuthStore.getState().logout(), new Promise((resolve) => setTimeout(resolve, 1500))]);
     navigate("/login", { replace: true });
   };
 
@@ -71,13 +78,15 @@ export default function Header() {
               <span className="hidden sm:inline">My Profile</span>
               <ChevronDown size={11} className={`text-slate-400 transition-transform ${profileOpen ? "rotate-180" : ""}`} />
             </button>
-            {profileOpen && (
-              <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl border border-emerald-100/60 shadow-lg shadow-emerald-900/5 z-50 overflow-hidden">
-                <div className="px-4 py-3 border-b border-slate-100">
-                  <p className="text-sm font-semibold text-slate-800">Supplier Profile</p>
-                  <p className="text-xs text-slate-500">Your account status and details</p>
-                </div>
-                <div className="px-4 py-4 space-y-3">
+            <AnimatePresence>
+              {profileOpen && (
+                <motion.div variants={popIn} initial="initial" animate="animate" exit="exit" className="absolute right-0 mt-2 w-72 bg-white rounded-xl border border-emerald-100/60 shadow-lg shadow-emerald-900/5 z-50 overflow-hidden">
+                  <div className="h-1 bg-gradient-to-r from-emerald-500 to-emerald-400" />
+                  <div className="px-4 py-3 border-b border-slate-100">
+                    <p className="text-sm font-semibold text-slate-800">Supplier Profile</p>
+                    <p className="text-xs text-slate-500">Your account status and details</p>
+                  </div>
+                  <div className="px-4 py-4 space-y-3">
                   {supplierProfile ? (
                     <>
                       <div className="flex items-center gap-3">
@@ -116,8 +125,9 @@ export default function Header() {
                     <div className="text-center text-sm text-slate-500">No supplier profile found.<p className="text-xs mt-1">Apply to become a supplier to see your status here.</p></div>
                   )}
                 </div>
-              </div>
+              </motion.div>
             )}
+            </AnimatePresence>
           </div>
         )}
 
@@ -141,8 +151,10 @@ export default function Header() {
             </div>
             <ChevronDown size={11} className={`text-slate-400 hidden sm:block transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
           </button>
+          <AnimatePresence>
           {userMenuOpen && (
-            <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl border border-emerald-100/60 shadow-lg shadow-emerald-900/5 z-50 overflow-hidden">
+            <motion.div variants={popIn} initial="initial" animate="animate" exit="exit" className="absolute right-0 mt-2 w-64 bg-white rounded-xl border border-emerald-100/60 shadow-lg shadow-emerald-900/5 z-50 overflow-hidden">
+              <div className="h-1 bg-gradient-to-r from-emerald-500 to-emerald-400" />
               <div className="px-4 py-4 border-b border-slate-100">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full overflow-hidden bg-[#044b3b] shrink-0">
@@ -175,11 +187,12 @@ export default function Header() {
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors disabled:opacity-70"
                 >
                   {logoutLoading ? <Loader2 size={15} className="animate-spin" /> : <LogOut size={15} />}
-                  {logoutLoading ? "Signing out..." : "Sign Out"}
+                  {logoutLoading ? "Please wait..." : "Sign Out"}
                 </button>
               </div>
-            </div>
+            </motion.div>
           )}
+          </AnimatePresence>
         </div>
       </div>
     </header>
