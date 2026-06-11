@@ -117,14 +117,14 @@ export default function Sidebar() {
     <>
       <button
         onClick={() => useSidebarStore.getState().toggleMobile()}
-        className="fixed top-3 left-3 z-[60] p-2.5 rounded-xl bg-[#059669] text-white shadow-lg lg:hidden hover:bg-[#047857] transition-colors"
+        className="fixed top-3 left-3 z-[60] p-2.5 rounded-xl bg-[#065f46] text-white shadow-lg lg:hidden hover:bg-[#047857] transition-colors"
         aria-label="Toggle menu"
       >
         {isMobileOpen ? <X size={18} /> : <Menu size={18} />}
       </button>
 
       <aside
-        className={`fixed left-0 top-0 h-screen bg-[#059669] border-r border-white/10 transition-all duration-300 z-50 flex flex-col
+        className={`fixed left-0 top-0 h-screen bg-[#065f46] border-r border-white/10 transition-all duration-300 z-50 flex flex-col
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
           ${isCollapsed ? "lg:w-[64px] lg:translate-x-0" : "lg:w-[270px] lg:translate-x-0"}
           w-[260px]`}
@@ -165,7 +165,7 @@ export default function Sidebar() {
                   </span>
                 </div>
               )}
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-white rounded-full border-2 border-[#059669]" />
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-white rounded-full border-2 border-[#065f46]" />
             </div>
             {!isCollapsed && (
               <div className="min-w-0 flex-1">

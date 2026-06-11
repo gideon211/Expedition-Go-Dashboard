@@ -43,7 +43,7 @@ export default function Header() {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-[#eaeaea] hover:bg-[#f5f5f5] rounded-lg py-1 pr-2 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#059669]/30">
+            <button className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-[#eaeaea] hover:bg-[#f5f5f5] rounded-lg py-1 pr-2 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#065f46]/30">
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-medium text-slate-700">{displayName}</p>
                 <p className="text-[10px] text-slate-400 capitalize">{displayRole}</p>
@@ -59,7 +59,7 @@ export default function Header() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64 p-0 overflow-hidden">
-            <div className="h-1.5 bg-[#059669]" />
+            <div className="h-1.5 bg-[#065f46]" />
             <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-slate-100">
               <div className="w-10 h-10 rounded-full overflow-hidden bg-[#044b3b] shrink-0 ring-2 ring-[#044b3b]/10">
                 {(user?.avatar || user?.photoURL) ? (
