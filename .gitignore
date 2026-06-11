@@ -43,3 +43,4 @@ Expedition-Go-Backend/
 playwright-report
 playwright.config.js
 test.yml
+.vercel

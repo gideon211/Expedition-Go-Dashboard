@@ -4,7 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 
-import { Loader2, RefreshCw, ArrowUpRight, ShoppingBag, CheckCircle2, Star, DollarSign, MessageCircle, AlertTriangle, ClipboardList, MapPin, TrendingUp, Bell, Check } from "lucide-react";
+import { Loader2, RefreshCw, ArrowUpRight, ShoppingBag, CheckCircle2, Star, DollarSign, MessageCircle, AlertTriangle, ClipboardList, MapPin, TrendingUp, Bell, Check, CalendarX2 } from "lucide-react";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { fetchSupplierDashboard } from "../api";
@@ -133,39 +133,41 @@ export default function DashboardPage() {
   const gaugeLabel = cancellationRate === 0 ? "Excellent" : cancellationRate <= 2 ? "Good" : cancellationRate <= 5 ? "Average" : "Needs Attention";
   const gaugeLabelColor = cancellationRate === 0 ? "text-emerald-600" : cancellationRate <= 2 ? "text-emerald-600" : cancellationRate <= 5 ? "text-amber-600" : "text-red-600";
 
-  const CancellationGauge = ({ value }) => {
-    const maxVal = 8;
-    const cx = 100, cy = 72, r = 62;
-    const circ = 2 * Math.PI * r;
-    const half = circ / 2;
-    const clamped = Math.min(Math.max(value, 0), maxVal);
+  const CancellationGauge = ({ value, label }) => {
+    const clamped = Math.min(Math.max(value, 0), 7);
+    const pct = clamped === 0 ? "0" : clamped >= 5 ? "5+" : `${Math.round(clamped)}`;
 
-    const seg = (from, to) => {
-      const f = Math.max(from, 0);
-      const t = Math.min(to, maxVal);
-      if (t <= f) return "0 0";
-      const start = half + (f / maxVal) * half;
-      const len = ((t - f) / maxVal) * half;
-      return `0 ${start} ${len} ${circ - start - len}`;
-    };
+    // Map value to angle: teal 0-2% → 180°-110°, mint 2-5% → 110°-40°, red 5-7% → 40°-0°
+    let angle;
+    if (clamped <= 2) angle = 180 - (clamped / 2) * 70;
+    else if (clamped <= 5) angle = 110 - ((clamped - 2) / 3) * 70;
+    else angle = 40 - ((clamped - 5) / 2) * 40;
 
-    const needleRad = (clamped / maxVal) * Math.PI;
-    const nx = -r * Math.cos(needleRad);
-    const ny = -r * Math.sin(needleRad);
-
-    const pct = clamped === 0 ? "0" : clamped >= maxVal ? "8+" : `${clamped}`;
+    const rad = (angle * Math.PI) / 180;
+    const nx = 100 + 70 * Math.cos(rad);
+    const ny = 95 - 70 * Math.sin(rad);
 
     return (
-      <svg viewBox="0 0 200 155" className="w-full">
-        <g transform={`translate(${cx}, ${cy})`}>
-          <circle r={r} fill="none" stroke="#059669" strokeWidth="20" strokeDasharray={seg(0, 2)} />
-          <circle r={r} fill="none" stroke="#a7f3d0" strokeWidth="20" strokeDasharray={seg(2, 5)} />
-          <circle r={r} fill="none" stroke="#f43f5e" strokeWidth="20" strokeDasharray={seg(5, 8)} />
-          <line x1="0" y1="0" x2={nx} y2={ny} stroke="#1e293b" strokeWidth="3" strokeLinecap="round" />
-          <circle r="5" fill="#1e293b" />
-          <circle r="2" fill="white" />
-        </g>
-        <text x={cx} y={145} textAnchor="middle" fontSize="26" fontWeight="700" fill="#1e293b" fontFamily="DM Sans, sans-serif">{pct}%</text>
+      <svg viewBox="0 0 200 130" className="w-full">
+        {/* Teal: 0-2% */}
+        <path d="M 30 95 A 70 70 0 0 1 76 29" fill="none" stroke="#0f766e" strokeWidth="14" strokeLinecap="round" />
+        {/* Mint: 2-5% */}
+        <path d="M 76 29 A 70 70 0 0 1 154 50" fill="none" stroke="#99f6e4" strokeWidth="14" />
+        {/* Red: 5%+ */}
+        <path d="M 154 50 A 70 70 0 0 1 170 95" fill="none" stroke="#dc2626" strokeWidth="14" strokeLinecap="round" />
+
+        {/* Needle indicator */}
+        <circle cx={nx} cy={ny} r="6" fill="#0f766e" stroke="white" strokeWidth="2" />
+
+        {/* Center text */}
+        <text x="100" y="80" textAnchor="middle" fontSize="36" fontWeight="700" fill="#1e293b" fontFamily="DM Sans, sans-serif">{pct}%</text>
+        <text x="100" y="98" textAnchor="middle" fontSize="13" fontWeight="700" fill="#334155" fontFamily="DM Sans, sans-serif">{label}</text>
+
+        {/* Scale labels */}
+        <text x="25" y="115" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="DM Sans, sans-serif">0%</text>
+        <text x="68" y="22" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="DM Sans, sans-serif">2%</text>
+        <text x="162" y="43" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="DM Sans, sans-serif">5%</text>
+        <text x="178" y="115" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="DM Sans, sans-serif">5+%</text>
       </svg>
     );
   };
@@ -371,19 +373,17 @@ export default function DashboardPage() {
 
           {/* Cancellation Gauge */}
           <div className="bg-white border border-emerald-100/60 rounded-xl p-5 hover:border-emerald-200 transition-all">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Cancellations</h3>
+            <div className="flex items-center gap-2 mb-1">
+              <CalendarX2 size={18} className="text-slate-700" />
+              <h3 className="text-base font-bold text-slate-800">Cancellations</h3>
             </div>
-            <p className={`text-xs font-semibold mb-2 ${gaugeLabelColor}`}>{gaugeLabel}</p>
-            <CancellationGauge value={cancellationRate} />
-            <div className="flex items-center justify-between text-[10px] font-medium text-slate-400 mt-1">
-              <span>0%</span>
-              <span>5+%</span>
-            </div>
-            <p className="text-[10px] font-medium text-slate-400 mt-2 leading-relaxed">
-              Percentage of cancelled bookings across all products.
+            <p className="text-sm text-slate-500 mb-3 leading-relaxed">
+              Percentage of canceled bookings across all products in the last 90 days:
             </p>
+            <CancellationGauge value={cancellationRate} label={gaugeLabel} />
+            <button className="w-full mt-3 py-2.5 px-4 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">
+              Review rate
+            </button>
           </div>
         </div>
       </div>
