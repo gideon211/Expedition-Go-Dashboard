@@ -449,6 +449,11 @@ export default function SupportFloating() {
                 {/* Header */}
                 <div className="flex shrink-0 items-center justify-between rounded-t-2xl bg-[#2563eb] px-4 py-3 text-white">
                   <div className="flex items-center gap-2.5 min-w-0">
+                    {selectedConv && (
+                      <button onClick={() => { setSelectedConv(null); setMessages([]); setMessageStatuses({}); setWelcomePage("main"); }} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/20 hover:text-white">
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                    )}
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/20">
                       <Headphones className="h-4 w-4" />
                     </div>
@@ -577,21 +582,20 @@ export default function SupportFloating() {
                                   <ChevronRight className="h-4 w-4 shrink-0 text-gray-300 transition-transform group-hover:translate-x-0.5 group-hover:text-[#2563eb]" />
                                 </button>
                                 <button
-                                  onClick={focusInput}
+                                  onClick={async () => { const conv = await ensureConversation(); if (conv) await loadAndSetMessages(conv.id); }}
                                   className="group flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-left shadow-sm transition-all duration-200 hover:border-[#2563eb]/30 hover:shadow-md hover:-translate-y-0.5"
                                 >
                                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#2563eb]/10 transition-colors group-hover:bg-[#2563eb]/15">
                                     <MessageCircle className="h-4 w-4 text-[#2563eb]" />
                                   </div>
                                   <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-medium text-gray-900">Send a Message</p>
-                                    <p className="truncate text-[11px] text-gray-500">Chat with us in real-time</p>
+                                    <p className="text-sm font-medium text-gray-900">Chat with us</p>
+                                    <p className="truncate text-[11px] text-gray-500">Send a message in real-time</p>
                                   </div>
                                   <ChevronRight className="h-4 w-4 shrink-0 text-gray-300 transition-transform group-hover:translate-x-0.5 group-hover:text-[#2563eb]" />
                                 </button>
                               </div>
                             </div>
-                            <InputBar value={input} onChange={setInput} onSend={handleSubmit} onKeyDown={handleKeyDown} onFileChange={handleFileChange} sending={sending} fileInputRef={fileInputRef} inputId="support-floating-input" />
                           </>
                         ) : (
                           <>
@@ -648,7 +652,6 @@ export default function SupportFloating() {
                                 </div>
                               </div>
                             </div>
-                            <InputBar value={input} onChange={setInput} onSend={handleSubmit} onKeyDown={handleKeyDown} onFileChange={handleFileChange} sending={sending} fileInputRef={fileInputRef} />
                           </>
                         )}
                       </motion.div>
