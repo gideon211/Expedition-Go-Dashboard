@@ -26,7 +26,7 @@ export default function MessageBubble({ message, isOwn, status, showAvatar, send
   const attMargin = compact ? "-mx-2.5 -mt-1.5 mb-1.5" : "-mx-3.5 -mt-2 mb-2";
   const attRadius = compact ? "rounded-t-[14px]" : "rounded-t-[18px]";
   const tsSize = compact ? "text-[9px]" : "text-[10px]";
-  const maxW = compact ? "max-w-[82%]" : "max-w-[75%]";
+  const maxW = compact ? "max-w-[72%]" : "max-w-[65%]";
 
   return (
     <div className={`flex gap-1.5 ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
