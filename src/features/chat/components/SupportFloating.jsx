@@ -81,8 +81,8 @@ export default function SupportFloating() {
   const user = useAuthStore((state) => state.user);
   const currentUserId = user?.id;
 
-  const { isOpen, pendingConversationId, open: openStore, close: closeStore, clearPendingConversation } = useChatFloatingStore();
-  const [conversations, setConversations] = useState([]);
+  const { isOpen, open: openStore, close: closeStore } = useChatFloatingStore();
+  const [, setConversations] = useState([]);
   const [selectedConv, setSelectedConv] = useState(null);
   const [messages, setMessages] = useState([]);
   const [messageStatuses, setMessageStatuses] = useState({});
@@ -246,7 +246,7 @@ export default function SupportFloating() {
     if (!selectedConv?.id) return;
     socket.emit("chat:join", { conversationId: selectedConv.id });
     return () => { socket.emit("chat:leave", { conversationId: selectedConv.id }); };
-  }, [selectedConv?.id]);
+  }, [selectedConv?.id, currentUserId]);
 
   useEffect(() => {
     if (messages.length > 0 && messagesEndRef.current && !loadingMore) {
@@ -298,7 +298,7 @@ export default function SupportFloating() {
       getChatSocket(currentUserId).emit("chat:join", { conversationId: conv.id });
     }
     return conv;
-  }, [selectedConv]);
+  }, [selectedConv, currentUserId]);
 
   const handleSend = useCallback(async (content, attachment) => {
     const text = content?.trim();
@@ -367,7 +367,7 @@ export default function SupportFloating() {
       setLoadingMore(false);
       isFetchingRef.current = false;
     }
-  }, [selectedConv?.id, hasMore, loadingMore, cursor]);
+  }, [selectedConv, hasMore, loadingMore, cursor]);
 
   const handleScroll = useCallback(() => {
     const el = messagesContainerRef.current;
@@ -392,15 +392,6 @@ export default function SupportFloating() {
     setSlideDir("left");
     setWelcomePage("main");
   }, []);
-
-  const focusInput = useCallback(() => {
-    const ta = document.querySelector("#support-floating-input");
-    ta?.focus();
-  }, []);
-
-  const otherParticipant = selectedConv?.participants?.find(
-    (p) => p.userId !== currentUserId
-  )?.user;
 
   return (
     <>
@@ -572,7 +563,7 @@ export default function SupportFloating() {
                                 initial={{ scale: 0.8, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ delay: 0.05, duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                                className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2563eb] to-[#1d4ed8] shadow-lg shadow-[#2563eb]/20"
+                                className="flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-[#2563eb] to-[#1d4ed8] shadow-lg shadow-[#2563eb]/20"
                               >
                                 <MessageCircle className="h-8 w-8 text-white" />
                               </motion.div>
@@ -600,7 +591,7 @@ export default function SupportFloating() {
                                     setMessages([]);
                                     setMessageStatuses({});
                                     let adminId = ADMIN_SUPPORT_ID;
-                                    if (!adminId) { try { adminId = await getAdminSupportId(); } catch {} }
+                                    if (!adminId) { try { adminId = await getAdminSupportId(); } catch { /* ignore */ } }
                                     if (!adminId) { toast.error("Support is not configured yet"); return; }
                                     try {
                                       const conv = await getOrCreateConversation(adminId, "SUPPLIER_ADMIN");
@@ -636,7 +627,7 @@ export default function SupportFloating() {
                               </button>
 
                               <div className="flex flex-col items-center text-center mb-5">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2563eb] to-[#1d4ed8] shadow-lg shadow-[#2563eb]/20 mb-3">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-linear-to-br from-[#2563eb] to-[#1d4ed8] shadow-lg shadow-[#2563eb]/20 mb-3">
                                   <Headphones className="h-6 w-6 text-white" />
                                 </div>
                                 <h3 className="text-base font-bold text-gray-900">Get in Touch</h3>
@@ -649,7 +640,7 @@ export default function SupportFloating() {
                                 <a href={`tel:${SUPPORT_PHONE.replace(/\s/g, "")}`}
                                   className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3.5 shadow-sm"
                                 >
-                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100">
+                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-emerald-50 to-emerald-100">
                                     <Phone className="h-4 w-4 text-emerald-600" />
                                   </div>
                                   <div className="min-w-0 flex-1">
@@ -662,7 +653,7 @@ export default function SupportFloating() {
                                 <a href={`mailto:${SUPPORT_EMAIL}`}
                                   className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3.5 shadow-sm"
                                 >
-                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-blue-100">
+                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-blue-50 to-blue-100">
                                     <Mail className="h-4 w-4 text-blue-600" />
                                   </div>
                                   <div className="min-w-0 flex-1">
@@ -690,7 +681,7 @@ export default function SupportFloating() {
                                 </div>
                               </div>
 
-                              <div className="mt-5 rounded-xl bg-gradient-to-r from-[#2563eb]/5 to-[#1d4ed8]/5 border border-[#2563eb]/10 p-4 text-center">
+                              <div className="mt-5 rounded-xl bg-linear-to-r from-[#2563eb]/5 to-[#1d4ed8]/5 border border-[#2563eb]/10 p-4 text-center">
                                 <p className="text-xs font-medium text-gray-700">Prefer instant messaging?</p>
                                 <button onClick={showMainPage} className="mt-2 text-xs font-semibold text-[#2563eb] hover:text-[#1d4ed8] transition-colors">
                                   Go back & start a chat →
