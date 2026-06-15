@@ -45,3 +45,6 @@ playwright.config.js
 test.yml
 .vercel
 .playwright-mcp
+*.png
+*.txt
+start file
