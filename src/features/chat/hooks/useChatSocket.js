@@ -1,67 +1,49 @@
-﻿import { useEffect, useCallback, useRef } from "react";
-import { io } from "socket.io-client";
-import config from "@/config";
-
-const SOCKET_URL = config.api.baseURL.replace("/api", "") || "";
+﻿import { useEffect, useCallback } from "react";
+import { getChatSocket } from "../chatSocket";
 
 export function useChatSocket(conversationId, userId) {
-  const socketRef = useRef(null);
+  const socket = getChatSocket(userId);
 
   useEffect(() => {
-    if (!userId) return;
-    const token = localStorage.getItem("auth_token");
-    socketRef.current = io(SOCKET_URL, {
-      auth: { userId, role: "supplier", token },
-      reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 3000,
-    });
+    if (!conversationId) return;
+    socket.emit("chat:join", { conversationId });
     return () => {
-      socketRef.current?.disconnect();
-      socketRef.current = null;
+      socket.emit("chat:leave", { conversationId });
     };
-  }, [userId]);
-
-  useEffect(() => {
-    if (!conversationId || !socketRef.current) return;
-    socketRef.current.emit("chat:join", { conversationId });
-    return () => {
-      socketRef.current?.emit("chat:leave", { conversationId });
-    };
-  }, [conversationId]);
+  }, [conversationId, socket]);
 
   const onNewMessage = useCallback((cb) => {
     const handler = (data) => cb(data.message, data.conversationId);
-    if (socketRef.current) socketRef.current.on("chat:message", handler);
-    return () => socketRef.current?.off("chat:message", handler);
-  }, []);
+    socket.on("chat:message", handler);
+    return () => { socket.off("chat:message", handler); };
+  }, [socket]);
 
   const onMarkRead = useCallback((cb) => {
     const handler = (data) => cb(data);
-    if (socketRef.current) socketRef.current.on("chat:mark-read", handler);
-    return () => socketRef.current?.off("chat:mark-read", handler);
-  }, []);
+    socket.on("chat:mark-read", handler);
+    return () => { socket.off("chat:mark-read", handler); };
+  }, [socket]);
 
   const onDelivered = useCallback((cb) => {
     const handler = (data) => cb(data);
-    if (socketRef.current) socketRef.current.on("chat:delivered", handler);
-    return () => socketRef.current?.off("chat:delivered", handler);
-  }, []);
+    socket.on("chat:delivered", handler);
+    return () => { socket.off("chat:delivered", handler); };
+  }, [socket]);
 
   const emitTyping = useCallback((convId) => {
-    socketRef.current?.emit("chat:typing", { conversationId: convId });
-  }, []);
+    socket.emit("chat:typing", { conversationId: convId });
+  }, [socket]);
 
   const emitMarkRead = useCallback((convId) => {
-    socketRef.current?.emit("chat:mark-read", { conversationId: convId });
-  }, []);
+    socket.emit("chat:mark-read", { conversationId: convId });
+  }, [socket]);
 
   const emitDelivered = useCallback((convId, messageIds) => {
-    socketRef.current?.emit("chat:delivered", {
+    socket.emit("chat:delivered", {
       conversationId: convId,
       messageIds: Array.isArray(messageIds) ? messageIds : [messageIds],
     });
-  }, []);
+  }, [socket]);
 
   return { onNewMessage, onMarkRead, onDelivered, emitTyping, emitMarkRead, emitDelivered };
 }

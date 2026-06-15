@@ -6,7 +6,6 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
-import { io } from "socket.io-client";
 import config from "@/config";
 import { useAuthStore } from "@/stores/authStore";
 import { useChatFloatingStore } from "@/stores/chatFloatingStore";
@@ -22,7 +21,8 @@ import {
 } from "../api";
 import { optimizeImage } from "@/lib/image";
 
-const SOCKET_URL = config.api.baseURL.replace("/api", "") || "";
+import { getChatSocket, isChatSocketConnected } from "../chatSocket";
+
 const ADMIN_SUPPORT_ID = config.support?.adminId || "";
 const POLL_INTERVAL = 30000;
 const CONV_CACHE_TTL = 30000;
@@ -34,8 +34,6 @@ const SUPPORT_HOURS = [
   { label: "Saturday", value: "9:00 AM - 2:00 PM" },
   { label: "Sunday", value: "Closed" },
 ];
-
-let persistentSocket = null;
 
 function formatDateSeparator(dateStr) {
   const d = new Date(dateStr);
@@ -180,16 +178,7 @@ export default function SupportFloating() {
 
   useEffect(() => {
     if (!currentUserId) return;
-    if (!persistentSocket) {
-      const token = localStorage.getItem("auth_token");
-      persistentSocket = io(SOCKET_URL, {
-        auth: { userId: currentUserId, role: "supplier", token },
-        reconnection: true,
-        reconnectionAttempts: 10,
-        reconnectionDelay: 2000,
-      });
-    }
-    const socket = persistentSocket;
+    const socket = getChatSocket(currentUserId);
 
     const onMessage = (data) => {
       const { message: msg, conversationId } = data;
@@ -251,8 +240,8 @@ export default function SupportFloating() {
   }, [currentUserId, isOpen]);
 
   useEffect(() => {
-    const socket = persistentSocket;
-    if (!socket || !selectedConv?.id) return;
+    const socket = getChatSocket(currentUserId);
+    if (!selectedConv?.id) return;
     socket.emit("chat:join", { conversationId: selectedConv.id });
     return () => { socket.emit("chat:leave", { conversationId: selectedConv.id }); };
   }, [selectedConv?.id]);
@@ -271,14 +260,14 @@ export default function SupportFloating() {
         setUnreadBadge(count);
       } catch (err) { console.error('[SupportFloating] Failed to poll unread count:', err); }
     };
-    if (!persistentSocket?.connected) poll();
+    if (!isChatSocketConnected()) poll();
     const id = setInterval(poll, POLL_INTERVAL);
     return () => clearInterval(id);
   }, [currentUserId]);
 
   useEffect(() => {
     const handleVisibility = () => {
-      if (document.hidden && persistentSocket?.connected) {
+      if (document.hidden && isChatSocketConnected()) {
         convCacheRef.current = { data: null, time: 0 };
       }
     };
@@ -303,7 +292,7 @@ export default function SupportFloating() {
       conv = await getOrCreateConversation(adminId, "SUPPLIER_ADMIN");
       setSelectedConv(conv);
       setConversations((prev) => [conv, ...prev]);
-      if (persistentSocket) persistentSocket.emit("chat:join", { conversationId: conv.id });
+      getChatSocket(currentUserId).emit("chat:join", { conversationId: conv.id });
     }
     return conv;
   }, [selectedConv, conversations]);
