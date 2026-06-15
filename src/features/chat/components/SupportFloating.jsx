@@ -525,7 +525,7 @@ export default function SupportFloating() {
                             const isOwn = currentUserId ? msg.senderId === currentUserId : false;
                             const prevMsg = idx > 0 ? messages[idx - 1] : null;
                             const showDateSep = prevMsg && isNewDay(prevMsg.createdAt, msg.createdAt);
-                            const showAvatar = !prevMsg || prevMsg.senderId !== msg.senderId || showDateSep;
+                            const showAvatar = true;
                             return (
                               <div key={msg.id}>
                                 {(showDateSep || idx === 0) && (
@@ -542,8 +542,9 @@ export default function SupportFloating() {
                                   isOwn={isOwn}
                                   status={isOwn ? messageStatuses[msg.id] : undefined}
                                   showAvatar={showAvatar}
-                                  senderAvatar={isOwn ? optimizeImage(user?.avatar, 24) : optimizeImage(msg.sender?.photoURL || otherParticipant?.photoURL, 24)}
+                                  senderAvatar={isOwn ? optimizeImage(user?.avatar, 24) : undefined}
                                   senderName={isOwn ? "You" : "Admin Support"}
+                                  avatarIcon={!isOwn ? <span className="text-xs">🤖</span> : undefined}
                                   compact
                                 />
                               </div>

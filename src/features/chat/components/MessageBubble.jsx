@@ -15,7 +15,7 @@ const statusIcon = {
   read: <CheckCheck className="h-3 w-3 text-emerald-400" />,
 };
 
-export default function MessageBubble({ message, isOwn, status, showAvatar, senderAvatar, senderName, compact }) {
+export default function MessageBubble({ message, isOwn, status, showAvatar, senderAvatar, senderName, compact, avatarIcon }) {
   const a = compact ? "h-6 w-6 text-[9px] mt-0" : "h-8 w-8 text-xs mt-1";
   const spacer = compact ? "w-6" : "w-8";
   const bubblePad = compact ? "px-2.5 py-1.5" : "px-3.5 py-2";
@@ -27,12 +27,15 @@ export default function MessageBubble({ message, isOwn, status, showAvatar, send
   const attRadius = compact ? "rounded-t-[14px]" : "rounded-t-[18px]";
   const tsSize = compact ? "text-[9px]" : "text-[10px]";
   const maxW = compact ? "max-w-[72%]" : "max-w-[65%]";
+  const avatarColor = avatarIcon ? "bg-[#2563eb]" : "bg-emerald-600";
 
   return (
-    <div className={`flex gap-1.5 ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
+      <div className={`flex gap-1 ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
       {showAvatar ? (
-        <div className={`relative flex ${a} shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-600 font-bold text-white`}>
-          {senderAvatar ? (
+        <div className={`relative flex ${a} shrink-0 items-center justify-center overflow-hidden rounded-full ${avatarColor} font-bold text-white self-end -mb-0.5`}>
+          {avatarIcon ? (
+            avatarIcon
+          ) : senderAvatar ? (
             <img
               src={senderAvatar}
               alt=""

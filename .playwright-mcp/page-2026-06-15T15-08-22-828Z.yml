@@ -1,0 +1,248 @@
+- generic [ref=e4]:
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - link "Community" [ref=e9] [cursor=pointer]:
+        - /url: /community
+        - img [ref=e11]
+        - text: Community
+      - generic [ref=e18]:
+        - button "Design resources UI kits Pre-made essentials like buttons and toasts UI kits Wireframes Explore your early ideas with lo-fi frames Wireframes Social media Create content like a pro Social media Figma Weave New Try our AI creative tools Figma Weave Design templates Assets" [ref=e19]:
+          - generic [ref=e20] [cursor=pointer]:
+            - text: Design resources
+            - img [ref=e22]
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - link "UI kits":
+                        - /url: /community/ui-kits
+                    - generic: Pre-made essentials like buttons and toasts
+                  - generic:
+                    - img "UI kits"
+                - generic:
+                  - generic:
+                    - generic:
+                      - link "Wireframes":
+                        - /url: /community/wireframes
+                    - generic: Explore your early ideas with lo-fi frames
+                  - generic:
+                    - img "Wireframes"
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - link "Social media":
+                        - /url: /community/social-media-templates
+                    - generic: Create content like a pro
+                  - generic:
+                    - img "Social media"
+                - generic:
+                  - generic:
+                    - generic:
+                      - link "Figma Weave":
+                        - /url: /community/weave
+                      - strong:
+                        - generic: New
+                    - generic: Try our AI creative tools
+                  - generic:
+                    - img "Figma Weave"
+              - generic:
+                - link "Design templates":
+                  - /url: /community/design-templates
+                  - generic: Design templates
+                - link "Assets":
+                  - /url: /community/visual-assets
+                  - generic: Assets
+        - button "Websites Landing page Make a splash, right from the start Landing page Landing page Portfolio Showcase your best work Portfolio Business Promote your brand online Business More websites Blog Wedding Photography Interior design" [ref=e24]:
+          - generic [ref=e25] [cursor=pointer]:
+            - text: Websites
+            - img [ref=e27]
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - link "Landing page":
+                      - /url: /community/website-templates/landing-pages
+                  - generic: Make a splash, right from the start
+                - generic:
+                  - img "Landing page"
+                  - img "Landing page"
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - link "Portfolio":
+                        - /url: /community/website-templates/portfolio
+                    - generic: Showcase your best work
+                  - generic:
+                    - img "Portfolio"
+                - generic:
+                  - generic:
+                    - generic:
+                      - link "Business":
+                        - /url: /community/website-templates/business
+                    - generic: Promote your brand online
+                  - generic:
+                    - img "Business"
+              - generic:
+                - link "More websites":
+                  - /url: /community/website-templates
+                  - generic: More websites
+                - link "Blog":
+                  - /url: /community/website-templates/blog
+                  - generic: Blog
+                - link "Wedding":
+                  - /url: /community/website-templates/wedding
+                  - generic: Wedding
+                - link "Photography":
+                  - /url: /community/website-templates/photography
+                  - generic: Photography
+                - link "Interior design":
+                  - /url: /community/website-templates/interior-design
+                  - generic: Interior design
+        - button "Figma Make" [ref=e29]:
+          - generic [ref=e30] [cursor=pointer]: Figma Make
+        - button "Extensions Plugins Further capabilities for design and development Plugins Widgets Useful tools that run right in your files Widgets Apps Extensions that connect Figma to other products Apps Editing & effects File organization Development Accessibility tools MCP clients Figma skills" [ref=e31]:
+          - generic [ref=e32] [cursor=pointer]:
+            - text: Extensions
+            - img [ref=e34]
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - link "Plugins":
+                      - /url: /community/plugins
+                  - generic: Further capabilities for design and development
+                - generic:
+                  - img "Plugins"
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - link "Widgets":
+                        - /url: /community/whiteboarding?resource_type=widgets
+                    - generic: Useful tools that run right in your files
+                  - generic:
+                    - img "Widgets"
+                - generic:
+                  - generic:
+                    - generic:
+                      - link "Apps":
+                        - /url: /community/apps
+                    - generic: Extensions that connect Figma to other products
+                  - generic:
+                    - img "Apps"
+              - generic:
+                - link "Editing & effects":
+                  - /url: /community/editing-effects
+                  - generic: Editing & effects
+                - link "File organization":
+                  - /url: /community/file-organization
+                  - generic: File organization
+                - link "Development":
+                  - /url: /community/development
+                  - generic: Development
+                - link "Accessibility tools":
+                  - /url: /community/accessibility
+                  - generic: Accessibility tools
+                - link "MCP clients":
+                  - /url: /community/apps/mcp-client
+                  - generic: MCP clients
+                - link "Figma skills":
+                  - /url: /community/skills
+                  - generic: Figma skills
+        - button "Whiteboarding Diagramming Map out complex flows Diagramming Fun & games Take a break (or break the ice) Fun & games Brainstorming Ideate, then pick your favorites Brainstorming Team meetings Templates for everything from kickoffs to retros Team meetings More whiteboarding Strategic planning" [ref=e36]:
+          - generic [ref=e37] [cursor=pointer]:
+            - text: Whiteboarding
+            - img [ref=e39]
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - link "Diagramming":
+                        - /url: /community/diagramming
+                    - generic: Map out complex flows
+                  - generic:
+                    - img "Diagramming"
+                - generic:
+                  - generic:
+                    - generic:
+                      - link "Fun & games":
+                        - /url: /community/fun-games
+                    - generic: Take a break (or break the ice)
+                  - generic:
+                    - img "Fun & games"
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - link "Brainstorming":
+                        - /url: /community/brainstorming
+                    - generic: Ideate, then pick your favorites
+                  - generic:
+                    - img "Brainstorming"
+                - generic:
+                  - generic:
+                    - generic:
+                      - link "Team meetings":
+                        - /url: /community/team-meetings
+                    - generic: Templates for everything from kickoffs to retros
+                  - generic:
+                    - img "Team meetings"
+              - generic:
+                - link "More whiteboarding":
+                  - /url: /community/whiteboarding
+                  - generic: More whiteboarding
+                - link "Strategic planning":
+                  - /url: /community/strategic-planning
+                  - generic: Strategic planning
+        - button "Presentations Pitch decks Share the story behind your big idea Pitch decks Product presentations Turn customers into believers by sharing your product vision Product presentations More presentations Mix and match with Figma Slides templates More presentations More presentations" [ref=e41]:
+          - generic [ref=e42] [cursor=pointer]:
+            - text: Presentations
+            - img [ref=e44]
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - link "Pitch decks":
+                      - /url: /community/presentations/pitch-deck
+                  - generic: Share the story behind your big idea
+                - generic:
+                  - img "Pitch decks"
+              - generic:
+                - generic:
+                  - generic:
+                    - link "Product presentations":
+                      - /url: /community/presentations/product
+                  - generic: Turn customers into believers by sharing your product vision
+                - generic:
+                  - img "Product presentations"
+              - generic:
+                - generic:
+                  - generic:
+                    - link "More presentations":
+                      - /url: /community/presentations
+                  - generic: Mix and match with Figma Slides templates
+                - generic:
+                  - img "More presentations"
+                  - img "More presentations"
+    - generic [ref=e46]:
+      - generic [ref=e48]:
+        - button [ref=e49] [cursor=pointer]:
+          - img [ref=e51]
+        - generic:
+          - textbox "Search"
+          - button "×"
+      - generic [ref=e53]:
+        - button "Log in" [ref=e54]
+        - button "Sign up" [ref=e55]
+  - button "Help" [ref=e105]:
+    - generic:
+      - img
