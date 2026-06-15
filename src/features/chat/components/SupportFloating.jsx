@@ -464,7 +464,7 @@ export default function SupportFloating() {
                           <TypingDots />
                         ) : selectedConv ? (
                           <span className="flex items-center gap-1">
-                            <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+                            <motion.span className="h-1.5 w-1.5 rounded-full bg-green-400" animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} />
                             <span className="text-green-300">Online</span>
                           </span>
                         ) : (
@@ -497,9 +497,9 @@ export default function SupportFloating() {
                     </div>
                   ) : selectedConv ? (
                     <motion.div
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      initial={{ opacity: 0, x: 24 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                       className="flex h-full flex-col"
                     >
                       <div
@@ -592,7 +592,21 @@ export default function SupportFloating() {
                                   <ChevronRight className="h-4 w-4 shrink-0 text-gray-300 transition-transform group-hover:translate-x-0.5 group-hover:text-[#2563eb]" />
                                 </button>
                                 <button
-                                  onClick={async () => { const conv = await ensureConversation(); if (conv) await loadAndSetMessages(conv.id); }}
+                                  onClick={async () => {
+                                    setSelectedConv({ id: "optimistic", participants: [] });
+                                    setMessages([]);
+                                    setMessageStatuses({});
+                                    let adminId = ADMIN_SUPPORT_ID;
+                                    if (!adminId) { try { adminId = await getAdminSupportId(); } catch {} }
+                                    if (!adminId) { toast.error("Support is not configured yet"); return; }
+                                    try {
+                                      const conv = await getOrCreateConversation(adminId, "SUPPLIER_ADMIN");
+                                      setSelectedConv(conv);
+                                      setConversations((prev) => prev.some((c) => c.id === conv.id) ? prev : [conv, ...prev]);
+                                      getChatSocket(currentUserId).emit("chat:join", { conversationId: conv.id });
+                                      loadAndSetMessages(conv.id);
+                                    } catch { toast.error("Failed to start conversation"); }
+                                  }}
                                   className="group flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-left shadow-sm transition-all duration-200 hover:border-[#2563eb]/30 hover:shadow-md hover:-translate-y-0.5"
                                 >
                                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#2563eb]/10 transition-colors group-hover:bg-[#2563eb]/15">
@@ -612,45 +626,56 @@ export default function SupportFloating() {
                             <div className="flex-1 overflow-y-auto px-5 py-4">
                               <button
                                 onClick={showMainPage}
-                                className="mb-4 flex items-center gap-1.5 text-xs font-medium text-gray-500 transition-colors hover:text-[#2563eb]"
+                                className="flex items-center gap-1.5 text-xs font-medium text-gray-400 transition-colors hover:text-[#2563eb] mb-5"
                               >
                                 <ChevronLeft className="h-3.5 w-3.5" />
                                 Back
                               </button>
-                              <h3 className="text-base font-bold text-gray-900">Get in Touch</h3>
-                              <p className="mt-1 text-xs text-gray-500">We're available during business hours</p>
-                              <div className="mt-4 space-y-3">
+
+                              <div className="flex flex-col items-center text-center mb-5">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2563eb] to-[#1d4ed8] shadow-lg shadow-[#2563eb]/20 mb-3">
+                                  <Headphones className="h-6 w-6 text-white" />
+                                </div>
+                                <h3 className="text-base font-bold text-gray-900">Get in Touch</h3>
+                                <p className="mt-1 text-xs text-gray-500 max-w-[240px]">
+                                  We aim to respond within 2 hours during business hours
+                                </p>
+                              </div>
+
+                              <div className="space-y-3">
                                 <a href={`tel:${SUPPORT_PHONE.replace(/\s/g, "")}`}
-                                  className="group flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-200 hover:border-[#2563eb]/30 hover:shadow-md hover:-translate-y-0.5"
+                                  className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3.5 shadow-sm"
                                 >
-                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#2563eb]/10 transition-colors group-hover:bg-[#2563eb]/15">
-                                    <Phone className="h-5 w-5 text-[#2563eb]" />
+                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100">
+                                    <Phone className="h-4 w-4 text-emerald-600" />
                                   </div>
                                   <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-medium text-gray-500">Phone</p>
-                                    <p className="mt-0.5 text-sm font-semibold text-gray-900">{SUPPORT_PHONE}</p>
+                                    <p className="text-[11px] font-medium text-gray-400">Call us</p>
+                                    <p className="mt-0.5 text-xs text-gray-900">{SUPPORT_PHONE}</p>
                                   </div>
-                                  <span className="shrink-0 rounded-full bg-[#2563eb]/10 px-2 py-0.5 text-[10px] font-medium text-[#2563eb]">Tap to call</span>
+                                  <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">Call</span>
                                 </a>
+
                                 <a href={`mailto:${SUPPORT_EMAIL}`}
-                                  className="group flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-200 hover:border-[#2563eb]/30 hover:shadow-md hover:-translate-y-0.5"
+                                  className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3.5 shadow-sm"
                                 >
-                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#2563eb]/10 transition-colors group-hover:bg-[#2563eb]/15">
-                                    <Mail className="h-5 w-5 text-[#2563eb]" />
+                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-blue-100">
+                                    <Mail className="h-4 w-4 text-blue-600" />
                                   </div>
                                   <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-medium text-gray-500">Email</p>
-                                    <p className="mt-0.5 text-sm font-semibold text-gray-900">{SUPPORT_EMAIL}</p>
+                                    <p className="text-[11px] font-medium text-gray-400">Email us</p>
+                                    <p className="mt-0.5 text-xs text-gray-900">{SUPPORT_EMAIL}</p>
                                   </div>
-                                  <span className="shrink-0 rounded-full bg-[#2563eb]/10 px-2 py-0.5 text-[10px] font-medium text-[#2563eb]">Tap to email</span>
+                                  <span className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600">Email</span>
                                 </a>
                               </div>
+
                               <div className="mt-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
-                                <div className="flex items-center gap-2.5">
+                                <div className="flex items-center gap-2.5 mb-3">
                                   <Clock className="h-4 w-4 text-gray-400" />
                                   <span className="text-xs font-semibold text-gray-700">Business Hours</span>
                                 </div>
-                                <div className="mt-3 space-y-1.5">
+                                <div className="space-y-2">
                                   {SUPPORT_HOURS.map((item) => (
                                     <div key={item.label} className="flex items-center justify-between text-xs">
                                       <span className="text-gray-500">{item.label}</span>
@@ -660,6 +685,13 @@ export default function SupportFloating() {
                                     </div>
                                   ))}
                                 </div>
+                              </div>
+
+                              <div className="mt-5 rounded-xl bg-gradient-to-r from-[#2563eb]/5 to-[#1d4ed8]/5 border border-[#2563eb]/10 p-4 text-center">
+                                <p className="text-xs font-medium text-gray-700">Prefer instant messaging?</p>
+                                <button onClick={showMainPage} className="mt-2 text-xs font-semibold text-[#2563eb] hover:text-[#1d4ed8] transition-colors">
+                                  Go back & start a chat →
+                                </button>
                               </div>
                             </div>
                           </>
