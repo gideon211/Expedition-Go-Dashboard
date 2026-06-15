@@ -462,6 +462,11 @@ export default function SupportFloating() {
                       <p className="truncate text-[10px] text-white/70 leading-tight">
                         {adminTyping ? (
                           <TypingDots />
+                        ) : selectedConv ? (
+                          <span className="flex items-center gap-1">
+                            <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+                            <span className="text-green-300">Online</span>
+                          </span>
                         ) : (
                           "Typically replies in minutes"
                         )}
@@ -491,7 +496,12 @@ export default function SupportFloating() {
                       ))}
                     </div>
                   ) : selectedConv ? (
-                    <div className="flex h-full flex-col">
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      className="flex h-full flex-col"
+                    >
                       <div
                         ref={messagesContainerRef}
                         onScroll={handleScroll}
@@ -541,7 +551,7 @@ export default function SupportFloating() {
                         </div>
                       </div>
                       <InputBar value={input} onChange={setInput} onSend={handleSubmit} onKeyDown={handleKeyDown} onFileChange={handleFileChange} sending={sending} fileInputRef={fileInputRef} />
-                    </div>
+                    </motion.div>
                   ) : (
                     <AnimatePresence mode="popLayout">
                       <motion.div
