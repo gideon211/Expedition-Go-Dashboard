@@ -126,7 +126,9 @@ export default function SupportFloating() {
       const statuses = {};
       msgs.forEach((m) => { statuses[m.id] = "sent"; });
       setMessageStatuses(statuses);
-    } catch {} finally {
+    } catch (err) {
+      console.error('[SupportFloating] Failed to load messages:', err);
+    } finally {
       isFetchingRef.current = false;
     }
   }, []);
@@ -162,14 +164,14 @@ export default function SupportFloating() {
           setSelectedConv(target);
           await loadAndSetMessages(target.id);
           if (!cancelled) {
-            try { await markConversationAsRead(target.id); } catch {}
+            try { await markConversationAsRead(target.id); } catch (err) { console.error('[SupportFloating] Failed to mark as read:', err); }
           }
         }
         if (!cancelled) {
           const badgeCount = convs.reduce((sum, c) => sum + (c.id === target?.id ? 0 : (c.unreadCount || 0)), 0);
           setUnreadBadge(badgeCount);
         }
-      } catch {} finally {
+      } catch (err) { console.error('[SupportFloating] Failed to load conversations:', err); } finally {
         if (!cancelled) setLoading(false);
       }
     })();
@@ -267,7 +269,7 @@ export default function SupportFloating() {
       try {
         const count = await getUnreadCount();
         setUnreadBadge(count);
-      } catch {}
+      } catch (err) { console.error('[SupportFloating] Failed to poll unread count:', err); }
     };
     if (!persistentSocket?.connected) poll();
     const id = setInterval(poll, POLL_INTERVAL);
@@ -367,7 +369,9 @@ export default function SupportFloating() {
       setMessages((prev) => [...msgs, ...prev]);
       setCursor(data.cursor || null);
       setHasMore(data.hasMore || false);
-    } catch {} finally {
+    } catch (err) {
+      console.error('[SupportFloating] Failed to load more messages:', err);
+    } finally {
       setLoadingMore(false);
       isFetchingRef.current = false;
     }
