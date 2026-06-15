@@ -197,10 +197,10 @@ export default function ProductTypeStep() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h3 className="text-lg font-semibold text-[#1e293b]">
+        <h3 className="text-lg font-semibold text-slate-800">
           What type of product are you creating?
         </h3>
-        <p className="text-sm text-[#64748b]">
+        <p className="text-sm text-slate-500">
           Please choose carefully as it impacts the following sections and you won't be able to edit this later.
         </p>
       </div>
@@ -214,48 +214,48 @@ export default function ProductTypeStep() {
             <div
               key={type.id}
               onClick={() => handleTypeChange(type.id)}
-              className={`relative flex items-start gap-4 p-4 md:p-5 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+              className={`relative flex items-start gap-4 p-4 md:p-5 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                 isSelected
-                  ? "border-[#044b3b] bg-[#044b3b]/[0.02]"
-                  : "border-[#eaeaea] hover:border-[#cbd5e1]"
+                  ? "border-emerald-600 bg-emerald-600/[0.02]"
+                  : "border-slate-200 hover:border-slate-300"
               }`}
             >
               {/* Radio indicator */}
               <div className="mt-1 flex-shrink-0">
                 <div
                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-                    isSelected ? "border-[#044b3b]" : "border-[#cbd5e1]"
+                    isSelected ? "border-emerald-600" : "border-slate-300"
                   }`}
                 >
                   {isSelected && (
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#044b3b]" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
                   )}
                 </div>
               </div>
 
               {/* Icon */}
-              <div className="flex-shrink-0 text-[#64748b]">
+              <div className="flex-shrink-0 text-slate-500">
                 <Icon size={32} strokeWidth={1.5} />
               </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h4 className={`text-base font-semibold ${isSelected ? "text-[#044b3b]" : "text-[#1e293b]"}`}>
+                  <h4 className={`text-base font-semibold ${isSelected ? "text-emerald-600" : "text-slate-800"}`}>
                     {type.label}
                   </h4>
-                  <HelpCircle size={16} className="text-[#9e9e9e]" />
+                  <HelpCircle size={16} className="text-slate-400" />
                 </div>
-                <p className="text-sm text-[#64748b] mt-0.5">{type.description}</p>
+                <p className="text-sm text-slate-500 mt-0.5">{type.description}</p>
 
                 {/* Conditional Tour fields */}
                 {isSelected && type.id === "tour" && (
-                  <div className="mt-5 space-y-5 border-t border-[#eaeaea] pt-5">
+                  <div className="mt-5 space-y-5 border-t border-slate-200 pt-5">
                     {/* Transportation Modes */}
                     <div ref={transportRef}>
-                      <label className="flex items-center gap-1.5 text-sm font-medium text-[#1e293b] mb-2">
+                      <label className="flex items-center gap-1.5 text-sm font-medium text-slate-800 mb-2">
                         What modes of transportation are used during the tour?
-                        <HelpCircle size={14} className="text-[#9e9e9e]" />
+                        <HelpCircle size={14} className="text-slate-400" />
                       </label>
                       <div className="relative">
                         <button
@@ -264,14 +264,14 @@ export default function ProductTypeStep() {
                             e.stopPropagation();
                             setTransportDropdownOpen(!transportDropdownOpen);
                           }}
-                          className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-left bg-white focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] flex items-center justify-between min-h-[42px]"
+                          className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-left bg-white focus:outline-none flex items-center justify-between min-h-[42px]"
                         >
                           <div className="flex flex-wrap gap-1.5">
                             {(product.tourTransportationModes || []).length > 0 ? (
                               (product.tourTransportationModes || []).map((mode) => (
                                 <span
                                   key={mode}
-                                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#f1f5f9] text-[#1e293b] text-xs rounded border border-[#e2e8f0]"
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-800 text-xs rounded border border-slate-200"
                                 >
                                   {mode}
                                   <span
@@ -279,34 +279,34 @@ export default function ProductTypeStep() {
                                       e.stopPropagation();
                                       removeTransportMode(mode);
                                     }}
-                                    className="cursor-pointer hover:text-[#dc3545]"
+                                    className="cursor-pointer hover:text-red-500"
                                   >
                                     <X size={12} />
                                   </span>
                                 </span>
                               ))
                             ) : (
-                              <span className="text-[#9e9e9e]">Select transportation modes</span>
+                              <span className="text-slate-400">Select transportation modes</span>
                             )}
                           </div>
-                          <ChevronDown size={16} className={`text-[#9e9e9e] transition-transform flex-shrink-0 ml-2 ${transportDropdownOpen ? "rotate-180" : ""}`} />
+                          <ChevronDown size={16} className={`text-slate-400 transition-transform flex-shrink-0 ml-2 ${transportDropdownOpen ? "rotate-180" : ""}`} />
                         </button>
 
                         {transportDropdownOpen && (
                           <div
                             onClick={(e) => e.stopPropagation()}
-                            className="absolute z-10 mt-1 w-full bg-white border border-[#cbd5e1] rounded-lg shadow-xl max-h-60 overflow-y-auto p-1"
+                            className="absolute z-10 mt-1 w-full bg-white border border-slate-300 rounded-xl shadow-xl max-h-60 overflow-y-auto p-1"
                           >
                             {TRANSPORTATION_MODES.map((mode) => (
                               <label
                                 key={mode}
-                                className="flex items-center gap-2 px-3 py-2 text-sm text-[#1e293b] hover:bg-[#f8fafc] rounded cursor-pointer"
+                                className="flex items-center gap-2 px-3 py-2 text-sm text-slate-800 hover:bg-slate-50 rounded cursor-pointer"
                               >
                                 <input
                                   type="checkbox"
                                   checked={(product.tourTransportationModes || []).includes(mode)}
                                   onChange={() => toggleTransportMode(mode)}
-                                  className="w-4 h-4 rounded border-[#cbd5e1] text-[#044b3b] focus:ring-[#044b3b]"
+                                  className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-slate-300"
                                 />
                                 {mode}
                               </label>
@@ -315,15 +315,15 @@ export default function ProductTypeStep() {
                         )}
                       </div>
                       {errors.tourTransportationModes && (
-                        <p className="mt-1 text-xs text-[#dc3545]">{errors.tourTransportationModes}</p>
+                        <p className="mt-1 text-xs text-red-500">{errors.tourTransportationModes}</p>
                       )}
                     </div>
 
                     {/* Tour Duration */}
                     <div>
-                      <label className="flex items-center gap-1.5 text-sm font-medium text-[#1e293b] mb-3">
+                      <label className="flex items-center gap-1.5 text-sm font-medium text-slate-800 mb-3">
                         How long is this tour?
-                        <HelpCircle size={14} className="text-[#9e9e9e]" />
+                        <HelpCircle size={14} className="text-slate-400" />
                       </label>
                       <div className="space-y-2">
                         {TOUR_DURATIONS.map((option) => (
@@ -338,20 +338,20 @@ export default function ProductTypeStep() {
                             <div
                               className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${
                                 product.tourDurationCategory === option.value
-                                  ? "border-[#044b3b]"
-                                  : "border-[#cbd5e1]"
+                                  ? "border-emerald-600"
+                                  : "border-slate-300"
                               }`}
                             >
                               {product.tourDurationCategory === option.value && (
-                                <div className="w-2 h-2 rounded-full bg-[#044b3b]" />
+                                <div className="w-2 h-2 rounded-full bg-emerald-600" />
                               )}
                             </div>
-                            <span className="text-sm text-[#1e293b]">{option.label}</span>
+                            <span className="text-sm text-slate-800">{option.label}</span>
                           </label>
                         ))}
                       </div>
                       {errors.tourDurationCategory && (
-                        <p className="mt-1 text-xs text-[#dc3545]">{errors.tourDurationCategory}</p>
+                        <p className="mt-1 text-xs text-red-500">{errors.tourDurationCategory}</p>
                       )}
                     </div>
                   </div>
@@ -359,12 +359,12 @@ export default function ProductTypeStep() {
 
                 {/* Conditional Activity fields */}
                 {isSelected && type.id === "activity" && (
-                  <div className="mt-5 space-y-5 border-t border-[#eaeaea] pt-5">
+                  <div className="mt-5 space-y-5 border-t border-slate-200 pt-5">
                     {/* Activity Categories Dropdown */}
                     <div ref={activityRef}>
-                      <label className="flex items-center gap-1.5 text-sm font-medium text-[#1e293b] mb-2">
+                      <label className="flex items-center gap-1.5 text-sm font-medium text-slate-800 mb-2">
                         What activities are included?
-                        <HelpCircle size={14} className="text-[#9e9e9e]" />
+                        <HelpCircle size={14} className="text-slate-400" />
                       </label>
                       <div className="relative">
                         <button
@@ -373,14 +373,14 @@ export default function ProductTypeStep() {
                             e.stopPropagation();
                             setActivityDropdownOpen(!activityDropdownOpen);
                           }}
-                          className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-left bg-white focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] flex items-center justify-between min-h-[42px]"
+                          className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-left bg-white focus:outline-none flex items-center justify-between min-h-[42px]"
                         >
                           <div className="flex flex-wrap gap-1.5">
                             {(product.activityCategories || []).length > 0 ? (
                               (product.activityCategories || []).map((item) => (
                                 <span
                                   key={item}
-                                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#f1f5f9] text-[#1e293b] text-xs rounded border border-[#e2e8f0]"
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-800 text-xs rounded border border-slate-200"
                                 >
                                   {item}
                                   <span
@@ -388,34 +388,34 @@ export default function ProductTypeStep() {
                                       e.stopPropagation();
                                       removeActivityItem(item);
                                     }}
-                                    className="cursor-pointer hover:text-[#dc3545]"
+                                    className="cursor-pointer hover:text-red-500"
                                   >
                                     <X size={12} />
                                   </span>
                                 </span>
                               ))
                             ) : (
-                              <span className="text-[#9e9e9e]">Select one (or more)</span>
+                              <span className="text-slate-400">Select one (or more)</span>
                             )}
                           </div>
-                          <ChevronDown size={16} className={`text-[#9e9e9e] transition-transform flex-shrink-0 ml-2 ${activityDropdownOpen ? "rotate-180" : ""}`} />
+                          <ChevronDown size={16} className={`text-slate-400 transition-transform flex-shrink-0 ml-2 ${activityDropdownOpen ? "rotate-180" : ""}`} />
                         </button>
 
                         {activityDropdownOpen && (
                           <div
                             onClick={(e) => e.stopPropagation()}
-                            className="absolute z-20 mt-1 w-full bg-white border border-[#cbd5e1] rounded-lg shadow-xl max-h-72 overflow-y-auto p-2"
+                            className="absolute z-20 mt-1 w-full bg-white border border-slate-300 rounded-xl shadow-xl max-h-72 overflow-y-auto p-2"
                           >
                             {/* Search */}
-                            <div className="sticky top-0 bg-white pb-2 border-b border-[#eaeaea] mb-1">
+                            <div className="sticky top-0 bg-white pb-2 border-b border-slate-200 mb-1">
                               <div className="relative">
-                                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#9e9e9e]" />
+                                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                                 <input
                                   type="text"
                                   value={activitySearch}
                                   onChange={(e) => setActivitySearch(e.target.value)}
                                   placeholder="Search activities"
-                                  className="w-full pl-8 pr-3 py-2 text-sm border border-[#eaeaea] rounded-md text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-1 focus:ring-[#044b3b]/20 focus:border-[#044b3b] bg-white"
+                                  className="w-full pl-8 pr-3 py-2 text-sm border border-slate-200 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none bg-white"
                                 />
                               </div>
                             </div>
@@ -430,26 +430,26 @@ export default function ProductTypeStep() {
                                       e.stopPropagation();
                                       toggleCategoryExpand(category.name);
                                     }}
-                                    className="w-full flex items-center justify-between px-2 py-2 text-sm text-[#1e293b] hover:bg-[#f8fafc] rounded-md transition-colors"
+                                    className="w-full flex items-center justify-between px-2 py-2 text-sm text-slate-800 hover:bg-slate-50 rounded-lg transition-colors"
                                   >
                                     <span className="font-medium">{category.name}</span>
                                     <ChevronRight
                                       size={14}
-                                      className={`text-[#9e9e9e] transition-transform ${expandedCategories[category.name] ? "rotate-90" : ""}`}
+                                      className={`text-slate-400 transition-transform ${expandedCategories[category.name] ? "rotate-90" : ""}`}
                                     />
                                   </button>
                                   {expandedCategories[category.name] && (
-                                    <div className="ml-2 pl-2 border-l border-[#eaeaea] space-y-0.5">
+                                    <div className="ml-2 pl-2 border-l border-slate-200 space-y-0.5">
                                       {category.items.map((item) => (
                                         <label
                                           key={item}
-                                          className="flex items-center gap-2 px-2 py-1.5 text-sm text-[#1e293b] hover:bg-[#f8fafc] rounded cursor-pointer"
+                                          className="flex items-center gap-2 px-2 py-1.5 text-sm text-slate-800 hover:bg-slate-50 rounded cursor-pointer"
                                         >
                                           <input
                                             type="checkbox"
                                             checked={(product.activityCategories || []).includes(item)}
                                             onChange={() => toggleActivityItem(item)}
-                                            className="w-4 h-4 rounded border-[#cbd5e1] text-[#044b3b] focus:ring-[#044b3b]"
+                                            className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-slate-300"
                                           />
                                           {item}
                                         </label>
@@ -459,7 +459,7 @@ export default function ProductTypeStep() {
                                 </div>
                               ))}
                               {filteredCategories.length === 0 && (
-                                <p className="px-2 py-3 text-sm text-[#9e9e9e] text-center">
+                                <p className="px-2 py-3 text-sm text-slate-400 text-center">
                                   No activities found
                                 </p>
                               )}
@@ -468,7 +468,7 @@ export default function ProductTypeStep() {
                         )}
                       </div>
                       {errors.activityCategories && (
-                        <p className="mt-1 text-xs text-[#dc3545]">{errors.activityCategories}</p>
+                        <p className="mt-1 text-xs text-red-500">{errors.activityCategories}</p>
                       )}
                     </div>
                   </div>
@@ -476,12 +476,12 @@ export default function ProductTypeStep() {
 
                 {/* Conditional Transport fields */}
                 {isSelected && type.id === "transport" && (
-                  <div className="mt-5 space-y-5 border-t border-[#eaeaea] pt-5">
+                  <div className="mt-5 space-y-5 border-t border-slate-200 pt-5">
                     {/* Transport Categories Dropdown */}
                     <div ref={transportCategoryRef}>
-                      <label className="flex items-center gap-1.5 text-sm font-medium text-[#1e293b] mb-2">
+                      <label className="flex items-center gap-1.5 text-sm font-medium text-slate-800 mb-2">
                         What type of transportation service are you providing?
-                        <HelpCircle size={14} className="text-[#9e9e9e]" />
+                        <HelpCircle size={14} className="text-slate-400" />
                       </label>
                       <div className="relative">
                         <button
@@ -490,14 +490,14 @@ export default function ProductTypeStep() {
                             e.stopPropagation();
                             setTransportCategoryDropdownOpen(!transportCategoryDropdownOpen);
                           }}
-                          className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-left bg-white focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] flex items-center justify-between min-h-[42px]"
+                          className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-left bg-white focus:outline-none flex items-center justify-between min-h-[42px]"
                         >
                           <div className="flex flex-wrap gap-1.5">
                             {(product.transportCategories || []).length > 0 ? (
                               (product.transportCategories || []).map((item) => (
                                 <span
                                   key={item}
-                                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#f1f5f9] text-[#1e293b] text-xs rounded border border-[#e2e8f0]"
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-800 text-xs rounded border border-slate-200"
                                 >
                                   {item}
                                   <span
@@ -505,34 +505,34 @@ export default function ProductTypeStep() {
                                       e.stopPropagation();
                                       removeTransportItem(item);
                                     }}
-                                    className="cursor-pointer hover:text-[#dc3545]"
+                                    className="cursor-pointer hover:text-red-500"
                                   >
                                     <X size={12} />
                                   </span>
                                 </span>
                               ))
                             ) : (
-                              <span className="text-[#9e9e9e]">Select one (or more)</span>
+                              <span className="text-slate-400">Select one (or more)</span>
                             )}
                           </div>
-                          <ChevronDown size={16} className={`text-[#9e9e9e] transition-transform flex-shrink-0 ml-2 ${transportCategoryDropdownOpen ? "rotate-180" : ""}`} />
+                          <ChevronDown size={16} className={`text-slate-400 transition-transform flex-shrink-0 ml-2 ${transportCategoryDropdownOpen ? "rotate-180" : ""}`} />
                         </button>
 
                         {transportCategoryDropdownOpen && (
                           <div
                             onClick={(e) => e.stopPropagation()}
-                            className="absolute z-20 mt-1 w-full bg-white border border-[#cbd5e1] rounded-lg shadow-xl max-h-72 overflow-y-auto p-2"
+                            className="absolute z-20 mt-1 w-full bg-white border border-slate-300 rounded-xl shadow-xl max-h-72 overflow-y-auto p-2"
                           >
                             {/* Search */}
-                            <div className="sticky top-0 bg-white pb-2 border-b border-[#eaeaea] mb-1">
+                            <div className="sticky top-0 bg-white pb-2 border-b border-slate-200 mb-1">
                               <div className="relative">
-                                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#9e9e9e]" />
+                                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                                 <input
                                   type="text"
                                   value={transportSearch}
                                   onChange={(e) => setTransportSearch(e.target.value)}
                                   placeholder="Search transportation types"
-                                  className="w-full pl-8 pr-3 py-2 text-sm border border-[#eaeaea] rounded-md text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-1 focus:ring-[#044b3b]/20 focus:border-[#044b3b] bg-white"
+                                  className="w-full pl-8 pr-3 py-2 text-sm border border-slate-200 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none bg-white"
                                 />
                               </div>
                             </div>
@@ -547,26 +547,26 @@ export default function ProductTypeStep() {
                                       e.stopPropagation();
                                       toggleCategoryExpand(category.name);
                                     }}
-                                    className="w-full flex items-center justify-between px-2 py-2 text-sm text-[#1e293b] hover:bg-[#f8fafc] rounded-md transition-colors"
+                                    className="w-full flex items-center justify-between px-2 py-2 text-sm text-slate-800 hover:bg-slate-50 rounded-lg transition-colors"
                                   >
                                     <span className="font-medium">{category.name}</span>
                                     <ChevronRight
                                       size={14}
-                                      className={`text-[#9e9e9e] transition-transform ${expandedCategories[category.name] ? "rotate-90" : ""}`}
+                                      className={`text-slate-400 transition-transform ${expandedCategories[category.name] ? "rotate-90" : ""}`}
                                     />
                                   </button>
                                   {expandedCategories[category.name] && (
-                                    <div className="ml-2 pl-2 border-l border-[#eaeaea] space-y-0.5">
+                                    <div className="ml-2 pl-2 border-l border-slate-200 space-y-0.5">
                                       {category.items.map((item) => (
                                         <label
                                           key={item}
-                                          className="flex items-center gap-2 px-2 py-1.5 text-sm text-[#1e293b] hover:bg-[#f8fafc] rounded cursor-pointer"
+                                          className="flex items-center gap-2 px-2 py-1.5 text-sm text-slate-800 hover:bg-slate-50 rounded cursor-pointer"
                                         >
                                           <input
                                             type="checkbox"
                                             checked={(product.transportCategories || []).includes(item)}
                                             onChange={() => toggleTransportItem(item)}
-                                            className="w-4 h-4 rounded border-[#cbd5e1] text-[#044b3b] focus:ring-[#044b3b]"
+                                            className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-slate-300"
                                           />
                                           {item}
                                         </label>
@@ -576,7 +576,7 @@ export default function ProductTypeStep() {
                                 </div>
                               ))}
                               {filteredTransportCategories.length === 0 && (
-                                <p className="px-2 py-3 text-sm text-[#9e9e9e] text-center">
+                                <p className="px-2 py-3 text-sm text-slate-400 text-center">
                                   No transportation types found
                                 </p>
                               )}
@@ -585,7 +585,7 @@ export default function ProductTypeStep() {
                         )}
                       </div>
                       {errors.transportCategories && (
-                        <p className="mt-1 text-xs text-[#dc3545]">{errors.transportCategories}</p>
+                        <p className="mt-1 text-xs text-red-500">{errors.transportCategories}</p>
                       )}
                     </div>
                   </div>
@@ -597,7 +597,7 @@ export default function ProductTypeStep() {
       </div>
 
       {errors.productType && (
-        <p className="text-xs text-[#dc3545]">{errors.productType}</p>
+        <p className="text-xs text-red-500">{errors.productType}</p>
       )}
     </div>
   );

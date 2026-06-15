@@ -1,16 +1,17 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { Layers, FileText, ScrollText, Image, DollarSign, CalendarDays, ClipboardList, CheckCircle } from "lucide-react";
 import { normalizeHighlights } from "@/features/products/utils/normalizeHighlights";
 
 const STEPS = [
-  { id: "type", label: "Product Type", number: 1 },
-  { id: "basics", label: "Product Basics", number: 2 },
-  { id: "content", label: "Product Content", number: 3 },
-  { id: "photos", label: "Photos & Media", number: 4 },
-  { id: "pricing", label: "Pricing & Tickets", number: 5 },
-  { id: "schedule", label: "Schedule & Availability", number: 6 },
-  { id: "booking", label: "Booking Rules", number: 7 },
-  { id: "review", label: "Review & Submit", number: 8 },
+  { id: "type", label: "Product Type", number: 1, icon: Layers },
+  { id: "basics", label: "Product Basics", number: 2, icon: FileText },
+  { id: "content", label: "Product Content", number: 3, icon: ScrollText },
+  { id: "photos", label: "Photos & Media", number: 4, icon: Image },
+  { id: "pricing", label: "Pricing & Tickets", number: 5, icon: DollarSign },
+  { id: "schedule", label: "Schedule & Availability", number: 6, icon: CalendarDays },
+  { id: "booking", label: "Booking Rules", number: 7, icon: ClipboardList },
+  { id: "review", label: "Review & Submit", number: 8, icon: CheckCircle },
 ];
 
 const INITIAL_PRODUCT = {

@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Save, X, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Archive, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
 import { createProduct, updateProduct } from "@/features/products/api";
@@ -206,6 +206,8 @@ export default function WizardNavFooter() {
   const isEditing = id && id !== "new";
 
   const handleNext = () => {
+    const isValid = validateStep(currentStep);
+    if (!isValid) return;
     nextStep();
   };
 
@@ -246,7 +248,7 @@ export default function WizardNavFooter() {
     } catch (err) {
       const status = err.response?.status;
       const message = status === 401
-        ? "Authentication failed. You need to log in before creating a product."
+        ? err.response?.data?.message || "Authentication failed. You need to log in before creating a product."
         : err.response?.data?.message || err.response?.data?.error || err.message || "Failed to save product. Please try again.";
 
       toast.error(message);
@@ -263,7 +265,7 @@ export default function WizardNavFooter() {
           <button
             type="button"
             onClick={handleDiscard}
-            className="flex items-center gap-2 px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm font-medium text-[#64748b] hover:bg-[#f8fafc] hover:text-[#1e293b] transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors"
           >
             <X size={16} />
             <span className="hidden sm:inline">Discard</span>
@@ -272,13 +274,13 @@ export default function WizardNavFooter() {
             type="button"
             onClick={handleSave}
             disabled={!isDirty || isSaving}
-            className="flex items-center gap-2 px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm font-medium text-[#64748b] hover:bg-[#f8fafc] hover:text-[#1e293b] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+            {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Archive size={16} />}
             <span className="hidden sm:inline">Save Draft</span>
           </button>
           {lastSaved && (
-            <span className="text-xs text-[#9e9e9e]">
+            <span className="text-xs text-slate-400">
               Last saved: {new Date(lastSaved).toLocaleTimeString()}
             </span>
           )}
@@ -289,7 +291,7 @@ export default function WizardNavFooter() {
             type="button"
             onClick={() => prevStep()}
             disabled={isFirst}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 border border-[#eaeaea] rounded-lg text-sm font-medium text-[#64748b] hover:bg-[#f8fafc] hover:text-[#1e293b] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <ChevronLeft size={16} />
             <span className="hidden sm:inline">Previous</span>
@@ -300,7 +302,7 @@ export default function WizardNavFooter() {
               type="button"
               onClick={handleSubmit}
               disabled={isSaving}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
               <span>{isEditing ? "Update Tour" : "Create Tour"}</span>
@@ -309,7 +311,7 @@ export default function WizardNavFooter() {
             <button
               type="button"
               onClick={handleNext}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors"
             >
               <span className="hidden sm:inline">Next</span>
               <ChevronRight size={16} />

@@ -6,12 +6,13 @@ export default function WizardProgressBar() {
   const { steps, currentStep, completedSteps } = useProductBuilderStore();
 
   return (
-    <div className="w-full min-w-[600px]">
+    <div className="w-full">
       <div className="flex items-center justify-between">
         {steps.map((step, index) => {
           const isCompleted = completedSteps.includes(index);
           const isCurrent = currentStep === index;
           const isPending = index > currentStep && !isCompleted;
+          const Icon = step.icon;
 
           return (
             <div key={step.id} className="flex flex-1 items-center">
@@ -20,20 +21,24 @@ export default function WizardProgressBar() {
                 <button
                   onClick={() => useProductBuilderStore.getState().goToStep(index)}
                   className={cn(
-                    "w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-200 border-2 cursor-pointer",
-                    isCompleted && "bg-[#044b3b] border-[#044b3b] text-white",
-                    isCurrent && "bg-white border-[#044b3b] text-[#044b3b] ring-4 ring-[#044b3b]/10",
-                    isPending && "bg-white border-[#eaeaea] text-[#9e9e9e] hover:border-[#044b3b] hover:text-[#044b3b]"
+                    "w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-300 border-2 cursor-pointer",
+                    isCompleted && "bg-emerald-600 border-emerald-600 text-white shadow-md shadow-emerald-600/20",
+                    isCurrent && "bg-white border-emerald-600 text-emerald-600 ring-4 ring-emerald-600/10 shadow-sm",
+                    isPending && "bg-white border-slate-200 text-slate-400 hover:border-emerald-600 hover:text-emerald-600 hover:shadow-sm hover:shadow-emerald-600/10"
                   )}
                 >
-                  {isCompleted ? <Check size={16} className="sm:w-[18px] sm:h-[18px]" /> : step.number}
+                  {isCompleted ? (
+                    <Check size={18} className="sm:w-5 sm:h-5" />
+                  ) : (
+                    <Icon size={18} className="sm:w-5 sm:h-5" />
+                  )}
                 </button>
                 <span
                   className={cn(
-                    "mt-2 text-[10px] sm:text-xs font-medium whitespace-nowrap",
-                    isCompleted && "text-[#044b3b]",
-                    isCurrent && "text-[#1e293b] font-semibold",
-                    isPending && "text-[#9e9e9e]"
+                    "mt-2.5 text-[10px] sm:text-xs font-medium whitespace-nowrap transition-colors duration-200",
+                    isCompleted && "text-emerald-600",
+                    isCurrent && "text-slate-800 font-semibold",
+                    isPending && "text-slate-400"
                   )}
                 >
                   {step.label}
@@ -42,11 +47,11 @@ export default function WizardProgressBar() {
 
               {/* Connector line */}
               {index < steps.length - 1 && (
-                <div className="flex-1 h-0.5 mx-1 sm:mx-2 mb-5 sm:mb-6">
+                <div className="flex-1 h-0.5 mx-2 sm:mx-3 mb-6 sm:mb-7">
                   <div
                     className={cn(
-                      "h-full transition-all duration-300",
-                      isCompleted ? "bg-[#044b3b]" : "bg-[#eaeaea]"
+                      "h-full transition-all duration-500",
+                      isCompleted ? "bg-emerald-600" : "bg-slate-200"
                     )}
                   />
                 </div>

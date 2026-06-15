@@ -1,6 +1,13 @@
-import { Plus, Trash2, DollarSign, Percent } from "lucide-react";
+import { Plus, Trash2, DollarSign, Percent, Tag } from "lucide-react";
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
 import DatePicker from "@/components/forms/DatePicker";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 const CURRENCIES = [
   { value: "USD", label: "USD ($)" },
@@ -48,14 +55,14 @@ export default function ProductPricingStep() {
       {/* Base Price & Currency */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-[#1e293b] mb-2">
+          <label className="block text-sm font-medium text-slate-800 mb-2">
             <span className="flex items-center gap-2">
-              <DollarSign size={16} className="text-[#64748b]" />
-              Base Price <span className="text-[#dc3545]">*</span>
+              <DollarSign size={16} className="text-slate-500" />
+              Base Price <span className="text-red-500">*</span>
             </span>
           </label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9e9e9e] text-sm">$</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
             <input
               type="number"
               value={pricing.basePrice}
@@ -63,51 +70,57 @@ export default function ProductPricingStep() {
               placeholder="0.00"
               min="0"
               step="0.01"
-              className={`w-full pl-8 pr-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] ${
-                errors.basePrice ? "border-[#dc3545]" : "border-[#eaeaea]"
+              className={`w-full pl-8 pr-4 py-2.5 border rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none ${
+                errors.basePrice ? "border-red-500" : "border-slate-200"
               }`}
             />
           </div>
-          {errors.basePrice && <p className="mt-1 text-xs text-[#dc3545]">{errors.basePrice}</p>}
+          {errors.basePrice && <p className="mt-1 text-xs text-red-500">{errors.basePrice}</p>}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#1e293b] mb-2">
-            Currency <span className="text-[#dc3545]">*</span>
+          <label className="block text-sm font-medium text-slate-800 mb-2">
+            Currency <span className="text-red-500">*</span>
           </label>
-          <select
+          <Select
             value={pricing.currency}
-            onChange={(e) => updateNested("pricing.currency", e.target.value)}
-            className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] bg-white focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] ${
-              errors.currency ? "border-[#dc3545]" : "border-[#eaeaea]"
-            }`}
+            onValueChange={(value) => updateNested("pricing.currency", value)}
           >
-            {CURRENCIES.map((c) => (
-              <option key={c.value} value={c.value}>{c.label}</option>
-            ))}
-          </select>
-          {errors.currency && <p className="mt-1 text-xs text-[#dc3545]">{errors.currency}</p>}
+            <SelectTrigger className={errors.currency ? "border-red-500" : ""}>
+              <SelectValue placeholder="Select currency" />
+            </SelectTrigger>
+            <SelectContent>
+              {CURRENCIES.map((c) => (
+                <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.currency && <p className="mt-1 text-xs text-red-500">{errors.currency}</p>}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#1e293b] mb-2">Pricing Model</label>
-          <select
+          <label className="block text-sm font-medium text-slate-800 mb-2">Pricing Model</label>
+          <Select
             value={pricing.pricingModel}
-            onChange={(e) => updateNested("pricing.pricingModel", e.target.value)}
-            className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] bg-white focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+            onValueChange={(value) => updateNested("pricing.pricingModel", value)}
           >
-            {PRICING_MODELS.map((m) => (
-              <option key={m.value} value={m.value}>{m.label}</option>
-            ))}
-          </select>
+            <SelectTrigger>
+              <SelectValue placeholder="Select pricing model" />
+            </SelectTrigger>
+            <SelectContent>
+              {PRICING_MODELS.map((m) => (
+                <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       {/* Pricing Schedule Dates */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-[#1e293b] mb-2">
-            Pricing Start Date <span className="text-[#dc3545]">*</span>
+          <label className="block text-sm font-medium text-slate-800 mb-2">
+            Pricing Start Date <span className="text-red-500">*</span>
           </label>
           <DatePicker
             value={pricing.startDate}
@@ -117,11 +130,11 @@ export default function ProductPricingStep() {
             error={Boolean(errors.pricingStartDate)}
             maxDate={pricing.endDate || undefined}
           />
-          {errors.pricingStartDate && <p className="mt-1 text-xs text-[#dc3545]">{errors.pricingStartDate}</p>}
+          {errors.pricingStartDate && <p className="mt-1 text-xs text-red-500">{errors.pricingStartDate}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#1e293b] mb-2">
-            Pricing End Date <span className="text-[#dc3545]">*</span>
+          <label className="block text-sm font-medium text-slate-800 mb-2">
+            Pricing End Date <span className="text-red-500">*</span>
           </label>
           <DatePicker
             value={pricing.endDate}
@@ -131,20 +144,25 @@ export default function ProductPricingStep() {
             error={Boolean(errors.pricingEndDate)}
             minDate={pricing.startDate || undefined}
           />
-          {errors.pricingEndDate && <p className="mt-1 text-xs text-[#dc3545]">{errors.pricingEndDate}</p>}
+          {errors.pricingEndDate && <p className="mt-1 text-xs text-red-500">{errors.pricingEndDate}</p>}
         </div>
       </div>
 
       {/* Pricing Tiers */}
       <div>
         {errors.pricingSchedule && (
-          <p className="mb-2 text-xs text-[#dc3545]">{errors.pricingSchedule}</p>
+          <p className="mb-2 text-xs text-red-500">{errors.pricingSchedule}</p>
         )}
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-[#1e293b]">Pricing Tiers</h3>
+          <h3 className="text-sm font-semibold text-slate-800">
+            <span className="flex items-center gap-2">
+              <Tag size={16} className="text-slate-500" />
+              Pricing Tiers
+            </span>
+          </h3>
           <button
             onClick={addTier}
-            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#044b3b] bg-[#f0fdf4] rounded-md hover:bg-[#dcfce7] transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors"
           >
             <Plus size={12} />
             Add Tier
@@ -152,57 +170,64 @@ export default function ProductPricingStep() {
         </div>
 
         <div className="space-y-3">
+          {pricing.tiers.length === 0 && (
+            <div className="p-6 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-center">
+              <Tag size={24} className="mx-auto text-slate-400 mb-2" />
+              <p className="text-sm text-slate-500">No pricing tiers defined</p>
+              <p className="text-xs text-slate-400 mt-1">Click "Add Tier" to create a pricing tier</p>
+            </div>
+          )}
           {pricing.tiers.map((tier, index) => (
-            <div key={index} className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end p-4 bg-[#f8fafc] rounded-lg border border-[#eaeaea]">
+            <div key={index} className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end p-4 bg-slate-50 rounded-xl border border-slate-200">
               <div className="sm:col-span-3">
-                <label className="block text-xs text-[#64748b] mb-1">Tier Name</label>
+                <label className="block text-xs text-slate-500 mb-1">Tier Name</label>
                 <input
                   type="text"
                   value={tier.name}
                   onChange={(e) => updateTier(index, "name", e.target.value)}
                   placeholder="e.g., Adult"
-                  className="w-full px-3 py-2 border border-[#eaeaea] rounded-md text-sm text-[#1e293b] focus:outline-none focus:ring-1 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none"
                 />
               </div>
               <div className="sm:col-span-3">
-                <label className="block text-xs text-[#64748b] mb-1">Price</label>
+                <label className="block text-xs text-slate-500 mb-1">Price</label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9e9e9e] text-sm">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
                   <input
                     type="number"
                     value={tier.price}
                     onChange={(e) => updateTier(index, "price", e.target.value === "" ? "" : Number(e.target.value))}
                     min="0"
                     step="0.01"
-                    className="w-full pl-7 pr-3 py-2 border border-[#eaeaea] rounded-md text-sm text-[#1e293b] focus:outline-none focus:ring-1 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+                    className="w-full pl-7 pr-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none"
                   />
                 </div>
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs text-[#64748b] mb-1">Min Age</label>
+                <label className="block text-xs text-slate-500 mb-1">Min Age</label>
                 <input
                   type="number"
                   value={tier.minAge}
                   onChange={(e) => updateTier(index, "minAge", Number(e.target.value))}
                   min="0"
-                  className="w-full px-3 py-2 border border-[#eaeaea] rounded-md text-sm text-[#1e293b] focus:outline-none focus:ring-1 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs text-[#64748b] mb-1">Max Age</label>
+                <label className="block text-xs text-slate-500 mb-1">Max Age</label>
                 <input
                   type="number"
                   value={tier.maxAge}
                   onChange={(e) => updateTier(index, "maxAge", Number(e.target.value))}
                   min="0"
-                  className="w-full px-3 py-2 border border-[#eaeaea] rounded-md text-sm text-[#1e293b] focus:outline-none focus:ring-1 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none"
                 />
               </div>
               <div className="sm:col-span-2 flex justify-end">
                 {pricing.tiers.length > 1 && (
                   <button
                     onClick={() => removeTier(index)}
-                    className="p-2 text-[#9e9e9e] hover:text-[#dc3545] transition-colors"
+                    className="p-2 text-slate-400 hover:text-red-500 transition-colors"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -216,7 +241,7 @@ export default function ProductPricingStep() {
       {/* Taxes & Fees */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <label className="block text-sm font-medium text-[#1e293b] mb-2">Taxes (%)</label>
+          <label className="block text-sm font-medium text-slate-800 mb-2">Taxes (%)</label>
           <div className="relative">
             <input
               type="number"
@@ -225,16 +250,16 @@ export default function ProductPricingStep() {
               placeholder="0"
               min="0"
               max="100"
-              className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
             />
-            <Percent size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9e9e9e]" />
+            <Percent size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#1e293b] mb-2">Additional Fees</label>
+          <label className="block text-sm font-medium text-slate-800 mb-2">Additional Fees</label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9e9e9e] text-sm">$</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
             <input
               type="number"
               value={pricing.fees}
@@ -242,13 +267,13 @@ export default function ProductPricingStep() {
               placeholder="0.00"
               min="0"
               step="0.01"
-              className="w-full pl-8 pr-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+              className="w-full pl-8 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#1e293b] mb-2">Commission Rate (%)</label>
+          <label className="block text-sm font-medium text-slate-800 mb-2">Commission Rate (%)</label>
           <div className="relative">
             <input
               type="number"
@@ -257,36 +282,40 @@ export default function ProductPricingStep() {
               placeholder="15"
               min="0"
               max="100"
-              className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
             />
-            <Percent size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9e9e9e]" />
+            <Percent size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
           </div>
         </div>
       </div>
 
       {/* Cancellation Policy */}
       <div>
-        <label className="block text-sm font-medium text-[#1e293b] mb-2">Cancellation Policy</label>
-        <select
+        <label className="block text-sm font-medium text-slate-800 mb-2">Cancellation Policy</label>
+        <Select
           value={product.cancellationPolicy}
-          onChange={(e) => updateProduct({ cancellationPolicy: e.target.value })}
-          className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] bg-white focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+          onValueChange={(value) => updateProduct({ cancellationPolicy: value })}
         >
-          {CANCELLATION_POLICIES.map((policy) => (
-            <option key={policy.value} value={policy.value}>{policy.label}</option>
-          ))}
-        </select>
+          <SelectTrigger>
+            <SelectValue placeholder="Select cancellation policy" />
+          </SelectTrigger>
+          <SelectContent>
+            {CANCELLATION_POLICIES.map((policy) => (
+              <SelectItem key={policy.value} value={policy.value}>{policy.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Refund Rules */}
       <div>
-        <label className="block text-sm font-medium text-[#1e293b] mb-2">Additional Refund Rules</label>
+        <label className="block text-sm font-medium text-slate-800 mb-2">Additional Refund Rules</label>
         <textarea
           value={product.refundRules}
           onChange={(e) => updateProduct({ refundRules: e.target.value })}
           rows={3}
           placeholder="Any specific refund conditions or exceptions..."
-          className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] resize-none"
+          className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none"
         />
       </div>
     </div>

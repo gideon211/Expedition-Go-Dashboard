@@ -1,6 +1,13 @@
 import { Plus, Trash2, Clock, Calendar } from "lucide-react";
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
 import DatePicker from "@/components/forms/DatePicker";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 const DAYS = [
   { value: "monday", label: "Mon" },
@@ -66,39 +73,39 @@ export default function ProductScheduleStep() {
     <div className="space-y-6">
       {/* Operating Days */}
       <div>
-        <label className="block text-sm font-medium text-[#1e293b] mb-3">
-          Operating Days <span className="text-[#dc3545]">*</span>
+        <label className="block text-sm font-medium text-slate-800 mb-3">
+          Operating Days <span className="text-red-500">*</span>
         </label>
         <div className="flex flex-wrap gap-2">
           {DAYS.map((day) => (
             <button
               key={day.value}
               onClick={() => toggleDay(day.value)}
-              className={`flex-1 min-w-[3rem] py-2.5 px-2 sm:px-3 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+              className={`flex-1 min-w-[3rem] py-2.5 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-medium transition-colors ${
                 schedule.operatingDays.includes(day.value)
-                  ? "bg-[#044b3b] text-white"
-                  : "bg-[#f8fafc] text-[#64748b] border border-[#eaeaea] hover:bg-[#f0fdf4] hover:text-[#044b3b]"
+                  ? "bg-emerald-600 text-white"
+                  : "bg-slate-50 text-slate-500 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600"
               }`}
             >
               {day.label}
             </button>
           ))}
         </div>
-        {errors.operatingDays && <p className="mt-1 text-xs text-[#dc3545]">{errors.operatingDays}</p>}
+        {errors.operatingDays && <p className="mt-1 text-xs text-red-500">{errors.operatingDays}</p>}
       </div>
 
       {/* Time Slots */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-[#1e293b]">
+          <h3 className="text-sm font-semibold text-slate-800">
             <span className="flex items-center gap-2">
-              <Clock size={16} className="text-[#64748b]" />
+              <Clock size={16} className="text-slate-500" />
               Time Slots
             </span>
           </h3>
           <button
             onClick={addTimeSlot}
-            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#044b3b] bg-[#f0fdf4] rounded-md hover:bg-[#dcfce7] transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors"
           >
             <Plus size={12} />
             Add Slot
@@ -106,33 +113,40 @@ export default function ProductScheduleStep() {
         </div>
 
         <div className="space-y-3">
+          {schedule.timeSlots.length === 0 && (
+            <div className="p-6 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-center">
+              <Clock size={24} className="mx-auto text-slate-400 mb-2" />
+              <p className="text-sm text-slate-500">No time slots defined</p>
+              <p className="text-xs text-slate-400 mt-1">Click "Add Slot" to create a time slot</p>
+            </div>
+          )}
           {schedule.timeSlots.map((slot, index) => (
-            <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-[#f8fafc] rounded-lg border border-[#eaeaea]">
-              <span className="text-sm text-[#64748b] w-8">{index + 1}.</span>
+            <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <span className="text-sm text-slate-500 w-8">{index + 1}.</span>
               <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-[#64748b] mb-1">Start Time</label>
+                  <label className="block text-xs text-slate-500 mb-1">Start Time</label>
                   <input
                     type="time"
                     value={slot.startTime}
                     onChange={(e) => updateTimeSlot(index, "startTime", e.target.value)}
-                    className="w-full px-3 py-2 border border-[#eaeaea] rounded-md text-sm text-[#1e293b] focus:outline-none focus:ring-1 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-[#64748b] mb-1">End Time</label>
+                  <label className="block text-xs text-slate-500 mb-1">End Time</label>
                   <input
                     type="time"
                     value={slot.endTime}
                     onChange={(e) => updateTimeSlot(index, "endTime", e.target.value)}
-                    className="w-full px-3 py-2 border border-[#eaeaea] rounded-md text-sm text-[#1e293b] focus:outline-none focus:ring-1 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none"
                   />
                 </div>
               </div>
               {schedule.timeSlots.length > 1 && (
                 <button
                   onClick={() => removeTimeSlot(index)}
-                  className="p-2 text-[#9e9e9e] hover:text-[#dc3545] transition-colors"
+                  className="p-2 text-slate-400 hover:text-red-500 transition-colors"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -144,43 +158,47 @@ export default function ProductScheduleStep() {
 
       {/* Seasonal Availability */}
       <div>
-        <label className="block text-sm font-medium text-[#1e293b] mb-2">
+        <label className="block text-sm font-medium text-slate-800 mb-2">
           <span className="flex items-center gap-2">
-            <Calendar size={16} className="text-[#64748b]" />
+            <Calendar size={16} className="text-slate-500" />
             Seasonal Availability
           </span>
         </label>
-        <select
+        <Select
           value={schedule.seasonalAvailability}
-          onChange={(e) => updateNested("schedule.seasonalAvailability", e.target.value)}
-          className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] bg-white focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+          onValueChange={(value) => updateNested("schedule.seasonalAvailability", value)}
         >
-          {SEASONS.map((season) => (
-            <option key={season.value} value={season.value}>{season.label}</option>
-          ))}
-        </select>
+          <SelectTrigger>
+            <SelectValue placeholder="Select season" />
+          </SelectTrigger>
+          <SelectContent>
+            {SEASONS.map((season) => (
+              <SelectItem key={season.value} value={season.value}>{season.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Capacity & Cutoff */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-[#1e293b] mb-2">Capacity Per Slot</label>
+          <label className="block text-sm font-medium text-slate-800 mb-2">Capacity Per Slot</label>
           <input
             type="number"
             value={schedule.capacityPerSlot}
             onChange={(e) => updateNested("schedule.capacityPerSlot", Number(e.target.value))}
             min="1"
-            className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#1e293b] mb-2">Booking Cutoff (Hours Before)</label>
+          <label className="block text-sm font-medium text-slate-800 mb-2">Booking Cutoff (Hours Before)</label>
           <input
             type="number"
             value={schedule.bookingCutoffHours}
             onChange={(e) => updateNested("schedule.bookingCutoffHours", Number(e.target.value))}
             min="0"
-            className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none"
           />
         </div>
       </div>
@@ -188,10 +206,15 @@ export default function ProductScheduleStep() {
       {/* Blackout Dates */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-[#1e293b]">Blackout Dates</h3>
+          <h3 className="text-sm font-semibold text-slate-800">
+            <span className="flex items-center gap-2">
+              <Calendar size={16} className="text-slate-500" />
+              Blackout Dates
+            </span>
+          </h3>
           <button
             onClick={addBlackoutDate}
-            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#044b3b] bg-[#f0fdf4] rounded-md hover:bg-[#dcfce7] transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors"
           >
             <Plus size={12} />
             Add Date
@@ -209,14 +232,14 @@ export default function ProductScheduleStep() {
               />
               <button
                 onClick={() => removeBlackoutDate(index)}
-                className="p-2 text-[#9e9e9e] hover:text-[#dc3545] transition-colors"
+                className="p-2 text-slate-400 hover:text-red-500 transition-colors"
               >
                 <Trash2 size={16} />
               </button>
             </div>
           ))}
           {schedule.blackoutDates.length === 0 && (
-            <p className="text-sm text-[#64748b] italic">No blackout dates set</p>
+            <p className="text-sm text-slate-400 italic">No blackout dates set</p>
           )}
         </div>
       </div>

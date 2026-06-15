@@ -64,7 +64,7 @@ export default function ProductContentStep() {
         return (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-[#1e293b] mb-2">
+              <label className="block text-sm font-medium text-slate-800 mb-2">
                 Meeting Point Instructions
               </label>
               <textarea
@@ -72,16 +72,16 @@ export default function ProductContentStep() {
                 onChange={(e) => updateNested("content.meetingInstructions", e.target.value)}
                 rows={4}
                 placeholder="Describe where and how customers will meet you or your guide..."
-                className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] resize-none ${
-                  errors.meetingInstructions ? "border-[#dc3545]" : "border-[#eaeaea]"
+                className={`w-full px-4 py-2.5 border rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none ${
+                  errors.meetingInstructions ? "border-red-500" : "border-slate-200"
                 }`}
               />
               {errors.meetingInstructions && (
-                <p className="mt-1 text-xs text-[#dc3545]">{errors.meetingInstructions}</p>
+                <p className="mt-1 text-xs text-red-500">{errors.meetingInstructions}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#1e293b] mb-2">
+              <label className="block text-sm font-medium text-slate-800 mb-2">
                 Pickup Description
               </label>
               <textarea
@@ -89,7 +89,7 @@ export default function ProductContentStep() {
                 onChange={(e) => updateNested("content.pickupDescription", e.target.value)}
                 rows={4}
                 placeholder="Describe pickup services, locations, and any restrictions..."
-                className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] resize-none"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none"
               />
             </div>
           </div>
@@ -105,13 +105,13 @@ export default function ProductContentStep() {
             />
 
             <div>
-              <label className="block text-sm font-medium text-[#1e293b] mb-2">
+              <label className="block text-sm font-medium text-slate-800 mb-2">
                 <span className="flex items-center gap-2">
-                  <Star size={16} className="text-[#64748b]" />
+                  <Star size={16} className="text-slate-500" />
                   Tour Highlights
                 </span>
               </label>
-              <p className="text-xs text-[#64748b] mb-2">
+              <p className="text-xs text-slate-500 mb-2">
                 Add the key selling points of your tour. Enter one highlight per line.
               </p>
               <textarea
@@ -119,22 +119,24 @@ export default function ProductContentStep() {
                 onChange={(e) => handleHighlightsChange(e.target.value)}
                 rows={6}
                 placeholder={"Visit local markets and cultural sites\nGuided nature walk through scenic trails\nTraditional cooking experience\nPhoto opportunities at viewpoints"}
-                className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] resize-none ${
-                  errors.highlights ? "border-[#dc3545]" : "border-[#eaeaea]"
+                className={`w-full px-4 py-2.5 border rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none ${
+                  errors.highlights ? "border-red-500" : "border-slate-200"
                 }`}
               />
               {errors.highlights && (
-                <p className="mt-1 text-xs text-[#dc3545]">{errors.highlights}</p>
+                <p className="mt-1 text-xs text-red-500">{errors.highlights}</p>
               )}
-              {highlights.length > 0 && (
-                <ul className="mt-3 space-y-1.5 rounded-lg border border-[#eaeaea] bg-[#f8fafc] p-3">
+              {highlights.length > 0 ? (
+                <ul className="mt-3 space-y-1.5 rounded-xl border border-slate-200 bg-slate-50 p-3">
                   {highlights.map((item, index) => (
-                    <li key={`${item}-${index}`} className="flex items-start gap-2 text-sm text-[#475569]">
-                      <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#044b3b]" />
+                    <li key={`${item}-${index}`} className="flex items-start gap-2 text-sm text-slate-600">
+                      <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-600" />
                       <span>{item}</span>
                     </li>
                   ))}
                 </ul>
+              ) : (
+                <p className="mt-3 text-sm text-slate-400 italic">No highlights added yet. Enter them above.</p>
               )}
             </div>
           </div>
@@ -144,27 +146,30 @@ export default function ProductContentStep() {
         return (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#1e293b] mb-3">
+              <label className="block text-sm font-medium text-slate-800 mb-3">
                 Languages Offered
               </label>
               {errors.languages && (
-                <p className="mb-2 text-xs text-[#dc3545]">{errors.languages}</p>
+                <p className="mb-2 text-xs text-red-500">{errors.languages}</p>
               )}
               <div className="flex flex-wrap gap-2">
                 {LANGUAGES.map((lang) => (
                   <button
                     key={lang}
                     onClick={() => toggleLanguage(lang)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
                       content.languages.includes(lang)
-                        ? "bg-[#044b3b] text-white"
-                        : "bg-[#f8fafc] text-[#64748b] border border-[#eaeaea] hover:bg-[#f0fdf4] hover:text-[#044b3b]"
+                        ? "bg-emerald-600 text-white"
+                        : "bg-slate-50 text-slate-500 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600"
                     }`}
                   >
                     {lang}
                   </button>
                 ))}
               </div>
+              {(content.languages || []).length === 0 && (
+                <p className="mt-3 text-sm text-slate-400 italic">No languages selected. Select at least one above.</p>
+              )}
             </div>
           </div>
         );
@@ -195,10 +200,10 @@ export default function ProductContentStep() {
         return (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#1e293b] mb-2">
+              <label className="block text-sm font-medium text-slate-800 mb-2">
                 What makes your product unique?
               </label>
-              <p className="text-xs text-[#64748b] mb-2">
+              <p className="text-xs text-slate-500 mb-2">
                 Describe what sets your experience apart from others. This will be shown prominently on your product page.
               </p>
               <textarea
@@ -206,12 +211,12 @@ export default function ProductContentStep() {
                 onChange={(e) => updateNested("content.uniqueSellingPoints", e.target.value)}
                 rows={6}
                 placeholder="Our tour is the only one that offers..."
-                className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] resize-none ${
-                  errors.uniqueSellingPoints ? "border-[#dc3545]" : "border-[#eaeaea]"
+                className={`w-full px-4 py-2.5 border rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none ${
+                  errors.uniqueSellingPoints ? "border-red-500" : "border-slate-200"
                 }`}
               />
               {errors.uniqueSellingPoints && (
-                <p className="mt-1 text-xs text-[#dc3545]">{errors.uniqueSellingPoints}</p>
+                <p className="mt-1 text-xs text-red-500">{errors.uniqueSellingPoints}</p>
               )}
             </div>
           </div>
@@ -220,26 +225,18 @@ export default function ProductContentStep() {
       case "travelerInfo":
         return (
           <div className="space-y-6">
+            <TagList
+              label="What to Bring"
+              accent="green"
+              items={content.whatToBring}
+              placeholder="e.g. Comfortable walking shoes"
+              onChange={(items) => updateNested("content.whatToBring", items)}
+            />
             <div>
-              <label className="block text-sm font-medium text-[#1e293b] mb-2">
-                What to Bring
-              </label>
-              <p className="text-xs text-[#64748b] mb-2">
-                List items travelers should bring on the experience (one per line).
-              </p>
-              <textarea
-                value={content.whatToBring.join("\n")}
-                onChange={(e) => updateNested("content.whatToBring", e.target.value.split("\n").filter(Boolean))}
-                rows={4}
-                placeholder="Comfortable walking shoes\nWeather-appropriate clothing\nCamera or smartphone"
-                className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] resize-none"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#1e293b] mb-2">
+              <label className="block text-sm font-medium text-slate-800 mb-2">
                 Additional Information
               </label>
-              <p className="text-xs text-[#64748b] mb-2">
+              <p className="text-xs text-slate-500 mb-2">
                 Any other important information travelers should know before booking.
               </p>
               <textarea
@@ -247,14 +244,14 @@ export default function ProductContentStep() {
                 onChange={(e) => updateNested("content.additionalInfo", e.target.value)}
                 rows={4}
                 placeholder="Minimum age requirements, physical fitness level..."
-                className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] resize-none"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#1e293b] mb-2">
+              <label className="block text-sm font-medium text-slate-800 mb-2">
                 Traveler Requirements
               </label>
-              <p className="text-xs text-[#64748b] mb-2">
+              <p className="text-xs text-slate-500 mb-2">
                 Specific requirements or restrictions for travelers (e.g., age, physical ability, documents).
               </p>
               <textarea
@@ -262,7 +259,7 @@ export default function ProductContentStep() {
                 onChange={(e) => updateNested("content.travelerRequirements", e.target.value)}
                 rows={4}
                 placeholder="Minimum age: 12 years old. Moderate fitness level required..."
-                className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] resize-none"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none"
               />
             </div>
           </div>
@@ -277,13 +274,13 @@ export default function ProductContentStep() {
     <div className="flex flex-col lg:flex-row gap-6">
       {/* Sidebar Navigation */}
       <div className="lg:w-72 flex-shrink-0">
-        <div className="bg-white rounded-lg border border-[#eaeaea] overflow-hidden">
-          <div className="px-4 py-3 bg-[#f8fafc] border-b border-[#eaeaea]">
-            <h3 className="text-xs font-bold text-[#1e293b] uppercase tracking-wider">
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+          <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
+            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
               Product Content
             </h3>
           </div>
-          <nav className="divide-y divide-[#eaeaea]">
+          <nav className="divide-y divide-slate-200">
             {CONTENT_SECTIONS.map((section) => {
               const Icon = section.icon;
               const isActive = activeSection === section.id;
@@ -294,19 +291,19 @@ export default function ProductContentStep() {
                   onClick={() => setActiveSection(section.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition-colors ${
                     isActive
-                      ? "bg-[#f0fdf4] text-[#044b3b] font-medium"
-                      : "text-[#1e293b] hover:bg-[#f8fafc]"
+                      ? "bg-emerald-50 text-emerald-600 font-medium"
+                      : "text-slate-800 hover:bg-slate-50"
                   }`}
                 >
-                  <div className={`flex-shrink-0 ${isActive ? "text-[#044b3b]" : "text-[#64748b]"}`}>
+                  <div className={`flex-shrink-0 ${isActive ? "text-emerald-600" : "text-slate-500"}`}>
                     <Icon size={18} />
                   </div>
                   <span className="flex-1">{section.label}</span>
                   {isComplete && (
-                    <Check size={16} className="text-[#00d67f] flex-shrink-0" />
+                    <Check size={16} className="text-emerald-500 flex-shrink-0" />
                   )}
                   {!isComplete && isActive && (
-                    <ChevronRight size={16} className="text-[#044b3b] flex-shrink-0" />
+                    <ChevronRight size={16} className="text-emerald-600 flex-shrink-0" />
                   )}
                 </button>
               );
@@ -317,9 +314,9 @@ export default function ProductContentStep() {
 
       {/* Content Area */}
       <div className="flex-1 min-w-0">
-        <div className="bg-white rounded-lg border border-[#eaeaea] p-4 md:p-6">
-          <div className="mb-4 pb-3 border-b border-[#eaeaea]">
-            <h3 className="text-base font-semibold text-[#1e293b]">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 shadow-sm">
+          <div className="mb-4 pb-3 border-b border-slate-200">
+            <h3 className="text-base font-semibold text-slate-800">
               {CONTENT_SECTIONS.find((s) => s.id === activeSection)?.label}
             </h3>
           </div>
@@ -384,37 +381,37 @@ function ItineraryBuilder({ items, onChange, error }) {
 
   return (
     <div>
-      <label className="block text-sm font-medium text-[#1e293b] mb-2">Full Itinerary</label>
-      <p className="text-xs text-[#64748b] mb-3">Add time, title, and description for each itinerary stop.</p>
+      <label className="block text-sm font-medium text-slate-800 mb-2">Full Itinerary</label>
+      <p className="text-xs text-slate-500 mb-3">Add time, title, and description for each itinerary stop.</p>
 
-      {error && <p className="mb-3 text-xs text-[#dc3545]">{error}</p>}
+      {error && <p className="mb-3 text-xs text-red-500">{error}</p>}
 
       {/* Existing items */}
       {items.length > 0 && (
         <div className="space-y-3 mb-4">
           {items.map((item, index) => (
-            <div key={index} className="flex gap-3 p-3 bg-[#f8fafc] border border-[#eaeaea] rounded-lg">
+            <div key={index} className="flex gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
               <div className="flex flex-col items-center">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#044b3b] flex-shrink-0 mt-1.5" />
-                {index < items.length - 1 && <div className="w-0.5 flex-1 bg-[#eaeaea] my-1" />}
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-600 flex-shrink-0 mt-1.5" />
+                {index < items.length - 1 && <div className="w-0.5 flex-1 bg-slate-200 my-1" />}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-0.5">
                     {(item.day || item.time) && (
-                      <span className="text-xs font-semibold text-[#044b3b] uppercase tracking-wider">
+                      <span className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">
                         {[item.day, item.time].filter(Boolean).join(" — ")}
                       </span>
                     )}
                     {item.title && (
-                      <p className="text-sm font-medium text-[#1e293b]">{item.title}</p>
+                      <p className="text-sm font-medium text-slate-800">{item.title}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
                       onClick={() => startEdit(index)}
-                      className="p-1.5 text-[#9e9e9e] hover:text-[#044b3b] transition-colors flex-shrink-0"
+                      className="p-1.5 text-slate-400 hover:text-emerald-600 transition-colors flex-shrink-0"
                       aria-label="Edit itinerary item"
                     >
                       <Pencil size={13} />
@@ -422,7 +419,7 @@ function ItineraryBuilder({ items, onChange, error }) {
                     <button
                       type="button"
                       onClick={() => removeItem(index)}
-                      className="p-1.5 text-[#9e9e9e] hover:text-[#dc3545] transition-colors flex-shrink-0"
+                      className="p-1.5 text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"
                       aria-label="Remove itinerary item"
                     >
                       <X size={13} />
@@ -430,7 +427,7 @@ function ItineraryBuilder({ items, onChange, error }) {
                   </div>
                 </div>
                 {item.description && (
-                  <p className="text-sm text-[#64748b] mt-0.5">{item.description}</p>
+                  <p className="text-sm text-slate-500 mt-0.5">{item.description}</p>
                 )}
               </div>
             </div>
@@ -438,15 +435,23 @@ function ItineraryBuilder({ items, onChange, error }) {
         </div>
       )}
 
+      {items.length === 0 && !isEditing && (
+        <div className="mb-4 p-6 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-center">
+          <Clock size={24} className="mx-auto text-slate-400 mb-2" />
+          <p className="text-sm text-slate-500">No itinerary stops added yet</p>
+          <p className="text-xs text-slate-400 mt-1">Add your first stop below</p>
+        </div>
+      )}
+
       {/* Add / Edit form */}
-      <div className="border border-[#eaeaea] rounded-lg p-4 bg-white space-y-3">
+      <div className="border border-slate-200 rounded-xl p-4 bg-white space-y-3 shadow-sm">
         {isEditing && (
-          <div className="flex items-center justify-between pb-2 border-b border-[#eaeaea]">
-            <span className="text-xs font-semibold text-[#044b3b] uppercase tracking-wider">Editing Item {editingIndex + 1}</span>
+          <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+            <span className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Editing Item {editingIndex + 1}</span>
             <button
               type="button"
               onClick={resetForm}
-              className="text-xs text-[#64748b] hover:text-[#1e293b] transition-colors"
+              className="text-xs text-slate-500 hover:text-slate-800 transition-colors"
             >
               Cancel
             </button>
@@ -454,7 +459,7 @@ function ItineraryBuilder({ items, onChange, error }) {
         )}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div>
-            <label className="block text-xs font-medium text-[#64748b] mb-1">
+            <label className="block text-xs font-medium text-slate-500 mb-1">
               <span className="flex items-center gap-1">
                 <Clock size={12} />
                 Day
@@ -466,41 +471,41 @@ function ItineraryBuilder({ items, onChange, error }) {
               onChange={(e) => setDay(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="e.g. Day 1"
-              className="w-full px-3 py-2 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#64748b] mb-1">Time</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Time</label>
             <input
               type="text"
               value={time}
               onChange={(e) => setTime(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="e.g. 09:00"
-              className="w-full px-3 py-2 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-xs font-medium text-[#64748b] mb-1">Title</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Title</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="e.g. Morning Game Drive"
-              className="w-full px-3 py-2 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
             />
           </div>
         </div>
         <div>
-          <label className="block text-xs font-medium text-[#64748b] mb-1">Description</label>
+          <label className="block text-xs font-medium text-slate-500 mb-1">Description</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             onKeyDown={handleKeyDown}
             rows={2}
             placeholder="Describe what happens at this stop..."
-            className="w-full px-3 py-2 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] resize-none"
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none"
           />
         </div>
         <div className="flex justify-end gap-2">
@@ -508,7 +513,7 @@ function ItineraryBuilder({ items, onChange, error }) {
             <button
               type="button"
               onClick={resetForm}
-              className="flex items-center gap-1.5 px-4 py-2 border border-[#eaeaea] text-[#64748b] rounded-lg text-sm font-medium hover:bg-[#f8fafc] transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 border border-slate-200 text-slate-500 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors"
             >
               <X size={16} />
               Cancel
@@ -518,7 +523,7 @@ function ItineraryBuilder({ items, onChange, error }) {
             type="button"
             onClick={saveItem}
             disabled={!title.trim() && !description.trim()}
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isEditing ? <Pencil size={16} /> : <Plus size={16} />}
             {isEditing ? "Save" : "Add Itinerary Item"}
@@ -529,32 +534,14 @@ function ItineraryBuilder({ items, onChange, error }) {
   );
 }
 
-const accentColors = {
-  green: {
-    bg: "bg-[#f0fdf4]",
-    border: "border-[#bbf7d0]",
-    text: "text-[#166534]",
-    chipBg: "bg-white",
-    chipBorder: "border-[#e0f2fe]",
-    chipText: "text-[#1e293b]",
-    hoverBg: "hover:bg-[#dcfce7]",
-    removeHover: "hover:text-[#dc3545]",
-  },
-  red: {
-    bg: "bg-[#fef2f2]",
-    border: "border-[#fecaca]",
-    text: "text-[#991b1b]",
-    chipBg: "bg-white",
-    chipBorder: "border-[#fef2f2]",
-    chipText: "text-[#1e293b]",
-    hoverBg: "hover:bg-[#fee2e2]",
-    removeHover: "hover:text-[#dc3545]",
-  },
-};
-
 function TagList({ label, items, placeholder, onChange, accent = "green" }) {
   const [inputValue, setInputValue] = useState("");
-  const colors = accentColors[accent];
+  const isGreen = accent === "green";
+
+  const accentColor = isGreen ? "emerald" : "red";
+  const accentBg = isGreen ? "bg-emerald-50" : "bg-red-50";
+  const accentBorder = isGreen ? "border-emerald-200" : "border-red-200";
+  const accentRing = isGreen ? "focus:ring-emerald-600/20 focus:border-emerald-600" : "focus:ring-red-500/20 focus:border-red-500";
 
   const addItem = () => {
     const trimmed = inputValue.trim();
@@ -576,59 +563,90 @@ function TagList({ label, items, placeholder, onChange, accent = "green" }) {
   };
 
   return (
-    <div className={`rounded-xl border ${colors.border} ${colors.bg} p-6`}>
-      <div className="flex items-center justify-between mb-5">
-        <h3 className="text-sm font-semibold text-[#1e293b]">{label}</h3>
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className={`px-5 py-3.5 border-b border-slate-100 ${isGreen ? "" : ""}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className={`w-2 h-2 rounded-full ${isGreen ? "bg-emerald-500" : "bg-red-500"}`} />
+            <h3 className="text-sm font-semibold text-slate-800">{label}</h3>
+          </div>
+          {items.length > 0 && (
+            <span className={`inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full text-[11px] font-semibold ${
+              isGreen ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+            }`}>
+              {items.length}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="p-5">
+        {/* Input row */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={placeholder}
+              className={`w-full px-4 py-2.5 border rounded-xl text-sm text-slate-800 placeholder:text-slate-400 bg-white focus:outline-none ${accentRing} ${
+                inputValue.trim() ? "border-slate-300" : "border-slate-200"
+              }`}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={addItem}
+            disabled={!inputValue.trim()}
+            className="flex items-center justify-center gap-1.5 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+          >
+            <Plus size={16} />
+            <span>Add</span>
+          </button>
+        </div>
+
+        {/* Items list */}
         {items.length > 0 && (
-          <span className={`inline-flex items-center justify-center min-w-[24px] h-[24px] px-1.5 rounded-full text-[11px] font-semibold ${colors.text} ${colors.hoverBg}`}>
-            {items.length}
-          </span>
+          <div className="mt-4 space-y-1.5">
+            {items.map((item, index) => (
+              <div
+                key={`${item}-${index}`}
+                className={`flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl border transition-all hover:shadow-sm group ${
+                  isGreen ? "border-emerald-100 bg-emerald-50/30 hover:border-emerald-200 hover:bg-emerald-50/60" : "border-red-100 bg-red-50/30 hover:border-red-200 hover:bg-red-50/60"
+                }`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isGreen ? "bg-emerald-400" : "bg-red-400"}`} />
+                  <span className="text-sm text-slate-700 truncate">{item}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeItem(index)}
+                  className="flex-shrink-0 p-1 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Empty state */}
+        {items.length === 0 && (
+          <div className="mt-4 flex flex-col items-center justify-center py-6 px-4 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2.5 ${
+              isGreen ? "bg-emerald-100" : "bg-red-100"
+            }`}>
+              <Check size={18} className={isGreen ? "text-emerald-500" : "text-red-500"} />
+            </div>
+            <p className="text-sm text-slate-500 text-center">No items added yet</p>
+            <p className="text-xs text-slate-400 mt-0.5">Type above and press Enter or click Add</p>
+          </div>
         )}
       </div>
-
-      <div className="flex flex-col sm:flex-row gap-2">
-        <input
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className="w-full px-4 py-3 bg-white border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] transition-shadow"
-        />
-        <button
-          type="button"
-          onClick={addItem}
-          disabled={!inputValue.trim()}
-          className="sm:self-start flex items-center justify-center gap-1.5 px-6 py-3 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
-        >
-          <Plus size={16} />
-          <span>Add</span>
-        </button>
-      </div>
-
-      {items.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-2">
-          {items.map((item, index) => (
-            <span
-              key={`${item}-${index}`}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 ${colors.chipBg} text-[#1e293b] border ${colors.chipBorder} rounded-lg text-sm shadow-sm transition-shadow hover:shadow-md`}
-            >
-              <span className="max-w-[240px] truncate">{item}</span>
-              <button
-                type="button"
-                onClick={() => removeItem(index)}
-                className={`flex-shrink-0 text-[#9e9e9e] ${colors.removeHover} transition-colors ml-0.5`}
-              >
-                <X size={14} />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-
-      {items.length === 0 && (
-        <p className="text-xs text-[#9e9e9e] mt-3">No items added yet. Type above and press Enter or click Add.</p>
-      )}
     </div>
   );
 }

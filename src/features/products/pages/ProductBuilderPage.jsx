@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { RotateCcw, X, Loader2, AlertCircle } from "lucide-react";
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
 import { getMyProduct } from "@/features/products/api";
@@ -309,8 +310,8 @@ export default function ProductBuilderPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 size={32} className="animate-spin text-[#044b3b]" />
-          <p className="text-sm text-[#64748b]">Loading product...</p>
+          <Loader2 size={32} className="animate-spin text-emerald-600" />
+          <p className="text-sm text-slate-500">Loading product...</p>
         </div>
       </div>
     );
@@ -320,13 +321,13 @@ export default function ProductBuilderPage() {
     return (
       <div className="p-4 md:p-6">
         <div className="flex flex-col items-center justify-center min-h-[400px]">
-          <div className="bg-[#fef2f2] border border-[#fca5a5] rounded-lg p-6 max-w-md text-center">
-            <AlertCircle size={40} className="text-[#dc2626] mx-auto mb-3" />
-            <h2 className="text-lg font-semibold text-[#991b1b] mb-2">Failed to Load Product</h2>
-            <p className="text-sm text-[#b91c1c] mb-4">{productError}</p>
+          <div className="bg-red-50 border border-red-300 rounded-xl p-6 max-w-md text-center shadow-sm">
+            <AlertCircle size={40} className="text-red-600 mx-auto mb-3" />
+            <h2 className="text-lg font-semibold text-red-800 mb-2">Failed to Load Product</h2>
+            <p className="text-sm text-red-700 mb-4">{productError}</p>
             <button
               onClick={() => navigate("/products")}
-              className="px-4 py-2 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
+              className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors"
             >
               Back to Products
             </button>
@@ -342,25 +343,29 @@ export default function ProductBuilderPage() {
     <div className="p-4 md:p-6">
       {/* Draft Restore Banner */}
       {showRestoreBanner && (
-        <div className="mb-4 p-4 bg-[#fffbeb] border border-[#ffc400] rounded-lg flex items-start gap-3">
-          <RotateCcw size={18} className="text-[#b45309] mt-0.5 flex-shrink-0" />
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 p-4 bg-amber-50 border border-amber-400 rounded-xl flex items-start gap-3 shadow-sm"
+        >
+          <RotateCcw size={18} className="text-amber-700 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-[#1e293b]">
+            <p className="text-sm font-medium text-slate-800">
               You have an unsaved draft
             </p>
-            <p className="text-xs text-[#64748b] mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Would you like to continue where you left off? All your inputs are preserved.
             </p>
             <div className="flex items-center gap-2 mt-2">
               <button
                 onClick={handleRestoreDraft}
-                className="px-3 py-1.5 bg-[#044b3b] text-white rounded-md text-xs font-medium hover:bg-[#033629] transition-colors"
+                className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 transition-colors"
               >
                 Continue Editing
               </button>
               <button
                 onClick={handleDismissBanner}
-                className="px-3 py-1.5 border border-[#eaeaea] rounded-md text-xs font-medium text-[#64748b] hover:bg-[#f8fafc] transition-colors"
+                className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-50 transition-colors"
               >
                 Start New
               </button>
@@ -368,28 +373,38 @@ export default function ProductBuilderPage() {
           </div>
           <button
             onClick={() => setShowRestoreBanner(false)}
-            className="text-[#9e9e9e] hover:text-[#64748b]"
+            className="text-slate-400 hover:text-slate-500"
             aria-label="Dismiss"
           >
             <X size={16} />
           </button>
-        </div>
+        </motion.div>
       )}
 
       {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-xl md:text-2xl font-bold text-[#1e293b]">
-          {id && id !== "new" ? "Edit Product" : "Create New Product"}
-        </h1>
-        <p className="text-sm text-[#64748b] mt-1">
-          Step {currentStep + 1} of {STEPS.length}: {STEPS[currentStep]?.label}
-        </p>
+      <div className="flex items-start gap-3 mb-6 max-w-5xl mx-auto">
+        <div className="w-1 h-10 bg-gradient-to-b from-emerald-500 to-emerald-300 rounded-full flex-shrink-0" />
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-800">
+            {id && id !== "new" ? "Edit Product" : "Create New Product"}
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Step {currentStep + 1} of {STEPS.length}: {STEPS[currentStep]?.label}
+          </p>
+        </div>
       </div>
 
       {/* Wizard */}
-      <WizardStepLayout title={STEPS[currentStep]?.label} description={STEPS[currentStep]?.description}>
-        {CurrentStepComponent && <CurrentStepComponent />}
-      </WizardStepLayout>
+      <motion.div
+        key={currentStep}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+      >
+        <WizardStepLayout title={STEPS[currentStep]?.label} description={STEPS[currentStep]?.description}>
+          {CurrentStepComponent && <CurrentStepComponent />}
+        </WizardStepLayout>
+      </motion.div>
     </div>
   );
 }

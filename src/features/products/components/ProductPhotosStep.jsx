@@ -85,18 +85,18 @@ export default function ProductPhotosStep() {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={handleClickUpload}
-        className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
+        className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${
           isDragOver
-            ? "border-[#044b3b] bg-[#f0fdf4]"
-            : "border-[#eaeaea] bg-[#f8fafc] hover:border-[#044b3b] hover:bg-[#f0fdf4]/50"
+            ? "border-emerald-600 bg-emerald-50"
+            : "border-slate-200 bg-slate-50 hover:border-emerald-600 hover:bg-emerald-50/50"
         }`}
       >
-        <Upload size={40} className="mx-auto text-[#9e9e9e] mb-3" />
-        <p className="text-sm font-medium text-[#1e293b] mb-1">
+        <Upload size={40} className="mx-auto text-slate-400 mb-3" />
+        <p className="text-sm font-medium text-slate-800 mb-1">
           Drag and drop photos here, or{" "}
-          <span className="text-[#044b3b] hover:underline">browse</span> to choose files
+          <span className="text-emerald-600 hover:underline">browse</span> to choose files
         </p>
-        <p className="text-xs text-[#64748b]">Supports JPG, PNG, WebP. Max 5MB per image.</p>
+        <p className="text-xs text-slate-500">Supports JPG, PNG, WebP. Max 5MB per image.</p>
         <input
           ref={fileInputRef}
           type="file"
@@ -111,8 +111,8 @@ export default function ProductPhotosStep() {
       {product.photos.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-[#1e293b]">Photos ({product.photos.length})</h3>
-            <p className="text-xs text-[#64748b]">
+            <h3 className="text-sm font-semibold text-slate-800">Photos ({product.photos.length})</h3>
+            <p className="text-xs text-slate-500">
               {product.heroImage ? "Hero image selected" : "Click star to set hero image"}
             </p>
           </div>
@@ -121,11 +121,11 @@ export default function ProductPhotosStep() {
             {product.photos.map((photo) => (
               <div
                 key={photo.id}
-                className={`group relative rounded-lg border overflow-hidden ${
-                  product.heroImage === photo.id ? "border-[#044b3b] ring-2 ring-[#044b3b]/20" : "border-[#eaeaea]"
+                className={`group relative rounded-xl border overflow-hidden ${
+                  product.heroImage === photo.id ? "border-emerald-600 ring-2 ring-emerald-600/20" : "border-slate-200"
                 }`}
               >
-                <div className="aspect-[4/3] bg-[#f8fafc] relative">
+                <div className="aspect-[4/3] bg-slate-50 relative">
                   <img
                     src={photo.url}
                     alt={photo.alt}
@@ -136,7 +136,7 @@ export default function ProductPhotosStep() {
                     }}
                   />
                   {product.heroImage === photo.id && (
-                    <div className="absolute top-2 left-2 px-2 py-1 bg-[#044b3b] text-white text-[10px] font-bold rounded-md">
+                    <div className="absolute top-2 left-2 px-2 py-1 bg-emerald-600 text-white text-[10px] font-bold rounded-md">
                       STAR
                     </div>
                   )}
@@ -144,8 +144,8 @@ export default function ProductPhotosStep() {
                     onClick={() => setHero(photo.id)}
                     className={`absolute top-2 right-2 p-1.5 rounded-md transition-colors ${
                       product.heroImage === photo.id
-                        ? 'bg-[#044b3b] text-white shadow-md'
-                        : 'bg-white/90 text-[#9e9e9e] hover:text-[#044b3b] shadow-sm'
+                        ? 'bg-emerald-600 text-white shadow-md'
+                        : 'bg-white/90 text-slate-400 hover:text-emerald-600 shadow-sm'
                     }`}
                     title={product.heroImage === photo.id ? 'Hero image' : 'Set as hero'}
                   >
@@ -153,7 +153,7 @@ export default function ProductPhotosStep() {
                   </button>
                   <button
                     onClick={() => removePhoto(photo.id)}
-                    className="absolute bottom-2 right-2 p-1.5 rounded-md bg-white/90 text-[#9e9e9e] hover:text-[#dc3545] shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute bottom-2 right-2 p-1.5 rounded-md bg-white/90 text-slate-400 hover:text-red-500 shadow-sm opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                     title="Remove photo"
                   >
                     <X size={14} />
@@ -166,7 +166,7 @@ export default function ProductPhotosStep() {
                     value={photo.alt}
                     onChange={(e) => updateAlt(photo.id, e.target.value)}
                     placeholder="Alt text"
-                    className="w-full px-2 py-1 text-xs border border-[#eaeaea] rounded text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-1 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+                    className="w-full px-2 py-1 text-xs border border-slate-200 rounded text-slate-800 placeholder:text-slate-400 focus:outline-none"
                   />
                 </div>
               </div>

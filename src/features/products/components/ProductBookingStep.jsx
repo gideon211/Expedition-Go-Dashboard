@@ -102,31 +102,31 @@ export default function ProductBookingStep() {
     <div className="space-y-6">
       {/* Confirmation Type */}
       <div>
-        <label className="block text-sm font-medium text-[#1e293b] mb-3">Booking Confirmation Type</label>
+        <label className="block text-sm font-medium text-slate-800 mb-3">Booking Confirmation Type</label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {CONFIRMATION_TYPES.map((type) => (
             <button
               key={type.value}
               onClick={() => updateNested("bookingRules.confirmationType", type.value)}
-              className={`p-4 rounded-lg border-2 text-left transition-colors ${
+              className={`p-4 rounded-xl border-2 text-left transition-colors ${
                 bookingRules.confirmationType === type.value
-                  ? "border-[#044b3b] bg-[#f0fdf4]"
-                  : "border-[#eaeaea] hover:border-[#044b3b]/30"
+                  ? "border-emerald-600 bg-emerald-50"
+                  : "border-slate-200 hover:border-emerald-600/30"
               }`}
             >
               <div className="flex items-center gap-3">
                 <div
                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                     bookingRules.confirmationType === type.value
-                      ? "border-[#044b3b] bg-[#044b3b]"
-                      : "border-[#eaeaea]"
+                      ? "border-emerald-600 bg-emerald-600"
+                      : "border-slate-200"
                   }`}
                 >
                   {bookingRules.confirmationType === type.value && <Check size={12} className="text-white" />}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-[#1e293b]">{type.label}</p>
-                  <p className="text-xs text-[#64748b]">{type.description}</p>
+                  <p className="text-sm font-semibold text-slate-800">{type.label}</p>
+                  <p className="text-xs text-slate-500">{type.description}</p>
                 </div>
               </div>
             </button>
@@ -137,9 +137,9 @@ export default function ProductBookingStep() {
       {/* Group Size & Advance Booking */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div>
-          <label className="block text-sm font-medium text-[#1e293b] mb-2">
+          <label className="block text-sm font-medium text-slate-800 mb-2">
             <span className="flex items-center gap-2">
-              <Clock size={16} className="text-[#64748b]" />
+              <Clock size={16} className="text-slate-500" />
               Min Advance Booking (hrs)
             </span>
           </label>
@@ -148,14 +148,14 @@ export default function ProductBookingStep() {
             value={bookingRules.minAdvanceBookingHours}
             onChange={(e) => updateNested("bookingRules.minAdvanceBookingHours", Number(e.target.value))}
             min="0"
-            className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#1e293b] mb-2">
+          <label className="block text-sm font-medium text-slate-800 mb-2">
             <span className="flex items-center gap-2">
-              <Users size={16} className="text-[#64748b]" />
+              <Users size={16} className="text-slate-500" />
               Min Group Size
             </span>
           </label>
@@ -164,14 +164,14 @@ export default function ProductBookingStep() {
             value={bookingRules.minGroupSize}
             onChange={(e) => updateNested("bookingRules.minGroupSize", Number(e.target.value))}
             min="1"
-            className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#1e293b] mb-2">
+          <label className="block text-sm font-medium text-slate-800 mb-2">
             <span className="flex items-center gap-2">
-              <Users size={16} className="text-[#64748b]" />
+              <Users size={16} className="text-slate-500" />
               Max Group Size
             </span>
           </label>
@@ -180,49 +180,49 @@ export default function ProductBookingStep() {
             value={bookingRules.maxGroupSize}
             onChange={(e) => updateNested("bookingRules.maxGroupSize", Number(e.target.value))}
             min="1"
-            className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#1e293b] mb-2">Refund Percentage (%)</label>
+          <label className="block text-sm font-medium text-slate-800 mb-2">Refund Percentage (%)</label>
           <input
             type="number"
             value={bookingRules.refundPercentage}
             onChange={(e) => updateNested("bookingRules.refundPercentage", Number(e.target.value))}
             min="0"
             max="100"
-            className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
+            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none"
           />
         </div>
       </div>
 
       {/* Instant Booking Toggle */}
-      <div className="flex items-center gap-3 p-4 bg-[#f8fafc] rounded-lg border border-[#eaeaea]">
+      <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
         <input
           type="checkbox"
           id="instantBooking"
           checked={bookingRules.instantBooking}
           onChange={(e) => updateNested("bookingRules.instantBooking", e.target.checked)}
-          className="w-5 h-5 rounded border-[#eaeaea] text-[#044b3b] focus:ring-[#044b3b]"
+          className="w-5 h-5 rounded border-slate-200 text-emerald-600 focus:ring-slate-300"
         />
-        <label htmlFor="instantBooking" className="text-sm font-medium text-[#1e293b]">
+        <label htmlFor="instantBooking" className="text-sm font-medium text-slate-800">
           Enable Instant Booking
         </label>
-        <span className="text-xs text-[#64748b]">Bookings are confirmed immediately without manual review</span>
+        <span className="text-xs text-slate-500">Bookings are confirmed immediately without manual review</span>
       </div>
 
       {/* Meeting Point */}
       <div className="space-y-4">
         <div ref={meetingContainerRef} className="relative">
-          <label className="block text-sm font-medium text-[#1e293b] mb-2">
+          <label className="block text-sm font-medium text-slate-800 mb-2">
             <span className="flex items-center gap-2">
-              <MapPin size={16} className="text-[#64748b]" />
-              Meeting Point Name <span className="text-[#dc3545]">*</span>
+              <MapPin size={16} className="text-slate-500" />
+              Meeting Point Name <span className="text-red-500">*</span>
             </span>
           </label>
           <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9e9e9e]" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               ref={meetingInputRef}
               type="text"
@@ -231,42 +231,42 @@ export default function ProductBookingStep() {
               onKeyDown={handleMeetingKeyDown}
               onFocus={() => { if (results.length > 0) setShowSuggestions(true); }}
               placeholder="Search for a location or type a meeting point name..."
-              className={`w-full pl-10 pr-10 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] ${
-                errors.meetingPoint ? "border-[#dc3545]" : "border-[#eaeaea]"
+              className={`w-full pl-10 pr-10 py-2.5 border rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none ${
+                errors.meetingPoint ? "border-red-500" : "border-slate-200"
               }`}
             />
             {meetingQuery && (
               <button
                 type="button"
                 onClick={handleMeetingClear}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9e9e9e] hover:text-[#64748b]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-500"
                 aria-label="Clear meeting point"
               >
                 <X size={14} />
               </button>
             )}
           </div>
-          {errors.meetingPoint && <p className="mt-1 text-xs text-[#dc3545]">{errors.meetingPoint}</p>}
+          {errors.meetingPoint && <p className="mt-1 text-xs text-red-500">{errors.meetingPoint}</p>}
 
           {/* Suggestion dropdown */}
           {showSuggestions && (
-            <div className="absolute z-50 mt-1 w-full bg-white border border-[#eaeaea] rounded-lg shadow-lg max-h-64 overflow-y-auto">
+            <div className="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
               {loading && (
-                <div className="flex items-center gap-2 px-4 py-3 text-sm text-[#64748b]">
+                <div className="flex items-center gap-2 px-4 py-3 text-sm text-slate-500">
                   <Loader2 size={14} className="animate-spin" />
                   Searching locations...
                 </div>
               )}
               {!loading && error && (
-                <div className="px-4 py-3 text-sm text-[#dc3545]">
+                <div className="px-4 py-3 text-sm text-red-500">
                   {error}
-                  <p className="text-xs text-[#9e9e9e] mt-1">You can still type a meeting point name manually.</p>
+                  <p className="text-xs text-slate-400 mt-1">You can still type a meeting point name manually.</p>
                 </div>
               )}
               {!loading && !error && results.length === 0 && meetingQuery.trim().length >= 2 && (
-                <div className="px-4 py-3 text-sm text-[#64748b]">
+                <div className="px-4 py-3 text-sm text-slate-500">
                   No locations found.
-                  <p className="text-xs text-[#9e9e9e] mt-1">Try a different search or type the name manually.</p>
+                  <p className="text-xs text-slate-400 mt-1">Try a different search or type the name manually.</p>
                 </div>
               )}
               {!loading && results.map((result, index) => (
@@ -274,14 +274,14 @@ export default function ProductBookingStep() {
                   key={`${result.source}-${index}`}
                   onClick={() => handleMeetingSelect(result)}
                   onMouseEnter={() => setHighlightedIdx(index)}
-                  className={`px-4 py-2.5 cursor-pointer text-sm border-b border-[#f1f5f9] last:border-0 ${
+                  className={`px-4 py-2.5 cursor-pointer text-sm border-b border-slate-100 last:border-0 ${
                     index === highlightedIdx
-                      ? "bg-[#f0fdf4] text-[#044b3b]"
-                      : "text-[#1e293b] hover:bg-[#f8fafc]"
+                      ? "bg-emerald-50 text-emerald-600"
+                      : "text-slate-800 hover:bg-slate-50"
                   }`}
                 >
                   <div className="font-medium truncate">{result.formatted}</div>
-                  <div className="text-xs text-[#64748b] truncate">
+                  <div className="text-xs text-slate-500 truncate">
                     {[result.city, result.region, result.country].filter(Boolean).join(", ")}
                   </div>
                 </div>
@@ -291,44 +291,19 @@ export default function ProductBookingStep() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#1e293b] mb-2">
-            Meeting Point Address <span className="text-[#dc3545]">*</span>
+          <label className="block text-sm font-medium text-slate-800 mb-2">
+            Meeting Point Address <span className="text-red-500">*</span>
           </label>
           <textarea
             value={bookingRules.meetingPointAddress}
             onChange={(e) => updateNested("bookingRules.meetingPointAddress", e.target.value)}
             rows={3}
             placeholder="Full street address..."
-            className={`w-full px-4 py-2.5 border rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] resize-none ${
-              errors.meetingPointAddress ? "border-[#dc3545]" : "border-[#eaeaea]"
+            className={`w-full px-4 py-2.5 border rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none ${
+              errors.meetingPointAddress ? "border-red-500" : "border-slate-200"
             }`}
           />
-          {errors.meetingPointAddress && <p className="mt-1 text-xs text-[#dc3545]">{errors.meetingPointAddress}</p>}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-[#1e293b] mb-2">Latitude</label>
-            <input
-              type="number"
-              step="any"
-              value={bookingRules.meetingPointLat ?? ""}
-              onChange={(e) => updateNested("bookingRules.meetingPointLat", e.target.value === "" ? null : Number(e.target.value))}
-              placeholder="e.g., 40.7647"
-              className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#1e293b] mb-2">Longitude</label>
-            <input
-              type="number"
-              step="any"
-              value={bookingRules.meetingPointLng ?? ""}
-              onChange={(e) => updateNested("bookingRules.meetingPointLng", e.target.value === "" ? null : Number(e.target.value))}
-              placeholder="e.g., -73.973"
-              className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]"
-            />
-          </div>
+          {errors.meetingPointAddress && <p className="mt-1 text-xs text-red-500">{errors.meetingPointAddress}</p>}
         </div>
 
         {/* Meeting Point Location Map */}
@@ -352,9 +327,9 @@ export default function ProductBookingStep() {
           />
         </div>
 
-        <p className="text-[10px] text-[#9e9e9e]">
+        <p className="text-[10px] text-slate-400">
           Location data ©{" "}
-          <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#64748b]">
+          <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-500">
             OpenStreetMap
           </a>{" "}
           contributors
@@ -368,20 +343,20 @@ export default function ProductBookingStep() {
             type="checkbox"
             checked={bookingRules.pickupAvailable}
             onChange={(e) => updateNested("bookingRules.pickupAvailable", e.target.checked)}
-            className="w-4 h-4 rounded border-[#eaeaea] text-[#044b3b] focus:ring-[#044b3b]"
+            className="w-4 h-4 rounded border-slate-200 text-emerald-600 focus:ring-slate-300"
           />
-          <span className="text-sm font-medium text-[#1e293b]">Pickup Service Available</span>
+          <span className="text-sm font-medium text-slate-800">Pickup Service Available</span>
         </label>
 
         {bookingRules.pickupAvailable && (
           <div>
-            <label className="block text-xs text-[#64748b] mb-1">Pickup Details</label>
+            <label className="block text-xs text-slate-500 mb-1">Pickup Details</label>
             <textarea
               value={bookingRules.pickupDetails}
               onChange={(e) => updateNested("bookingRules.pickupDetails", e.target.value)}
               rows={3}
               placeholder="Describe pickup locations, times, and any restrictions..."
-              className="w-full px-4 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] resize-none"
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none"
             />
           </div>
         )}

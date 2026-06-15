@@ -11,8 +11,8 @@ const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) 
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-sm",
-      "focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b]",
+      "flex min-h-[42px] w-full items-center justify-between whitespace-nowrap rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-sm",
+      "focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600",
       "disabled:cursor-not-allowed disabled:opacity-50",
       "[&>span]:line-clamp-1",
       className
@@ -21,7 +21,7 @@ const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) 
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown size={14} className="text-slate-400 shrink-0" />
+      <ChevronDown size={16} className="text-slate-400 shrink-0 ml-2" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ))
@@ -61,17 +61,17 @@ const SelectItem = React.forwardRef(({ className, children, ...props }, ref) => 
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-lg py-2 pl-8 pr-3 text-sm font-medium text-slate-700",
-      "focus:bg-slate-50 focus:text-slate-900 focus:outline-none",
+      "relative flex w-full cursor-default select-none items-center rounded-lg py-2 pl-8 pr-3 text-sm font-medium text-slate-700 transition-colors",
+      "focus:bg-emerald-50 focus:text-emerald-700 focus:outline-none",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "data-[state=checked]:text-[#044b3b] data-[state=checked]:bg-emerald-50",
+      "data-[state=checked]:text-emerald-600 data-[state=checked]:bg-emerald-50",
       className
     )}
     {...props}
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
-        <Check size={14} className="text-[#044b3b]" />
+        <Check size={14} className="text-emerald-600" />
       </SelectPrimitive.ItemIndicator>
     </span>
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
