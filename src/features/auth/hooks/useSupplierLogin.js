@@ -6,19 +6,31 @@ import {
   showSupplierLoginToast,
 } from "@/features/auth/api";
 import { useAuthStore, canAccessSupplierDashboard } from "@/stores/authStore";
+import api from "@/lib/axios";
 
-export function getPostLoginPath(supplierProfile) {
+export function getPostLoginPath(supplierProfile, isTeamMember) {
   const returnUrl = localStorage.getItem("auth_return_url");
 
   if (returnUrl) {
     return returnUrl;
   }
 
-  if (canAccessSupplierDashboard(supplierProfile)) {
+  if (canAccessSupplierDashboard(supplierProfile) || isTeamMember) {
     return "/";
   }
 
   return "/supplier/status";
+}
+
+async function checkIsTeamMember() {
+  try {
+    const res = await api.get("/suppliers/settings/team/my-role", {
+      skipGlobalErrorHandler: true,
+    });
+    return res.data?.data?.role !== null;
+  } catch {
+    return false;
+  }
 }
 
 export function useSupplierLogin() {
@@ -42,7 +54,8 @@ export function useSupplierLogin() {
         login(user, token || idToken, supplierProfile);
         showSupplierLoginToast(supplierProfile, user);
 
-        const path = getPostLoginPath(supplierProfile);
+        const isTeamMember = await checkIsTeamMember();
+        const path = getPostLoginPath(supplierProfile, isTeamMember);
         localStorage.removeItem("auth_return_url");
         navigate(path, { replace: true });
 
