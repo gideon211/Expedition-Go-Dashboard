@@ -291,6 +291,18 @@ export default function LoginPage() {
               )}
               Sign in with Google
             </button>
+
+            <p className="mt-5 text-center text-xs text-slate-500">
+              Don't have an account?{" "}
+              <a
+                href="https://travioafrica.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-600 hover:text-emerald-700 font-medium underline underline-offset-2"
+              >
+                Create one on TravioAfrica
+              </a>
+            </p>
           </div>
         </div>
       </motion.div>
