@@ -6,18 +6,19 @@ import { toast } from "sonner";
 import { loadSupplierProfile } from "@/features/auth/api";
 import { LogOut, ChevronLeft, ChevronRight, Menu, X, LayoutDashboard, Package, Ticket, CalendarDays, Users, DollarSign, Star, Bell, BarChart3, BadgeCheck, Settings } from "lucide-react";
 import { optimizeImage } from "@/lib/image";
+import { useTeamRole } from "@/hooks/useTeamRole";
 
-const navItems = [
-  { label: "Dashboard", path: "/", icon: <LayoutDashboard size={20} /> },
-  { label: "Products", path: "/products", icon: <Package size={20} /> },
-  { label: "Bookings", path: "/bookings", icon: <Ticket size={20} /> },
-  { label: "Availability", path: "/availability", icon: <CalendarDays size={20} /> },
-  { label: "Customers", path: "/chat", icon: <Users size={20} /> },
-  { label: "Finance", path: "/finance", icon: <DollarSign size={20} /> },
-  { label: "Reviews", path: "/reviews", icon: <Star size={20} /> },
-  { label: "Notifications", path: "/notifications", icon: <Bell size={20} /> },
-  { label: "Analytics", path: "/analytics", icon: <BarChart3 size={20} /> },
-  { label: "Settings", path: "/settings", icon: <Settings size={20} /> },
+const allNavItems = [
+  { label: "Dashboard", path: "/", icon: <LayoutDashboard size={20} />, permission: null },
+  { label: "Products", path: "/products", icon: <Package size={20} />, permission: "tours.view" },
+  { label: "Bookings", path: "/bookings", icon: <Ticket size={20} />, permission: "bookings.view" },
+  { label: "Availability", path: "/availability", icon: <CalendarDays size={20} />, permission: "tours.view" },
+  { label: "Customers", path: "/chat", icon: <Users size={20} />, permission: "chat.view" },
+  { label: "Finance", path: "/finance", icon: <DollarSign size={20} />, permission: "earnings.view" },
+  { label: "Reviews", path: "/reviews", icon: <Star size={20} />, permission: "reviews.view" },
+  { label: "Notifications", path: "/notifications", icon: <Bell size={20} />, permission: null },
+  { label: "Analytics", path: "/analytics", icon: <BarChart3 size={20} />, permission: null },
+  { label: "Settings", path: "/settings", icon: <Settings size={20} />, permission: null },
 ];
 
 function extractBusinessName(businessInfo) {
@@ -47,6 +48,12 @@ export default function Sidebar() {
   const [businessName, setBusinessName] = useState(null);
   const logoutRef = useRef(null);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const { hasPermission } = useTeamRole();
+
+  const navItems = allNavItems.filter((item) => {
+    if (!item.permission) return true;
+    return hasPermission(item.permission);
+  });
 
   useEffect(() => {
     if (!user?.roles?.includes("supplier")) return;

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Loader2,
@@ -41,6 +42,12 @@ const stagger = {
 
 export default function LoginPage() {
   const { completeLogin, loading, error, setError } = useSupplierLogin();
+  const [searchParams] = useSearchParams();
+
+  const redirect = searchParams.get("redirect");
+  if (redirect) {
+    localStorage.setItem("auth_return_url", redirect);
+  }
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

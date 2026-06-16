@@ -27,6 +27,8 @@ import {
 import { getAuthToken, useAuthStore } from "@/stores/authStore";
 import { cn } from "@/lib/utils";
 import { config } from "@/config";
+import { useTeamRole } from "@/hooks/useTeamRole";
+import { TEAM_ROLES, TEAM_ROLE_LABELS, TEAM_ROLE_COLORS } from "@/config/teamRoles";
 
 const TABS = [
   { key: "profile", label: "Profile", icon: User },
@@ -55,6 +57,14 @@ export default function SettingsPage() {
   const activeTab = searchParams.get("tab") || "profile";
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { canManageTeam, canManageFinance, canManageChat, isOwner, teamRole } = useTeamRole();
+
+  const filteredTabs = TABS.filter((tab) => {
+    if (tab.key === "team") return canManageTeam();
+    if (tab.key === "payouts") return canManageFinance() || isOwner;
+    if (tab.key === "notifications") return isOwner;
+    return true;
+  });
 
   return (
     <div className="p-5 md:p-6 max-w-5xl mx-auto">
@@ -65,11 +75,16 @@ export default function SettingsPage() {
           <h1 className="text-xl md:text-2xl font-bold text-slate-800">Settings</h1>
           <p className="text-sm text-slate-500 mt-0.5">Manage your account and business settings</p>
         </div>
+        {!isOwner && teamRole && (
+          <span className={cn("text-[10px] font-medium px-2 py-1 rounded-full", TEAM_ROLE_COLORS[teamRole])}>
+            {TEAM_ROLE_LABELS[teamRole]} Access
+          </span>
+        )}
       </div>
 
       {/* Tabs */}
       <div className="flex items-center gap-1 bg-slate-100/80 rounded-xl p-1 mb-6 overflow-x-auto">
-        {TABS.map((tab) => {
+        {filteredTabs.map((tab) => {
           const Icon = tab.icon;
           return (
             <button key={tab.key} onClick={() => setSearchParams({ tab: tab.key })}
@@ -1295,6 +1310,8 @@ function TeamTab() {
   const [form, setForm] = useState({ email: "", role: "editor" });
   const [sending, setSending] = useState(false);
   const [directAdd, setDirectAdd] = useState(false);
+  const [editingRole, setEditingRole] = useState(null);
+  const [memberToRemove, setMemberToRemove] = useState(null);
 
   useEffect(() => {
     fetchTeamMembers()
@@ -1325,11 +1342,24 @@ function TeamTab() {
     }
   };
 
-  const handleRemove = async (id, email) => {
+  const handleRoleChange = async (memberId, newRole) => {
     try {
-      await removeTeamMember(id);
-      setMembers((prev) => prev.filter((m) => m.id !== id));
-      toast.success("Removed " + email);
+      await updateTeamMemberRole(memberId, newRole);
+      setMembers((prev) => prev.map((m) => m.id === memberId ? { ...m, role: newRole } : m));
+      setEditingRole(null);
+      toast.success("Role updated successfully");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to update role");
+    }
+  };
+
+  const handleRemove = async () => {
+    if (!memberToRemove) return;
+    try {
+      await removeTeamMember(memberToRemove.id);
+      setMembers((prev) => prev.filter((m) => m.id !== memberToRemove.id));
+      toast.success("Removed " + memberToRemove.email);
+      setMemberToRemove(null);
     } catch (err) {
       toast.error(err?.response?.data?.message || "Failed to remove member");
     }
@@ -1426,7 +1456,7 @@ function TeamTab() {
             <div className="space-y-2">
               <div className="flex items-center gap-3 px-3 py-3 text-xs font-semibold text-slate-400 border-b border-slate-100">
                 <span className="flex-1">Member</span>
-                <span className="w-20">Role</span>
+                <span className="w-24">Role</span>
                 <span className="w-20">Status</span>
                 <span className="w-10" />
               </div>
@@ -1436,13 +1466,34 @@ function TeamTab() {
                     <span className="text-xs font-bold text-emerald-700">{m.email.charAt(0).toUpperCase()}</span>
                   </div>
                   <span className="flex-1 text-sm text-slate-700">{m.email}</span>
-                  <span className="w-20 text-xs capitalize text-slate-500">{m.role}</span>
+                  <div className="w-24 relative">
+                    {editingRole === m.id ? (
+                      <Select value={m.role} onValueChange={(v) => handleRoleChange(m.id, v)} onOpenChange={(open) => !open && setEditingRole(null)}>
+                        <SelectTrigger className="h-7 text-[10px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="editor">Editor</SelectItem>
+                          <SelectItem value="finance">Finance</SelectItem>
+                          <SelectItem value="support">Support</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <button
+                        onClick={() => setEditingRole(m.id)}
+                        className={cn("text-[10px] font-medium px-2 py-1 rounded cursor-pointer hover:opacity-80 transition-opacity", TEAM_ROLE_COLORS[m.role] || "bg-slate-100 text-slate-600")}
+                      >
+                        {TEAM_ROLE_LABELS[m.role] || m.role}
+                      </button>
+                    )}
+                  </div>
                   <span className="w-20">
                     <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded", m.status === "PENDING" ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700")}>
                       {m.status === "PENDING" ? "Pending" : "Active"}
                     </span>
                   </span>
-                  <button onClick={() => handleRemove(m.id, m.email)}
+                  <button onClick={() => setMemberToRemove(m)}
                     className="p-1.5 text-slate-300 hover:text-red-500 rounded-lg hover:bg-red-50 transition-all">
                     <X size={14} />
                   </button>
@@ -1452,6 +1503,49 @@ function TeamTab() {
           )}
         </div>
       </div>
+
+      <AnimatePresence>
+        {memberToRemove && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={() => setMemberToRemove(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                  <AlertTriangle size={20} className="text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-800">Remove Team Member</h3>
+                  <p className="text-xs text-slate-500">This action cannot be undone</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-600 mb-6">
+                Are you sure you want to remove <span className="font-medium">{memberToRemove.email}</span> from your team?
+              </p>
+              <div className="flex items-center gap-3 justify-end">
+                <button onClick={() => setMemberToRemove(null)}
+                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+                  Cancel
+                </button>
+                <button onClick={handleRemove}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors">
+                  Remove
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

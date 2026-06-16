@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import ScrollToTop from "@/components/shared/ScrollToTop";
 import { Toaster } from "sonner";
+import { TeamRoleProvider } from "@/contexts/TeamRoleContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,7 +19,9 @@ export default function Providers({ children }) {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <ScrollToTop />
-        {children}
+        <TeamRoleProvider>
+          {children}
+        </TeamRoleProvider>
         <Toaster
           position="top-right"
           richColors

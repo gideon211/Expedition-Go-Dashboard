@@ -42,6 +42,24 @@ export default function TeamInvitePage() {
     loadInvite();
   }, [token, isAuthenticated]);
 
+  useEffect(() => {
+    if (status === STATUS.READY && invite && isAuthenticated && user) {
+      if (user.email?.toLowerCase() === invite.invitedEmail?.toLowerCase()) {
+        (async () => {
+          setStatus(STATUS.ACCEPTING);
+          try {
+            await acceptInvite(token);
+            setStatus(STATUS.SUCCESS);
+          } catch (err) {
+            const msg = err?.response?.data?.message || "Failed to accept invitation.";
+            setErrorMsg(msg);
+            setStatus(STATUS.ERROR);
+          }
+        })();
+      }
+    }
+  }, [status, invite, isAuthenticated, user, token]);
+
   const loadInvite = async () => {
     setStatus(STATUS.LOADING);
     try {
@@ -52,12 +70,20 @@ export default function TeamInvitePage() {
         return;
       }
       setInvite(data);
-      setStatus(STATUS.READY);
+      if (data.status === "REVOKED") {
+        setStatus(STATUS.REVOKED);
+      } else {
+        setStatus(STATUS.READY);
+      }
     } catch (err) {
       const errData = err?.response?.data;
       const msg = errData?.message || "Could not load invitation.";
       if (err?.response?.status === 410) {
-        setStatus(STATUS.EXPIRED);
+        if (msg.toLowerCase().includes("revoked")) {
+          setStatus(STATUS.REVOKED);
+        } else {
+          setStatus(STATUS.EXPIRED);
+        }
         setErrorMsg(msg);
       } else if (err?.response?.status === 409) {
         setStatus(STATUS.ACCEPTED_ALREADY);

@@ -7,6 +7,7 @@ import {
   getAuthToken,
 } from "@/stores/authStore";
 import { loadSupplierProfile } from "@/features/auth/api";
+import { useTeamRole } from "@/hooks/useTeamRole";
 import { Loader2 } from "lucide-react";
 
 const PROFILE_CHECK_TIMEOUT_MS = 8000;
@@ -28,10 +29,12 @@ export default function ProtectedRoute({ requireAdmin = false }) {
   const isAdmin = isAdminUser();
   const authToken = getAuthToken();
   const profileCheckStarted = useRef(false);
+  const { teamRole, loading: teamRoleLoading } = useTeamRole();
 
-  const hasDashboardAccess = isAdmin || canAccessSupplierDashboard(supplierProfile);
+  const isTeamMember = !teamRoleLoading && teamRole !== null;
+  const hasDashboardAccess = isAdmin || canAccessSupplierDashboard(supplierProfile) || isTeamMember;
   const needsProfileLookup =
-    hasHydrated && isAuthenticated && Boolean(authToken) && !isAdmin && !hasDashboardAccess;
+    hasHydrated && isAuthenticated && Boolean(authToken) && !isAdmin && !isTeamMember && !canAccessSupplierDashboard(supplierProfile);
 
   const [profileResolved, setProfileResolved] = useState(() => !needsProfileLookup);
 
@@ -86,7 +89,7 @@ export default function ProtectedRoute({ requireAdmin = false }) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (needsProfileLookup && !profileResolved) {
+  if (teamRoleLoading || (needsProfileLookup && !profileResolved)) {
     return <SessionLoadingScreen />;
   }
 
@@ -94,7 +97,7 @@ export default function ProtectedRoute({ requireAdmin = false }) {
     return <Navigate to="/" replace />;
   }
 
-  if (!isAdmin && !canAccessSupplierDashboard(supplierProfile)) {
+  if (!isAdmin && !hasDashboardAccess) {
     return <Navigate to="/supplier/status" replace />;
   }
 

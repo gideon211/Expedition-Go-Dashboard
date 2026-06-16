@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback } from "react";
-import { Upload, X, Star } from "lucide-react";
+import { Upload, Trash2 } from "lucide-react";
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
 
 export default function ProductPhotosStep() {
@@ -113,7 +113,7 @@ export default function ProductPhotosStep() {
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-slate-800">Photos ({product.photos.length})</h3>
             <p className="text-xs text-slate-500">
-              {product.heroImage ? "Hero image selected" : "Click star to set hero image"}
+              {product.heroImage ? "Thumbnail selected" : "Select a thumbnail for your product"}
             </p>
           </div>
 
@@ -137,30 +137,19 @@ export default function ProductPhotosStep() {
                   />
                   {product.heroImage === photo.id && (
                     <div className="absolute top-2 left-2 px-2 py-1 bg-emerald-600 text-white text-[10px] font-bold rounded-md">
-                      STAR
+                      THUMBNAIL
                     </div>
                   )}
-                  <button
-                    onClick={() => setHero(photo.id)}
-                    className={`absolute top-2 right-2 p-1.5 rounded-md transition-colors ${
-                      product.heroImage === photo.id
-                        ? 'bg-emerald-600 text-white shadow-md'
-                        : 'bg-white/90 text-slate-400 hover:text-emerald-600 shadow-sm'
-                    }`}
-                    title={product.heroImage === photo.id ? 'Hero image' : 'Set as hero'}
-                  >
-                    <Star size={14} className={product.heroImage === photo.id ? 'fill-current' : ''} />
-                  </button>
                   <button
                     onClick={() => removePhoto(photo.id)}
                     className="absolute bottom-2 right-2 p-1.5 rounded-md bg-white/90 text-slate-400 hover:text-red-500 shadow-sm opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                     title="Remove photo"
                   >
-                    <X size={14} />
+                    <Trash2 size={14} />
                   </button>
                 </div>
 
-                <div className="p-2">
+                <div className="p-2 space-y-2">
                   <input
                     type="text"
                     value={photo.alt}
@@ -168,6 +157,16 @@ export default function ProductPhotosStep() {
                     placeholder="Alt text"
                     className="w-full px-2 py-1 text-xs border border-slate-200 rounded text-slate-800 placeholder:text-slate-400 focus:outline-none"
                   />
+                  <button
+                    onClick={() => setHero(photo.id)}
+                    className={`w-full text-[11px] font-medium py-1 rounded transition-colors ${
+                      product.heroImage === photo.id
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "text-slate-400 hover:text-emerald-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    {product.heroImage === photo.id ? "Thumbnail \u2713" : "Set as thumbnail"}
+                  </button>
                 </div>
               </div>
             ))}
