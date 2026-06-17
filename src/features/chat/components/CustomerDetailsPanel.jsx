@@ -69,7 +69,7 @@ export default function CustomerDetailsPanel({ conversation, currentUserId, onCl
 
   return (
     <div
-      className="flex h-full w-[420px] shrink-0 flex-col border-l border-gray-200 bg-white shadow-[-4px_0_16px_rgba(0,0,0,0.06)]"
+      className="flex h-full w-[420px] max-lg:w-full shrink-0 flex-col border-l border-gray-200 bg-white shadow-[-4px_0_16px_rgba(0,0,0,0.06)]"
     >
       {/* Header */}
       <div className="bg-gradient-to-r from-[#044b3b] to-emerald-700 px-5 h-16 flex items-center justify-between relative">

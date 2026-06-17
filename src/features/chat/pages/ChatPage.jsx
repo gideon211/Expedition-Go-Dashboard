@@ -29,6 +29,7 @@ export default function ChatPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [sending, setSending] = useState(false);
   const [showDetailsPanel, setShowDetailsPanel] = useState(false);
+  const [mobileView, setMobileView] = useState('list');
   const isFetchingRef = useRef(false);
   const lastProcessedCustomerId = useRef(null);
 
@@ -136,6 +137,7 @@ export default function ChatPage() {
   const handleSelectConversation = useCallback(async (conv) => {
     setSelectedConv(conv);
     setShowDetailsPanel(false);
+    setMobileView('chat');
     await loadMessages(conv.id, conv);
     try {
       await markConversationAsRead(conv.id);
@@ -272,98 +274,163 @@ export default function ChatPage() {
   )?.user;
   const isCustomerConv = Boolean(otherParticipant?.roles?.includes("customer"));
 
-  return (
-    <div className="px-6 py-4 h-[calc(100vh-120px)] mx-auto">
-      <div className="flex h-full rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5 overflow-hidden">
-      <div className="flex w-[340px] shrink-0 flex-col border-r border-slate-200 bg-white">
-        <div className="px-4 pt-4 pb-3">
-          <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-1">
-            {TABS.map((tab) => {
-              const isActive = activeTab === tab.key;
-              const unreadCount = conversations.filter((c) => c.type === "SUPPLIER_CUSTOMER" && (c.unreadCount ?? 0) > 0).length;
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => handleTabChange(tab.key)}
-                                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg transition-all duration-200 ${
+  const convListPanel = (
+    <>
+      <div className="px-4 pt-4 pb-3">
+        <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-1">
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.key;
+            const unreadCount = conversations.filter((c) => c.type === "SUPPLIER_CUSTOMER" && (c.unreadCount ?? 0) > 0).length;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => handleTabChange(tab.key)}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg transition-all duration-200 ${
+                  isActive
+                    ? "bg-white text-emerald-700 shadow-sm border border-slate-200"
+                    : "text-slate-500 hover:text-slate-700 border border-transparent"
+                }`}
+                style={{ outline: "none", WebkitTapHighlightColor: "transparent" }}
+              >
+                {tab.label}
+                {tab.key === "unread" && unreadCount > 0 && (
+                  <span className={`inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full px-1.5 text-[10px] font-bold ${
                     isActive
-                      ? "bg-white text-emerald-700 shadow-sm border border-slate-200"
-                      : "text-slate-500 hover:text-slate-700 border border-transparent"
-                  }`}
-                  style={{ outline: "none", WebkitTapHighlightColor: "transparent" }}
-                >
-                  {tab.label}
-                  {tab.key === "unread" && unreadCount > 0 && (
-                    <span className={`inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full px-1.5 text-[10px] font-bold ${
-                      isActive
-                        ? "bg-emerald-600 text-white"
-                        : "bg-slate-200 text-slate-600"
-                    }`}>
-                      {unreadCount}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        <div className="flex-1 overflow-y-auto pt-2">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, x: -12 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 12 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <ConversationList
-                conversations={filteredConversations}
-                selectedId={selectedConv?.id}
-                onSelect={handleSelectConversation}
-                onDelete={handleDeleteConversation}
-                loading={loadingConvs}
-                currentUserId={currentUserId}
-                emptyMessage={activeTab === "unread" ? "No unread messages" : "No conversations yet"}
-              />
-            </motion.div>
-          </AnimatePresence>
+                      ? "bg-emerald-600 text-white"
+                      : "bg-slate-200 text-slate-600"
+                  }`}>
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
-      <div className="flex flex-1 min-w-0">
-        <div className="flex-1 min-w-0">
-          <ChatWindow
-            conversation={selectedConv}
-            messages={messages}
-            messageStatuses={messageStatuses}
-            onSendMessage={handleSend}
-            onLoadMore={handleLoadMore}
-            hasMore={hasMore}
-            loading={loadingMsgs}
-            loadingMore={loadingMore}
-            sending={sending}
-            currentUserId={currentUserId}
-            onOpenDetails={() => setShowDetailsPanel((v) => !v)}
-            showDetailsButton={isCustomerConv}
-            showDetails={showDetailsPanel}
-          />
-        </div>
-        <AnimatePresence>
-          {showDetailsPanel && isCustomerConv && (
-            <motion.div
-              initial={{ opacity: 0, x: 32 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 32 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-            >
-              <CustomerDetailsPanel
+      <div className="flex-1 overflow-y-auto pt-2">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, x: -12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 12 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+          >
+            <ConversationList
+              conversations={filteredConversations}
+              selectedId={selectedConv?.id}
+              onSelect={handleSelectConversation}
+              onDelete={handleDeleteConversation}
+              loading={loadingConvs}
+              currentUserId={currentUserId}
+              emptyMessage={activeTab === "unread" ? "No unread messages" : "No conversations yet"}
+            />
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </>
+  );
+
+  return (
+    <div className="px-6 py-4 h-[calc(100vh-120px)] mx-auto">
+      <div className="relative flex h-full rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5 overflow-hidden">
+        {/* Desktop: 3-column layout */}
+        <div className="hidden lg:flex h-full w-full">
+          <div className="flex w-[340px] shrink-0 flex-col border-r border-slate-200 bg-white">
+            {convListPanel}
+          </div>
+          <div className="flex flex-1 min-w-0">
+            <div className="flex-1 min-w-0">
+              <ChatWindow
                 conversation={selectedConv}
+                messages={messages}
+                messageStatuses={messageStatuses}
+                onSendMessage={handleSend}
+                onLoadMore={handleLoadMore}
+                hasMore={hasMore}
+                loading={loadingMsgs}
+                loadingMore={loadingMore}
+                sending={sending}
                 currentUserId={currentUserId}
-                onClose={() => setShowDetailsPanel(false)}
+                onOpenDetails={() => setShowDetailsPanel((v) => !v)}
+                showDetailsButton={isCustomerConv}
+                showDetails={showDetailsPanel}
               />
+            </div>
+            <AnimatePresence>
+              {showDetailsPanel && isCustomerConv && (
+                <motion.div
+                  initial={{ opacity: 0, x: 32 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 32 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                >
+                  <CustomerDetailsPanel
+                    conversation={selectedConv}
+                    currentUserId={currentUserId}
+                    onClose={() => setShowDetailsPanel(false)}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Mobile: single-panel views */}
+        <div className="flex lg:hidden h-full w-full">
+          {mobileView === 'list' && (
+            <div className="flex flex-col h-full w-full bg-white">
+              {convListPanel}
+            </div>
+          )}
+          {mobileView === 'chat' && (
+            <ChatWindow
+              conversation={selectedConv}
+              messages={messages}
+              messageStatuses={messageStatuses}
+              onSendMessage={handleSend}
+              onLoadMore={handleLoadMore}
+              hasMore={hasMore}
+              loading={loadingMsgs}
+              loadingMore={loadingMore}
+              sending={sending}
+              currentUserId={currentUserId}
+              onOpenDetails={() => setMobileView('details')}
+              showDetailsButton={isCustomerConv}
+              showDetails={false}
+              showBackButton
+              onBack={() => setMobileView('list')}
+            />
+          )}
+        </div>
+
+        {/* Mobile: Customer details overlay */}
+        <AnimatePresence>
+          {mobileView === 'details' && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/20 lg:hidden"
+              onClick={() => setMobileView('chat')}
+            >
+              <motion.div
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <CustomerDetailsPanel
+                  conversation={selectedConv}
+                  currentUserId={currentUserId}
+                  onClose={() => setMobileView('chat')}
+                />
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
       </div>
     </div>
   );

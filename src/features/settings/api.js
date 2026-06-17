@@ -67,6 +67,11 @@ export async function inviteTeamMember(data) {
   return response.data?.data?.member || null;
 }
 
+export async function resendInvite(email) {
+  const response = await api.post("/suppliers/settings/team/invite/resend", { email }, { skipGlobalErrorHandler: true });
+  return response.data;
+}
+
 export async function removeTeamMember(id) {
   return api.delete(`/suppliers/settings/team/members/${id}`, { skipGlobalErrorHandler: true });
 }

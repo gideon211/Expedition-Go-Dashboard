@@ -22,7 +22,7 @@ import {
   fetchPayoutMethods, createPayoutMethod, deletePayoutMethod,
   fetchPayouts,
   fetchTeamMembers, inviteTeamMember, removeTeamMember, updateTeamMemberRole,
-  directAddTeamMember
+  directAddTeamMember, resendInvite
 } from "../api";
 import { getAuthToken, useAuthStore } from "@/stores/authStore";
 import { cn } from "@/lib/utils";
@@ -1303,6 +1303,29 @@ function BookingRulesTab() {
   );
 }
 
+function ResendButton({ email }) {
+  const [resending, setResending] = useState(false);
+
+  const handleResend = async () => {
+    setResending(true);
+    try {
+      await resendInvite(email);
+      toast.success("Invitation resent to " + email);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to resend invitation");
+    } finally {
+      setResending(false);
+    }
+  };
+
+  return (
+    <button onClick={handleResend} disabled={resending}
+      className="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-emerald-50 transition-all disabled:opacity-50" title="Resend invitation">
+      {resending ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+    </button>
+  );
+}
+
 function TeamTab() {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1493,6 +1516,9 @@ function TeamTab() {
                       {m.status === "PENDING" ? "Pending" : "Active"}
                     </span>
                   </span>
+                  {m.status === "PENDING" && (
+                    <ResendButton email={m.email} />
+                  )}
                   <button onClick={() => setMemberToRemove(m)}
                     className="p-1.5 text-slate-300 hover:text-red-500 rounded-lg hover:bg-red-50 transition-all">
                     <X size={14} />

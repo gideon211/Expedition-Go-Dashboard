@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 
-const API_BASE_URL = 'https://expedition-go-backend-v2.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://expedition-go-backend-v2.onrender.com/api';
 
 // Mock data
 const mockBookings = [

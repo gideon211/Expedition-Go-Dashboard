@@ -58,7 +58,7 @@ const MessageSkeleton = ({ align = "left" }) => (
   </div>
 );
 
-export default function ChatWindow({ conversation, messages, messageStatuses, onSendMessage, onLoadMore, hasMore, loading, loadingMore, sending, currentUserId, onOpenDetails, showDetailsButton, showDetails }) {
+export default function ChatWindow({ conversation, messages, messageStatuses, onSendMessage, onLoadMore, hasMore, loading, loadingMore, sending, currentUserId, onOpenDetails, showDetailsButton, showDetails, showBackButton, onBack }) {
   const currentUser = useAuthStore((s) => s.user);
   const [input, setInput] = useState("");
   const [showScrollBtn, setShowScrollBtn] = useState(false);
@@ -167,6 +167,14 @@ export default function ChatWindow({ conversation, messages, messageStatuses, on
     <div className="flex h-full flex-col">
       <style>{`@keyframes chatSlideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
       <div className="flex items-center gap-3 border-b border-slate-200 bg-white px-5 py-3">
+        {showBackButton && (
+          <button
+            onClick={onBack}
+            className="shrink-0 flex items-center justify-center rounded-lg p-1.5 -ml-1.5 text-slate-500 hover:bg-slate-100 transition-colors md:hidden"
+          >
+            <ChevronLeft size={20} />
+          </button>
+        )}
         <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-600 text-sm font-bold text-white shadow-sm">
           <span>{headerName.charAt(0).toUpperCase()}</span>
           {otherParticipant?.photoURL && (

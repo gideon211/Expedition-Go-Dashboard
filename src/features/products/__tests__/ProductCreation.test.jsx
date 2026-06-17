@@ -85,7 +85,7 @@ describe('Product Creation Flow', () => {
       },
       content: {
         itinerary: [{ day: "Day 1", time: "09:00", title: "Arrival", description: "Arrive and settle in" }],
-        highlights: [],
+        highlights: [{ title: "Amazing wildlife", description: "See all the animals" }],
         included: [],
         excluded: [],
         whatToBring: [],
@@ -104,7 +104,7 @@ describe('Product Creation Flow', () => {
     store.setStep(7);
 
     // Find and click the submit button
-    const submitButton = await screen.findByText(/Submit for Review/i);
+    const submitButton = await screen.findByText(/Create Tour/i);
     expect(submitButton).toBeInTheDocument();
 
     fireEvent.click(submitButton);
@@ -114,15 +114,14 @@ describe('Product Creation Flow', () => {
       expect(mockCreateProduct).toHaveBeenCalled();
     });
 
-    // Check the payload structure
+    // Check the payload structure (FormData)
     const payload = mockCreateProduct.mock.calls[0][0];
-    console.log('Payload sent to createProduct:', JSON.stringify(payload, null, 2));
-
-    expect(payload).toHaveProperty('title', 'Test Safari');
-    expect(payload).toHaveProperty('status');
-    expect(payload).toHaveProperty('categorization');
-    expect(payload).toHaveProperty('productContent');
-    expect(payload).toHaveProperty('schedulesAndPricing');
-    expect(payload).toHaveProperty('bookingAndTickets');
+    expect(payload instanceof FormData).toBe(true);
+    expect(payload.get('title')).toBe('Test Safari');
+    expect(payload.has('status')).toBe(true);
+    expect(payload.has('categorization')).toBe(true);
+    expect(payload.has('productContent')).toBe(true);
+    expect(payload.has('schedulesAndPricing')).toBe(true);
+    expect(payload.has('bookingAndTickets')).toBe(true);
   });
 });

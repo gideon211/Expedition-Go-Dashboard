@@ -22,10 +22,10 @@ const NOTIFICATION_ICONS = {
 };
 
 const STATS_CONFIG = [
-  { label: "Total Bookings", icon: ShoppingBag, accent: "border-l-emerald-600", iconBg: "bg-emerald-50", iconBorder: "border-emerald-200/60", iconColor: "text-emerald-600" },
-  { label: "Total Revenue", icon: TrendingUp, accent: "border-l-emerald-500", iconBg: "bg-emerald-50", iconBorder: "border-emerald-200/60", iconColor: "text-emerald-600" },
-  { label: "Active Tours", icon: MapPin, accent: "border-l-emerald-400", iconBg: "bg-emerald-50", iconBorder: "border-emerald-200/60", iconColor: "text-emerald-600" },
-  { label: "Pending Requests", icon: ClipboardList, accent: "border-l-amber-400", iconBg: "bg-amber-50", iconBorder: "border-amber-200/60", iconColor: "text-amber-600" },
+  { label: "Total Bookings", icon: ShoppingBag, accent: "border-l-emerald-600", iconBg: "bg-emerald-50", iconBorder: "border-emerald-200/60", iconColor: "text-emerald-600", path: "/bookings" },
+  { label: "Total Revenue", icon: TrendingUp, accent: "border-l-emerald-500", iconBg: "bg-emerald-50", iconBorder: "border-emerald-200/60", iconColor: "text-emerald-600", path: "/finance" },
+  { label: "Active Tours", icon: MapPin, accent: "border-l-emerald-400", iconBg: "bg-emerald-50", iconBorder: "border-emerald-200/60", iconColor: "text-emerald-600", path: "/products", state: { statusFilter: "ACTIVE" } },
+  { label: "Pending Requests", icon: ClipboardList, accent: "border-l-amber-400", iconBg: "bg-amber-50", iconBorder: "border-amber-200/60", iconColor: "text-amber-600", path: "/bookings?tab=PENDING" },
 ];
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -205,7 +205,7 @@ export default function DashboardPage() {
         {STATS_CONFIG.map((s, i) => {
           const Icon = s.icon;
           return (
-            <div key={s.label} className={`bg-white border border-emerald-100/60 rounded-xl p-4 hover:shadow-md hover:shadow-emerald-900/5 hover:border-emerald-200 transition-all border-l-4 ${s.accent}`}>
+            <div key={s.label} onClick={() => navigate(s.path, s.state ? { state: s.state } : undefined)} className={`bg-white border border-emerald-100/60 rounded-xl p-4 hover:shadow-md hover:shadow-emerald-900/5 hover:border-emerald-200 transition-all border-l-4 cursor-pointer ${s.accent}`}>
               <div className="flex items-center justify-between mb-2.5">
                 <div className={`w-9 h-9 rounded-lg ${s.iconBg} border ${s.iconBorder} flex items-center justify-center`}>
                   <Icon size={16} className={s.iconColor} />
@@ -381,7 +381,7 @@ export default function DashboardPage() {
               Percentage of canceled bookings across all products in the last 90 days:
             </p>
             <CancellationGauge value={cancellationRate} label={gaugeLabel} />
-            <button className="w-full mt-3 py-2.5 px-4 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">
+            <button onClick={() => navigate("/bookings")} className="w-full mt-3 py-2.5 px-4 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">
               Review rate
             </button>
           </div>
@@ -413,7 +413,7 @@ export default function DashboardPage() {
           ) : recentBookings.length > 0 ? (
             <div className="space-y-1">
               {recentBookings.slice(0, 4).map((b) => (
-                <div key={b.id} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-emerald-50/40 transition-colors cursor-pointer border border-transparent hover:border-emerald-100">
+                <div key={b.id} onClick={() => navigate(`/bookings?bookingId=${b.id}`)} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-emerald-50/40 transition-colors cursor-pointer border border-transparent hover:border-emerald-100">
                   {b.tourPhoto ? (
                     <img src={b.tourPhoto} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0 ring-1 ring-emerald-100" />
                   ) : (
@@ -446,7 +446,7 @@ export default function DashboardPage() {
         <div className="bg-white border border-emerald-100/60 rounded-xl p-5 hover:border-emerald-200 transition-all">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-slate-800">Top Products</h3>
-            <button className="text-xs font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition-colors">
+            <button onClick={() => navigate("/products")} className="text-xs font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition-colors">
               View all <ArrowUpRight size={11} />
             </button>
           </div>

@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { Loader2, CheckCircle2, XCircle, Clock, Mail, Shield, Building2, AlertTriangle, ArrowRight } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { useTeamRole } from "@/hooks/useTeamRole";
+import { toast } from "sonner";
 import { fetchInviteDetails, acceptInvite, declineInvite } from "@/features/settings/api";
 
 const STATUS = {
@@ -73,11 +74,7 @@ export default function TeamInvitePage() {
         return;
       }
       setInvite(data);
-      if (data.status === "REVOKED") {
-        setStatus(STATUS.REVOKED);
-      } else {
-        setStatus(STATUS.READY);
-      }
+      setStatus(STATUS.READY);
     } catch (err) {
       const errData = err?.response?.data;
       const msg = errData?.message || "Could not load invitation.";
@@ -130,7 +127,7 @@ export default function TeamInvitePage() {
       await declineInvite(token);
       navigate("/", { replace: true });
     } catch {
-      // silent
+      toast.error("Failed to decline invitation. Please try again.");
     }
   };
 
