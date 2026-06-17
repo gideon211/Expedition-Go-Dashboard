@@ -6,8 +6,10 @@ import {
 
 import { Loader2, RefreshCw, ArrowUpRight, ShoppingBag, CheckCircle2, Star, DollarSign, MessageCircle, AlertTriangle, ClipboardList, MapPin, TrendingUp, Bell, Check, CalendarX2 } from "lucide-react";
 import StatusBadge from "@/components/shared/StatusBadge";
+import CancellationGauge from "@/components/shared/CancellationGauge";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { fetchSupplierDashboard } from "../api";
+import { fetchCancellationSummary } from "@/features/cancellation/api";
 import { getAuthToken, useAuthStore } from "@/stores/authStore";
 import { fetchSupplierBookings } from "@/features/bookings/api";
 import { fetchNotifications, markAllNotificationsAsRead } from "@/features/notifications/api";
@@ -67,6 +69,7 @@ export default function DashboardPage() {
   const [error, setError] = useState(null);
   const [recentBookings, setRecentBookings] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [cancellationSummary, setCancellationSummary] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const user = useAuthStore((s) => s.user);
 
@@ -77,11 +80,13 @@ export default function DashboardPage() {
       fetchSupplierDashboard(),
       fetchSupplierBookings({ page: 1, limit: 4 }).then(r => r.bookings).catch(() => []),
       fetchNotifications({ limit: 5 }).then(r => { setUnreadCount(r.unreadCount || 0); return r.notifications || []; }).catch(() => []),
+      fetchCancellationSummary().catch(() => null),
     ])
-      .then(([data, bookings, notifs]) => {
+      .then(([data, bookings, notifs, cancellationData]) => {
         setDashboardData(data);
         setRecentBookings(bookings);
         setNotifications(notifs);
+        setCancellationSummary(cancellationData);
       })
       .catch((err) => {
         if (err.code === "AUTH_REQUIRED") return;
@@ -130,47 +135,7 @@ export default function DashboardPage() {
     }));
   }, [totalRevenue]);
 
-  const gaugeLabel = cancellationRate === 0 ? "Excellent" : cancellationRate <= 2 ? "Good" : cancellationRate <= 5 ? "Average" : "Needs Attention";
-  const gaugeLabelColor = cancellationRate === 0 ? "text-emerald-600" : cancellationRate <= 2 ? "text-emerald-600" : cancellationRate <= 5 ? "text-amber-600" : "text-red-600";
-
-  const CancellationGauge = ({ value, label }) => {
-    const clamped = Math.min(Math.max(value, 0), 7);
-    const pct = clamped === 0 ? "0" : clamped >= 5 ? "5+" : `${Math.round(clamped)}`;
-
-    // Map value to angle: teal 0-2% → 180°-110°, mint 2-5% → 110°-40°, red 5-7% → 40°-0°
-    let angle;
-    if (clamped <= 2) angle = 180 - (clamped / 2) * 70;
-    else if (clamped <= 5) angle = 110 - ((clamped - 2) / 3) * 70;
-    else angle = 40 - ((clamped - 5) / 2) * 40;
-
-    const rad = (angle * Math.PI) / 180;
-    const nx = 100 + 70 * Math.cos(rad);
-    const ny = 95 - 70 * Math.sin(rad);
-
-    return (
-      <svg viewBox="0 0 200 130" className="w-full">
-        {/* Teal: 0-2% */}
-        <path d="M 30 95 A 70 70 0 0 1 76 29" fill="none" stroke="#0f766e" strokeWidth="14" strokeLinecap="round" />
-        {/* Mint: 2-5% */}
-        <path d="M 76 29 A 70 70 0 0 1 154 50" fill="none" stroke="#99f6e4" strokeWidth="14" />
-        {/* Red: 5%+ */}
-        <path d="M 154 50 A 70 70 0 0 1 170 95" fill="none" stroke="#dc2626" strokeWidth="14" strokeLinecap="round" />
-
-        {/* Needle indicator */}
-        <circle cx={nx} cy={ny} r="6" fill="#0f766e" stroke="white" strokeWidth="2" />
-
-        {/* Center text */}
-        <text x="100" y="80" textAnchor="middle" fontSize="36" fontWeight="700" fill="#1e293b" fontFamily="DM Sans, sans-serif">{pct}%</text>
-        <text x="100" y="98" textAnchor="middle" fontSize="13" fontWeight="700" fill="#334155" fontFamily="DM Sans, sans-serif">{label}</text>
-
-        {/* Scale labels */}
-        <text x="25" y="115" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="DM Sans, sans-serif">0%</text>
-        <text x="68" y="22" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="DM Sans, sans-serif">2%</text>
-        <text x="162" y="43" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="DM Sans, sans-serif">5%</text>
-        <text x="178" y="115" textAnchor="middle" fontSize="10" fill="#94a3b8" fontFamily="DM Sans, sans-serif">5+%</text>
-      </svg>
-    );
-  };
+  const gaugeLabel = cancellationRate < 2 ? "Excellent" : cancellationRate < 5 ? "Warning" : "Poor";
 
   return (
     <div className="p-5 md:p-6 max-w-7xl mx-auto space-y-5">
@@ -372,7 +337,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Cancellation Gauge */}
-          <div className="bg-white border border-emerald-100/60 rounded-xl p-5 hover:border-emerald-200 transition-all">
+          <div onClick={() => navigate("/cancellation-rate")} className="bg-white border border-emerald-100/60 rounded-xl p-5 hover:border-emerald-200 transition-all cursor-pointer">
             <div className="flex items-center gap-2 mb-1">
               <CalendarX2 size={18} className="text-slate-700" />
               <h3 className="text-base font-bold text-slate-800">Cancellations</h3>
@@ -380,10 +345,10 @@ export default function DashboardPage() {
             <p className="text-sm text-slate-500 mb-3 leading-relaxed">
               Percentage of canceled bookings across all products in the last 90 days:
             </p>
-            <CancellationGauge value={cancellationRate} label={gaugeLabel} />
-            <button onClick={() => navigate("/bookings")} className="w-full mt-3 py-2.5 px-4 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">
-              Review rate
-            </button>
+            <CancellationGauge
+              value={cancellationSummary?.cancellationRate ?? cancellationRate}
+              label={cancellationSummary?.status || gaugeLabel}
+            />
           </div>
         </div>
       </div>

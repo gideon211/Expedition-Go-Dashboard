@@ -4,7 +4,7 @@ import { useSidebarStore } from "@/stores/sidebarStore";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
 import { loadSupplierProfile } from "@/features/auth/api";
-import { LogOut, ChevronLeft, ChevronRight, Menu, X, LayoutDashboard, Package, Ticket, CalendarDays, Users, DollarSign, Star, Bell, BarChart3, BadgeCheck, Settings } from "lucide-react";
+import { LogOut, ChevronLeft, ChevronRight, Menu, X, LayoutDashboard, Package, Ticket, CalendarDays, Users, DollarSign, Star, Bell, BarChart3, BadgeCheck, Settings, CalendarX2 } from "lucide-react";
 import { optimizeImage } from "@/lib/image";
 import { useTeamRole } from "@/hooks/useTeamRole";
 
@@ -12,6 +12,7 @@ const allNavItems = [
   { label: "Dashboard", path: "/", icon: <LayoutDashboard size={20} />, permission: null },
   { label: "Products", path: "/products", icon: <Package size={20} />, permission: "tours.view" },
   { label: "Bookings", path: "/bookings", icon: <Ticket size={20} />, permission: "bookings.view" },
+  { label: "Cancellation", path: "/cancellation-rate", icon: <CalendarX2 size={20} />, permission: null },
   { label: "Availability", path: "/availability", icon: <CalendarDays size={20} />, permission: "tours.view" },
   { label: "Customers", path: "/chat", icon: <Users size={20} />, permission: "chat.view" },
   { label: "Finance", path: "/finance", icon: <DollarSign size={20} />, permission: "earnings.view" },
