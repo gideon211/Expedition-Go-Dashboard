@@ -1,7 +1,8 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  exchangeFirebaseToken,
+  loginWithEmail,
+  fetchCurrentUser,
   getLoginErrorMessage,
   showSupplierLoginToast,
 } from "@/features/auth/api";
@@ -33,38 +34,59 @@ async function checkIsTeamMember() {
   }
 }
 
+async function fetchSupplierProfile(authToken) {
+  try {
+    const response = await api.get("/suppliers/application/status", {
+      skipGlobalErrorHandler: true,
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    return response.data?.data?.supplierProfile || response.data?.data || null;
+  } catch {
+    return null;
+  }
+}
+
 export function useSupplierLogin() {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const completeLogin = useCallback(
-    async (idToken) => {
+  const finalizeLogin = useCallback(
+    async (user, token, supplierProfile) => {
+      login(user, token, supplierProfile);
+      showSupplierLoginToast(supplierProfile, user);
+
+      const isTeamMember = await checkIsTeamMember();
+      const path = getPostLoginPath(supplierProfile, isTeamMember);
+      localStorage.removeItem("auth_return_url");
+      navigate(path, { replace: true });
+    },
+    [login, navigate]
+  );
+
+  const completeLoginWithEmail = useCallback(
+    async (email, password) => {
       setError("");
       setLoading(true);
 
       try {
-        const { user, supplierProfile, token } = await exchangeFirebaseToken(idToken);
+        const data = await loginWithEmail(email, password);
+        const { user, accessToken, refreshToken } = data;
 
         if (!user) {
           throw new Error("Backend did not return user data.");
         }
 
-        login(user, token || idToken, supplierProfile);
-        showSupplierLoginToast(supplierProfile, user);
+        if (refreshToken) {
+          localStorage.setItem("refresh_token", refreshToken);
+        }
 
-        const isTeamMember = await checkIsTeamMember();
-        const path = getPostLoginPath(supplierProfile, isTeamMember);
-        localStorage.removeItem("auth_return_url");
-        navigate(path, { replace: true });
+        const supplierProfile = await fetchSupplierProfile(accessToken);
+        await finalizeLogin(user, accessToken, supplierProfile);
 
         return { user, supplierProfile };
       } catch (err) {
-        if (err.code === "auth/popup-closed-by-user") {
-          return null;
-        }
-
         const message = getLoginErrorMessage(err);
         setError(message);
         throw err;
@@ -72,8 +94,39 @@ export function useSupplierLogin() {
         setLoading(false);
       }
     },
-    [login, navigate]
+    [finalizeLogin]
   );
 
-  return { completeLogin, loading, error, setError };
+  const completeLoginFromToken = useCallback(
+    async (accessToken, refreshToken) => {
+      setError("");
+      setLoading(true);
+
+      try {
+        localStorage.setItem("auth_token", accessToken);
+        if (refreshToken) {
+          localStorage.setItem("refresh_token", refreshToken);
+        }
+
+        const user = await fetchCurrentUser(accessToken);
+        if (!user) {
+          throw new Error("Backend did not return user data.");
+        }
+
+        const supplierProfile = await fetchSupplierProfile(accessToken);
+        await finalizeLogin(user, accessToken, supplierProfile);
+
+        return { user, supplierProfile };
+      } catch (err) {
+        const message = getLoginErrorMessage(err);
+        setError(message);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [finalizeLogin]
+  );
+
+  return { completeLoginWithEmail, completeLoginFromToken, loading, error, setError };
 }

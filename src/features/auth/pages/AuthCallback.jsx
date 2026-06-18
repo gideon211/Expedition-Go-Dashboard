@@ -2,42 +2,29 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Loader2, CheckCircle2, AlertCircle, ArrowRight, Shield } from "lucide-react";
 import { toast } from "sonner";
-import { exchangeFirebaseToken, getLoginErrorMessage, showSupplierLoginToast } from "@/features/auth/api";
+import { getLoginErrorMessage, showSupplierLoginToast } from "@/features/auth/api";
 import { useAuthStore } from "@/stores/authStore";
 import { getPostLoginPath } from "@/features/auth/hooks/useSupplierLogin";
+import { fetchCurrentUser } from "@/features/auth/api";
 
-/**
- * AuthCallback
- *
- * Cross-domain authentication bridge.
- * When the main site (travioafrica.com) redirects a logged-in user here
- * with ?token=<firebase_id_token>, this page:
- *  1. Reads the token from the URL
- *  2. Exchanges the token with POST /api/users/signup
- *  3. We update local auth state and redirect based on supplier approval status
- *
- * The token is removed from the URL immediately to prevent it from lingering
- * in browser history or referrer headers.
- */
 export default function AuthCallback() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const login = useAuthStore((state) => state.login);
-  const [status, setStatus] = useState("checking"); // checking | loading | success | error
+  const [status, setStatus] = useState("checking");
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    const token = searchParams.get("token");
+    const accessToken = searchParams.get("accessToken");
+    const refreshToken = searchParams.get("refreshToken");
 
-    if (!token) {
+    if (!accessToken) {
       setStatus("error");
       setErrorMessage("No authentication token found in the URL.");
       toast.error("Authentication failed: missing token.");
       return;
     }
 
-    // Immediately remove token from URL so it doesn't stay in browser history
-    // or get leaked via referrer headers.
     if (window.history.replaceState) {
       const cleanUrl =
         window.location.protocol +
@@ -47,26 +34,29 @@ export default function AuthCallback() {
       try {
         window.history.replaceState({ path: cleanUrl }, "", cleanUrl);
       } catch {
-        // SecurityError can occur in jsdom/iframe contexts — safe to ignore
       }
     }
 
     setStatus("loading");
 
-    exchangeFirebaseToken(token)
-      .then(({ user, supplierProfile, token: backendToken }) => {
+    localStorage.setItem("auth_token", accessToken);
+    if (refreshToken) {
+      localStorage.setItem("refresh_token", refreshToken);
+    }
+
+    fetchCurrentUser(accessToken)
+      .then((user) => {
         if (!user) {
           throw new Error("Backend did not return user data.");
         }
 
-        const authToken = backendToken || token;
-        login(user, authToken, supplierProfile);
+        login(user, accessToken, null);
 
         setStatus("success");
-        showSupplierLoginToast(supplierProfile, user);
+        showSupplierLoginToast(null, user);
 
         const returnUrl = localStorage.getItem("auth_return_url");
-        const redirectTo = returnUrl || getPostLoginPath(supplierProfile);
+        const redirectTo = returnUrl || getPostLoginPath(null);
 
         setTimeout(() => {
           localStorage.removeItem("auth_return_url");
@@ -98,8 +88,8 @@ export default function AuthCallback() {
         </div>
 
         <h1 className="text-xl font-bold text-[#1e293b] mb-2">
-          {status === "checking" && "Checking authentication…"}
-          {status === "loading" && "Verifying your session…"}
+          {status === "checking" && "Checking authentication\u2026"}
+          {status === "loading" && "Verifying your session\u2026"}
           {status === "success" && "Authentication successful!"}
           {status === "error" && "Authentication failed"}
         </h1>
@@ -110,7 +100,7 @@ export default function AuthCallback() {
           {status === "loading" &&
             "Please wait while we validate your credentials and establish a secure session."}
           {status === "success" &&
-            "Your session is active. Redirecting you to the dashboard…"}
+            "Your session is active. Redirecting you to the dashboard\u2026"}
           {status === "error" && errorMessage}
         </p>
 

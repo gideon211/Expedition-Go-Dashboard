@@ -962,17 +962,16 @@ function SecurityTab() {
     }
     setSaving(true);
     try {
-      const { getAuth, updatePassword, reauthenticateWithCredential, EmailAuthProvider } = await import("firebase/auth");
-      const { auth } = await import("@/lib/firebase");
-      const user = auth.currentUser;
-      if (!user) { toast.error("You must be logged in"); return; }
-      const credential = EmailAuthProvider.credential(user.email, form.currentPassword);
-      await reauthenticateWithCredential(user, credential);
-      await updatePassword(user, form.newPassword);
+      const api = (await import("@/lib/axios")).default;
+      await api.patch("/auth/change-password", {
+        currentPassword: form.currentPassword,
+        newPassword: form.newPassword,
+      });
       toast.success("Password updated successfully");
       setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
     } catch (err) {
-      toast.error(err.code === "auth/wrong-password" ? "Current password is incorrect" : "Failed to update password");
+      const msg = err.response?.data?.message || "Failed to update password";
+      toast.error(msg);
     } finally { setSaving(false); }
   };
 

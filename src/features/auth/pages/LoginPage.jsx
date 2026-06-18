@@ -13,15 +13,9 @@ import {
   BarChart3,
   Compass,
 } from "lucide-react";
-import {
-  auth,
-  googleProvider,
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  getFirebaseStatus,
-} from "@/lib/firebase";
 import { useSupplierLogin } from "@/features/auth/hooks/useSupplierLogin";
 import { getLoginErrorMessage } from "@/features/auth/api";
+import config from "@/config";
 import supplierLoginImage from "@/assets/supplier_login.jpg";
 
 const FEATURES = [
@@ -41,7 +35,7 @@ const stagger = {
 };
 
 export default function LoginPage() {
-  const { completeLogin, loading, error, setError } = useSupplierLogin();
+  const { completeLoginWithEmail, loading, error, setError } = useSupplierLogin();
   const [searchParams] = useSearchParams();
 
   const redirect = searchParams.get("redirect");
@@ -63,56 +57,24 @@ export default function LoginPage() {
       return;
     }
 
-    if (!auth) {
-      setError("Authentication service is unavailable. Please try again later.");
-      return;
-    }
-
     try {
-      const result = await signInWithEmailAndPassword(auth, email.trim(), password);
-      const idToken = await result.user.getIdToken();
-      await completeLogin(idToken);
+      await completeLoginWithEmail(email.trim(), password);
     } catch (err) {
-      if (err.code === "auth/popup-closed-by-user") return;
       if (!err.response) {
         setError(getLoginErrorMessage(err));
       }
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = () => {
     setError("");
-
-    if (!auth || !googleProvider) {
-      const status = getFirebaseStatus();
-      if (status.error) {
-        setError(`Sign-in unavailable: ${status.error}`);
-      } else if (!status.hasConfig) {
-        setError("Sign-in is not configured. Contact the administrator.");
-      } else {
-        setError("Authentication service is unavailable. Please try again later.");
-      }
-      return;
-    }
-
     setGoogleLoading(true);
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const idToken = await result.user.getIdToken();
-      await completeLogin(idToken);
-    } catch (err) {
-      if (err.code === "auth/popup-closed-by-user") return;
-      if (!err.response) {
-        setError(getLoginErrorMessage(err));
-      }
-    } finally {
-      setGoogleLoading(false);
-    }
+    const baseUrl = config.api.baseURL;
+    window.location.href = `${baseUrl}/auth/google`;
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50/80 p-4 sm:p-6">
-      {/* Unified card: image + form come together at same height */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -126,7 +88,6 @@ export default function LoginPage() {
             alt="African travel and safari experiences"
             className="absolute inset-0 w-full h-full object-cover"
           />
-          {/* Lighter overlay — image shows through more */}
           <div className="absolute inset-0 bg-gradient-to-t from-emerald-700/30 via-emerald-800/15 to-emerald-900/5" />
 
           <div className="relative z-10 flex flex-col p-6 xl:p-8 text-white flex-1">
@@ -170,7 +131,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Form panel — same height as image panel */}
+        {/* Form panel */}
         <div className="flex-1 flex items-center justify-center p-8 lg:p-12">
           <div className="w-full max-w-md">
             {/* Mobile brand */}
