@@ -11,17 +11,13 @@ async function fetchSupplierProfile(authToken) {
     return null;
   }
 
-  try {
-    const response = await api.get("/suppliers/application/status", {
-      skipGlobalErrorHandler: true,
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
-    });
-    return response.data?.data?.supplierProfile || response.data?.data || null;
-  } catch {
-    return null;
-  }
+  const response = await api.get("/suppliers/application/status", {
+    skipGlobalErrorHandler: true,
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
+  });
+  return response.data?.data?.supplierProfile || response.data?.data || null;
 }
 
 export async function loadSupplierProfile(authToken = getAuthToken()) {
@@ -99,7 +95,13 @@ export function getSupplierLoginToast(supplierProfile, user) {
   };
 }
 
+let lastToastTime = 0;
+
 export function showSupplierLoginToast(supplierProfile, user) {
+  const now = Date.now();
+  if (now - lastToastTime < 5000) return;
+  lastToastTime = now;
+
   const { type, message } = getSupplierLoginToast(supplierProfile, user);
 
   if (type === "success") {
