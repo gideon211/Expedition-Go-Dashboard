@@ -11,6 +11,7 @@ import {
   Building2,
   FileText,
   RefreshCw,
+  LogIn,
 } from "lucide-react";
 import {
   useAuthStore,
@@ -146,23 +147,46 @@ export default function SupplierStatusPage() {
 
   // Error state
   if (error) {
+    const isAuthError = error.includes("401") || error.toLowerCase().includes("token") || error.toLowerCase().includes("session") || error.toLowerCase().includes("expired") || error.toLowerCase().includes("unauthorized") || error.toLowerCase().includes("log in again");
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] px-4">
         <div className="max-w-md w-full bg-white rounded-xl border border-[#eaeaea] shadow-sm p-8 text-center">
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 rounded-full bg-[#fee2e2] flex items-center justify-center">
-              <AlertCircle size={32} className="text-[#dc2626]" />
+            <div className={`w-16 h-16 rounded-full ${isAuthError ? "bg-[#fef3c7]" : "bg-[#fee2e2]"} flex items-center justify-center`}>
+              {isAuthError ? <LogIn size={32} className="text-[#92400e]" /> : <AlertCircle size={32} className="text-[#dc2626]" />}
             </div>
           </div>
-          <h1 className="text-xl font-bold text-[#1e293b] mb-2">Something went wrong</h1>
-          <p className="text-sm text-[#64748b] mb-6">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
-          >
-            <RefreshCw size={16} />
-            <span>Try Again</span>
-          </button>
+          <h1 className="text-xl font-bold text-[#1e293b] mb-2">
+            {isAuthError ? "Session Expired" : "Something went wrong"}
+          </h1>
+          <p className="text-sm text-[#64748b] mb-6">
+            {isAuthError
+              ? "Your session has expired. Please log in again to continue."
+              : error}
+          </p>
+          {isAuthError ? (
+            <button
+              onClick={() => {
+                localStorage.removeItem("auth_token");
+                localStorage.removeItem("auth_user");
+                localStorage.removeItem("refresh_token");
+                useAuthStore.getState().setUnauthenticated();
+                window.location.href = "/login";
+              }}
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
+            >
+              <LogIn size={16} />
+              <span>Log In Again</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#044b3b] text-white rounded-lg text-sm font-medium hover:bg-[#033629] transition-colors"
+            >
+              <RefreshCw size={16} />
+              <span>Try Again</span>
+            </button>
+          )}
         </div>
       </div>
     );

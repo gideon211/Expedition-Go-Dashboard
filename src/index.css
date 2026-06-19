@@ -351,6 +351,23 @@
 
 .dashboard-date-picker .react-datepicker__day--today {
   font-weight: 700;
+  position: relative;
+}
+.dashboard-date-picker .react-datepicker__day--today::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #059669;
+}
+.dashboard-date-picker .react-datepicker__day--disabled {
+  color: #d1d5db !important;
+  cursor: not-allowed !important;
+  text-decoration: line-through;
 }
 
 .dashboard-date-picker .react-datepicker__navigation-icon::before {
@@ -682,6 +699,23 @@
 
 .dashboard-date-picker .react-datepicker__day--today {
   font-weight: 700;
+  position: relative;
+}
+.dashboard-date-picker .react-datepicker__day--today::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #059669;
+}
+.dashboard-date-picker .react-datepicker__day--disabled {
+  color: #d1d5db !important;
+  cursor: not-allowed !important;
+  text-decoration: line-through;
 }
 
 .dashboard-date-picker .react-datepicker__navigation-icon::before {

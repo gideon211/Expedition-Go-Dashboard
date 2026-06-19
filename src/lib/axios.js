@@ -130,17 +130,15 @@ api.interceptors.response.use(
       } catch {
       }
 
-      if (!originalRequest?.skipGlobalErrorHandler) {
-        if (typeof window !== "undefined") {
-          localStorage.setItem("auth_return_url", window.location.pathname + window.location.search);
-        }
-        localStorage.removeItem("auth_token");
-        localStorage.removeItem("auth_user");
-        localStorage.removeItem("refresh_token");
-        useAuthStore.getState().setUnauthenticated();
-        if (typeof window !== "undefined") {
-          window.location.href = "/login";
-        }
+      if (typeof window !== "undefined") {
+        localStorage.setItem("auth_return_url", window.location.pathname + window.location.search);
+      }
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("auth_user");
+      localStorage.removeItem("refresh_token");
+      useAuthStore.getState().setUnauthenticated();
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
       }
       return Promise.reject(error);
     }

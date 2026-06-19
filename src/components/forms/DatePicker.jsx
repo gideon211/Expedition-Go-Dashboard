@@ -75,7 +75,7 @@ const DatePicker = forwardRef(function DatePicker(
       {!inline && (
         <Calendar
           size={16}
-          className="dashboard-date-picker__icon pointer-events-none text-[#9e9e9e]"
+          className="dashboard-date-picker__icon cursor-pointer text-[#9e9e9e]"
           aria-hidden="true"
         />
       )}

@@ -16,6 +16,8 @@ import SettingsPage from "@/features/settings/pages/SettingsPage";
 import ChatPage from "@/features/chat/pages/ChatPage";
 import AnalyticsPage from "@/features/analytics/pages/AnalyticsPage";
 import CancellationRatePage from "@/features/cancellation/pages/CancellationRatePage";
+import SpecialOffersListPage from "@/features/special-offers/pages/SpecialOffersListPage";
+import SpecialOfferBuilderPage from "@/features/special-offers/pages/SpecialOfferBuilderPage";
 
 import GuestRoute from "@/components/shared/GuestRoute";
 
@@ -82,6 +84,8 @@ export default function AppRoutes() {
           <Route path="/customers" element={<Navigate to="/chat" replace />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/cancellation-rate" element={<CancellationRatePage />} />
+          <Route path="/special-offers" element={<SpecialOffersListPage />} />
+          <Route path="/special-offers/build/:id?/:step?" element={<SpecialOfferBuilderPage />} />
 
           {/* Catch-all route for 404 */}
           <Route path="*" element={<NotFoundPage />} />
