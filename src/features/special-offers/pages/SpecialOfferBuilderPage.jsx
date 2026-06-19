@@ -16,7 +16,7 @@ export default function SpecialOfferBuilderPage() {
   const { id, step } = useParams();
   const navigate = useNavigate();
   const {
-    currentStep, setStep, offer, editingId, isDirty, isSaving, errors,
+    currentStep, setStep, offer, editingId, isSaving,
     nextStep, prevStep, validateStep, setSaving, markSaved, reset, loadOffer, hasHydrated,
   } = useSpecialOfferBuilderStore();
   const [loadingProduct, setLoadingProduct] = useState(false);
@@ -39,6 +39,7 @@ export default function SpecialOfferBuilderPage() {
   useEffect(() => {
     if (!id || id === "new" || !hasHydrated) return;
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoadingProduct(true);
     setProductError(null);
     getSpecialOffer(id)
@@ -121,7 +122,9 @@ export default function SpecialOfferBuilderPage() {
       const payload = {
         name: offer.name,
         offerType: offer.offerType,
-        discountPercentage: offer.discountPercentage,
+        discountType: offer.discountType,
+        discountPercentage: offer.discountType === "PERCENTAGE" ? offer.discountPercentage : 0,
+        fixedDiscountValue: offer.discountType === "FIXED_AMOUNT" ? offer.fixedDiscountValue : null,
         startDate: offer.startDate ? new Date(offer.startDate).toISOString() : null,
         endDate: offer.endDate ? new Date(offer.endDate).toISOString() : null,
         isActive: offer.isActive,
@@ -129,6 +132,13 @@ export default function SpecialOfferBuilderPage() {
         maxSpots: offer.capacityType === "CAPPED" ? offer.maxSpots : null,
         timeSlotMode: offer.timeSlotMode,
         specificWeekdays: offer.specificWeekdays,
+        earlyBirdAdvanceDays: offer.offerType === "EARLY_BIRD" ? offer.earlyBirdAdvanceDays : null,
+        lastMinuteWindowHours: offer.offerType === "LAST_MINUTE" ? offer.lastMinuteWindowHours : null,
+        promoCode: offer.promoCode || null,
+        minQuantity: offer.minQuantity || null,
+        minSpendAmount: offer.minSpendAmount || null,
+        maxRedemptionsPerCustomer: offer.maxRedemptionsPerCustomer || null,
+        stackable: offer.stackable,
         targets: offer.targets.map((t) => ({
           tourId: t.tourId,
           tourOptionKey: t.tourOptionKey || null,

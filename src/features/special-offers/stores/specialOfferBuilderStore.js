@@ -95,10 +95,12 @@ export const useSpecialOfferBuilderStore = create(
         }
         if (stepIndex === 1) {
           if (!offer.name || !offer.name.trim()) errors.name = "Offer name is required";
-          if (!offer.startDate) errors.startDate = "Start date is required";
-          if (!offer.endDate) errors.endDate = "End date is required";
-          if (offer.startDate && offer.endDate && new Date(offer.startDate) >= new Date(offer.endDate)) {
-            errors.endDate = "End date must be after start date";
+          if (offer.offerType === "LIMITED_TIME") {
+            if (!offer.startDate) errors.startDate = "Start date is required";
+            if (!offer.endDate) errors.endDate = "End date is required";
+            if (offer.startDate && offer.endDate && new Date(offer.startDate) >= new Date(offer.endDate)) {
+              errors.endDate = "End date must be after start date";
+            }
           }
         }
         if (stepIndex === 2) {

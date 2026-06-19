@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Plus, Search, Edit, Power, Trash2, Package, CalendarDays, Percent, Tag, X, Infinity, TicketCheck, ArrowUp, Clock } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Plus, Search, Edit, Power, Trash2, Package, Percent, Tag, X, TicketCheck, ArrowUp, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { fetchSpecialOffers, deleteSpecialOffer, toggleSpecialOffer } from "@/features/special-offers/api";
 import LoadingSkeleton from "@/components/shared/Skeleton";
@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/select";
 
 const OFFER_TYPE_LABELS = { LIMITED_TIME: "Limited Time", EARLY_BIRD: "Early Bird", LAST_MINUTE: "Last Minute" };
-const OFFER_TYPE_ACCENTS = { LIMITED_TIME: "bg-indigo-500", EARLY_BIRD: "bg-amber-500", LAST_MINUTE: "bg-rose-500" };
 
 const STATUS_CONFIG = {
   active: { label: "Active", dot: "bg-emerald-500", bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
@@ -45,6 +44,7 @@ export default function SpecialOffersListPage() {
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [selectedOffer, setSelectedOffer] = useState(null);
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -54,7 +54,10 @@ export default function SpecialOffersListPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    load();
+  }, [load]);
 
   const filtered = offers.filter((o) => {
     if (search && !o.name.toLowerCase().includes(search.toLowerCase())) return false;
@@ -304,12 +307,16 @@ export default function SpecialOffersListPage() {
                     </div>
                   )}
 
-                  <div className="flex items-center gap-3 flex-1 min-w-0 px-3 py-3">
+                  <div
+                    className="flex items-center gap-3 flex-1 min-w-0 px-3 py-3 cursor-pointer"
+                    onClick={() => setSelectedOffer(offer)}
+                  >
                   <div className="flex-1 min-w-0 space-y-1">
                     {/* Tour title + Status */}
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           const t = offer.targets?.[0]?.tour || offer.targets?.[0];
                           if (t) navigate(`/products/${t.id || t.tourId}`);
                         }}
@@ -355,7 +362,7 @@ export default function SpecialOffersListPage() {
                             return (
                               <button
                                 key={t.id || t.tourId}
-                                onClick={() => navigate(`/products/${tData.id || t.tourId}`)}
+                                onClick={(e) => { e.stopPropagation(); navigate(`/products/${tData.id || t.tourId}`); }}
                                 className="inline-flex items-center gap-1.5 px-2 py-1 bg-white border border-slate-200 rounded-md text-[11px] text-slate-600 hover:border-emerald-300 hover:bg-emerald-50/30 transition-all cursor-pointer"
                               >
                                 <div className="w-4 h-4 rounded bg-slate-200 overflow-hidden shrink-0">
@@ -412,20 +419,24 @@ export default function SpecialOffersListPage() {
       )}
 
       {/* Delete confirmation modal */}
-      {deleteTarget && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          onClick={cancelDelete}
-        >
+      <AnimatePresence>
+        {deleteTarget && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-2xl shadow-xl max-w-sm w-full mx-4 p-6"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            onClick={cancelDelete}
           >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl shadow-xl max-w-sm w-full mx-4 p-6"
+            >
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
                 <Trash2 size={18} className="text-red-500" />
@@ -485,7 +496,216 @@ export default function SpecialOffersListPage() {
             </div>
           </motion.div>
         </motion.div>
-      )}
+        )}
+      </AnimatePresence>
+
+      {/* Detail modal */}
+      <AnimatePresence>
+        {selectedOffer && (() => {
+          const o = selectedOffer;
+          const statusCfg = STATUS_CONFIG[o.status] || STATUS_CONFIG.inactive;
+          const typeLabel = OFFER_TYPE_LABELS[o.offerType] || o.offerType;
+          const capped = o.capacityType === "CAPPED";
+          const spotsUsed = capped ? ((o.spotsSold / o.maxSpots) * 100).toFixed(0) : 0;
+          const headerAccent = o.offerType === "EARLY_BIRD" ? "from-amber-500 to-amber-600" : o.offerType === "LAST_MINUTE" ? "from-rose-500 to-rose-600" : "from-indigo-500 to-indigo-600";
+
+          const handleModalEdit = () => { setSelectedOffer(null); navigate(`/special-offers/build/${o.id}`); };
+          const handleModalToggle = async () => {
+            try {
+              const res = await toggleSpecialOffer(o.id);
+              const updated = res.data?.data?.offer;
+              toast.success(updated?.isActive ? "Offer activated" : "Offer deactivated");
+              setSelectedOffer(null);
+              load();
+            } catch { toast.error("Failed to toggle offer"); }
+          };
+          const handleModalDelete = () => { setSelectedOffer(null); setDeleteTarget(o.id); };
+
+          return (
+            <motion.div
+              key="detail-modal-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+              onClick={() => setSelectedOffer(null)}
+            >
+              <motion.div
+                key="detail-modal-content"
+                initial={{ opacity: 0, scale: 0.92, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ type: "spring", stiffness: 300, damping: 28 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden max-h-[90vh] flex flex-col"
+              >
+                {/* Header accent strip */}
+                <div className={cn("relative px-6 pt-6 pb-5 bg-gradient-to-r text-white", headerAccent)}>
+                  <button
+                    onClick={() => setSelectedOffer(null)}
+                    className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className={cn(
+                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border",
+                      "bg-white/20 border-white/30 text-white"
+                    )}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                      {statusCfg.label}
+                    </span>
+                    <span className="text-white/70 text-[11px] font-medium">{typeLabel}</span>
+                  </div>
+                  <h2 className="text-lg font-bold leading-tight pr-8">{o.name}</h2>
+                  <p className="text-white/80 text-xs mt-1">
+                    {formatDate(o.startDate)} – {formatDate(o.endDate)}
+                  </p>
+                </div>
+
+                {/* Scrollable content */}
+                <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
+                  {/* Discount highlight */}
+                  <div className="flex items-center gap-4">
+                    <div className={cn(
+                      "w-16 h-16 rounded-2xl flex flex-col items-center justify-center",
+                      o.discountType === "FIXED_AMOUNT" ? "bg-blue-50 border border-blue-200" : "bg-emerald-50 border border-emerald-200"
+                    )}>
+                      <Percent size={14} className={o.discountType === "FIXED_AMOUNT" ? "text-blue-500" : "text-emerald-500"} />
+                      <span className={cn("text-xl font-bold leading-none mt-0.5", o.discountType === "FIXED_AMOUNT" ? "text-blue-700" : "text-emerald-700")}>
+                        {o.discountType === "FIXED_AMOUNT" ? `$${o.fixedDiscountValue}` : `${o.discountPercentage}`}
+                      </span>
+                      <span className={cn("text-[8px] font-semibold uppercase tracking-wider", o.discountType === "FIXED_AMOUNT" ? "text-blue-500" : "text-emerald-500")}>
+                        {o.discountType === "FIXED_AMOUNT" ? "Off" : "% Off"}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-800">
+                        {o.discountType === "FIXED_AMOUNT"
+                          ? `$${o.fixedDiscountValue} off per booking`
+                          : `${o.discountPercentage}% discount`}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {o.discountType === "FIXED_AMOUNT"
+                          ? `Fixed amount discount`
+                          : `Customers save ${o.discountPercentage}% on this offer`}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Details grid */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <DetailItem label="Offer Type" value={typeLabel} />
+                    <DetailItem label="Capacity" value={capped ? `${o.maxSpots - o.spotsSold} spots left of ${o.maxSpots}` : "Unlimited"} />
+                    <DetailItem label="Valid Days" value={o.timeSlotMode === "SPECIFIC_WEEKDAYS" ? o.specificWeekdays?.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(", ") || "—" : "All Days"} />
+                    {o.promoCode && <DetailItem label="Promo Code" value={o.promoCode} highlight />}
+                    {o.minQuantity && <DetailItem label="Min Travelers" value={o.minQuantity} />}
+                    {o.minSpendAmount && <DetailItem label="Min Spend" value={`$${o.minSpendAmount}`} />}
+                    {o.maxRedemptionsPerCustomer && <DetailItem label="Max/Customer" value={o.maxRedemptionsPerCustomer} />}
+                    <DetailItem label="Stackable" value={o.stackable ? "Yes" : "No"} />
+                    {o.offerType === "EARLY_BIRD" && <DetailItem label="Advance Booking" value={`${o.earlyBirdAdvanceDays || 7}+ days`} />}
+                    {o.offerType === "LAST_MINUTE" && <DetailItem label="Booking Window" value={`Within ${o.lastMinuteWindowHours || 72}h`} />}
+                  </div>
+
+                  {/* Capacity bar (capped only) */}
+                  {capped && o.maxSpots > 0 && (
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-medium text-slate-600">Capacity</span>
+                        <span className="text-xs text-slate-500">{o.spotsSold} / {o.maxSpots} sold</span>
+                      </div>
+                      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min(Number(spotsUsed), 100)}%` }}
+                          transition={{ duration: 0.6, ease: "easeOut" }}
+                          className={cn(
+                            "h-full rounded-full",
+                            spotsUsed >= 90 ? "bg-red-500" : spotsUsed >= 70 ? "bg-amber-500" : "bg-emerald-500"
+                          )}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Products */}
+                  {o.targets?.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-slate-600 mb-2">
+                        Products ({o.targets.length})
+                      </p>
+                      <div className="space-y-1.5">
+                        {o.targets.map((t) => {
+                          const tData = t.tour || t;
+                          const price = getTourPrice(t.tour);
+                          return (
+                            <button
+                              key={t.id || t.tourId}
+                              onClick={() => { setSelectedOffer(null); navigate(`/products/${tData.id || t.tourId}`); }}
+                              className="w-full flex items-center gap-3 px-3 py-2.5 bg-slate-50 hover:bg-emerald-50/50 border border-slate-200 hover:border-emerald-200 rounded-xl transition-all group"
+                            >
+                              <div className="w-10 h-10 rounded-lg bg-slate-200 overflow-hidden shrink-0">
+                                {tData.photos?.[0] || t.tourPhoto ? (
+                                  <img src={tData.photos?.[0] || t.tourPhoto} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <Package size={14} className="text-slate-400" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0 text-left">
+                                <p className="text-sm font-medium text-slate-700 group-hover:text-emerald-600 truncate transition-colors">
+                                  {tData.title || t.tourTitle || "Tour"}
+                                </p>
+                                {t.tourOptionLabel && (
+                                  <p className="text-[11px] text-slate-400 truncate">{t.tourOptionLabel}</p>
+                                )}
+                              </div>
+                              {price && (
+                                <div className="text-right shrink-0">
+                                  <p className="text-xs text-slate-400 line-through">${Math.round(price)}</p>
+                                  <p className="text-sm font-bold text-emerald-600">
+                                    ${Math.round(price * (1 - o.discountPercentage / 100))}
+                                  </p>
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action buttons */}
+                <div className="px-6 py-4 border-t border-slate-100 flex items-center gap-3">
+                  <button
+                    onClick={handleModalEdit}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 shadow-sm transition-colors"
+                  >
+                    <Edit size={15} />
+                    Edit Offer
+                  </button>
+                  <button
+                    onClick={handleModalToggle}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors"
+                  >
+                    <Power size={15} />
+                    {o.isActive ? "Deactivate" : "Activate"}
+                  </button>
+                  <button
+                    onClick={handleModalDelete}
+                    className="inline-flex items-center justify-center w-10 h-10 border border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 rounded-xl transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
     </div>
   );
 }
@@ -497,6 +717,15 @@ function MoreVerticalIcon({ size, className }) {
       <circle cx="12" cy="12" r="1" />
       <circle cx="12" cy="19" r="1" />
     </svg>
+  );
+}
+
+function DetailItem({ label, value, highlight }) {
+  return (
+    <div className="px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-100">
+      <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-0.5">{label}</p>
+      <p className={cn("text-sm font-semibold", highlight ? "text-indigo-600 font-mono" : "text-slate-700")}>{value}</p>
+    </div>
   );
 }
 
