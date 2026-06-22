@@ -1,7 +1,9 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  AlertCircle,
   ArrowUpRight,
   Calendar,
+  Camera,
   Clock,
   Inbox,
   Loader2,
