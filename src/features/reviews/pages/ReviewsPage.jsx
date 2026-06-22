@@ -609,7 +609,7 @@ export default function ReviewsPage() {
                       </div>
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">Your Response</span>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => handleOpenReply(review)}
                             className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
@@ -640,7 +640,7 @@ export default function ReviewsPage() {
 
                   {/* Reply action */}
                   {!review.supplierResponse && (
-                    <div className="mt-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                    <div className="mt-4 flex items-center gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-200">
                       <button
                         onClick={() => handleOpenReply(review)}
                         className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/60 rounded-xl hover:bg-emerald-100 hover:border-emerald-300 transition-all"
@@ -653,7 +653,7 @@ export default function ReviewsPage() {
 
                   {/* Always show reply/edit for replied reviews */}
                   {review.supplierResponse && (
-                    <div className="mt-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                    <div className="mt-3 flex items-center gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-200">
                       <button
                         onClick={() => handleOpenReply(review)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-500 border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-slate-700 transition-all"

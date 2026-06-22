@@ -213,7 +213,7 @@ export default function Sidebar() {
         </button>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3 scrollbar-thin">
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3 min-h-0 scrollbar-none">
           <ul className={`space-y-[2px] ${isCollapsed ? "px-2" : "px-3"}`}>
             {navItems.map((item) => (
               <li key={item.path}>

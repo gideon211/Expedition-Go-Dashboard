@@ -83,7 +83,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 bg-slate-100/80 rounded-xl p-1 mb-6 overflow-x-auto">
+      <div className="flex items-center gap-1 bg-slate-100/80 rounded-xl p-1 mb-6 overflow-x-auto scrollbar-none">
         {filteredTabs.map((tab) => {
           const Icon = tab.icon;
           return (
