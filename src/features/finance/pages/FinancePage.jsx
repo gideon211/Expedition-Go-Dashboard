@@ -60,11 +60,11 @@ export default function FinancePage() {
     try {
       if (activeTab === "earnings") {
         const result = await fetchEarnings({ limit: 50 });
-        setEarnings(result.earnings);
+        setEarnings((result.earnings || []).sort((a, b) => new Date(b.date) - new Date(a.date)));
         setEarningsSummary(result.summary);
       } else if (activeTab === "payouts") {
         const result = await fetchPayouts({ limit: 50 });
-        setPayouts(result.payouts);
+        setPayouts((result.payouts || []).sort((a, b) => new Date(b.date) - new Date(a.date)));
         setPayoutsSummary(result.summary);
       } else {
         const result = await fetchPayoutMethods();
