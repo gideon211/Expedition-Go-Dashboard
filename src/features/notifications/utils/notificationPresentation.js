@@ -15,11 +15,11 @@ function getNotificationRoute(type, data = {}) {
   if (data.bookingId) {
     return { path: `/bookings?bookingId=${data.bookingId}`, label: "View Booking" };
   }
-  if (data.tourId) {
-    return { path: `/products/${data.tourId}`, label: "View Product" };
-  }
   if (data.reviewId) {
     return { path: `/reviews?reviewId=${data.reviewId}`, label: "View Review" };
+  }
+  if (data.tourId) {
+    return { path: `/products/${data.tourId}`, label: "View Product" };
   }
   if (data.payoutId) {
     return { path: `/finance?tab=payouts&payoutId=${data.payoutId}`, label: "View Payout" };
@@ -30,7 +30,7 @@ function getNotificationRoute(type, data = {}) {
     case "BOOKING_CANCELLED":
       return { path: "/bookings", label: "View Bookings" };
     case "REVIEW_RECEIVED":
-      return { path: "/reviews", label: "View Reviews" };
+      return { path: "/reviews", label: "View Review" };
     case "PAYMENT_RECEIVED":
     case "PAYOUT_PROCESSED":
     case "PAYOUT_APPROVED":
