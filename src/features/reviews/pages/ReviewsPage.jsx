@@ -1,9 +1,12 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
+  ArrowLeft,
   ArrowUpRight,
   Calendar,
   Camera,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Inbox,
   Loader2,
@@ -24,7 +27,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { formatDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -273,6 +276,78 @@ function ReplyModal({ review, onClose, onSubmit, submitting }) {
   );
 }
 
+function ReviewPhotoLightbox({ photos, index, onClose, onIndexChange }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95"
+      onClick={onClose}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 z-10 p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+      >
+        <X size={24} />
+      </button>
+
+      {photos.length > 1 && (
+        <>
+          <button
+            onClick={(e) => { e.stopPropagation(); onIndexChange(index - 1); }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-3 text-white/60 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+          >
+            <ChevronLeft size={28} />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onIndexChange(index + 1); }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 text-white/60 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+          >
+            <ChevronRight size={28} />
+          </button>
+        </>
+      )}
+
+      <motion.div
+        key={index}
+        initial={{ opacity: 0, scale: 0.92 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.2 }}
+        className="max-w-[90vw] max-h-[85vh] flex items-center justify-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <img
+          src={photos[index]}
+          alt=""
+          className="max-w-full max-h-[85vh] object-contain rounded-lg"
+        />
+      </motion.div>
+
+      {photos.length > 1 && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2">
+          {photos.map((_, i) => (
+            <button
+              key={i}
+              onClick={(e) => { e.stopPropagation(); onIndexChange(i); }}
+              className={cn(
+                "rounded-full transition-all duration-200",
+                i === index
+                  ? "w-5 h-2 bg-white"
+                  : "w-2 h-2 bg-white/30 hover:bg-white/50"
+              )}
+            />
+          ))}
+          <span className="ml-3 text-xs font-medium text-white/50">
+            {index + 1} / {photos.length}
+          </span>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
 export default function ReviewsPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [reviews, setReviews] = useState([]);
@@ -280,6 +355,11 @@ export default function ReviewsPage() {
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const highlightId = searchParams.get("reviewId");
+  const [highlightedReviewId, setHighlightedReviewId] = useState(null);
+  const [lightboxPhotos, setLightboxPhotos] = useState(null);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const [replyTarget, setReplyTarget] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -329,6 +409,28 @@ export default function ReviewsPage() {
 
   const stats = useMemo(() => computeStats(reviews), [reviews]);
 
+  useEffect(() => {
+    if (highlightId && reviews.length > 0) {
+      const match = reviews.find((r) => r.id === highlightId);
+      if (match) {
+        setHighlightedReviewId(highlightId);
+        setTimeout(() => {
+          const el = document.getElementById(`review-${highlightId}`);
+          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 100);
+        const timer = setTimeout(() => {
+          setHighlightedReviewId(null);
+          setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            next.delete("reviewId");
+            return next;
+          }, { replace: true });
+        }, 8000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [highlightId, reviews, setSearchParams]);
+
   const handleOpenReply = (review) => setReplyTarget(review);
 
   const handleSubmitReply = async (review, text) => {
@@ -375,6 +477,30 @@ export default function ReviewsPage() {
     }
   };
 
+  const openLightbox = (photos, index) => {
+    setLightboxPhotos(photos);
+    setLightboxIndex(index);
+  };
+
+  const closeLightbox = () => setLightboxPhotos(null);
+
+  const changeLightboxIndex = (next) => {
+    if (!lightboxPhotos) return;
+    const total = lightboxPhotos.length;
+    setLightboxIndex(((next % total) + total) % total);
+  };
+
+  useEffect(() => {
+    if (!lightboxPhotos) return;
+    const handleKey = (e) => {
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft") changeLightboxIndex(lightboxIndex - 1);
+      if (e.key === "ArrowRight") changeLightboxIndex(lightboxIndex + 1);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [lightboxPhotos, lightboxIndex]);
+
   const formatCurrency = (amount, currency = "EUR") =>
     new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount);
 
@@ -392,7 +518,7 @@ export default function ReviewsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div className="flex items-center gap-4">
-          <div className="w-1 h-10 bg-gradient-to-b from-emerald-500 to-emerald-300 rounded-full" />
+          <div className="w-1 h-10 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full" />
           <div>
             <div className="flex items-center gap-2.5">
               <h1 className="text-xl md:text-2xl font-bold text-slate-800">Reviews</h1>
@@ -530,7 +656,7 @@ export default function ReviewsPage() {
             exit={{ opacity: 0, y: -20 }}
             className="flex flex-col items-center justify-center py-20 px-5"
           >
-            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center mb-6 ring-1 ring-emerald-200/60 shadow-inner">
+            <div className="w-20 h-20 rounded-3xl bg-linear-to-br from-emerald-50 to-emerald-100 flex items-center justify-center mb-6 ring-1 ring-emerald-200/60 shadow-inner">
               {search ? (
                 <Search size={32} className="text-emerald-300" />
               ) : (
@@ -566,20 +692,26 @@ export default function ReviewsPage() {
             {filteredReviews.map((review) => (
               <motion.div
                 key={review.id}
+                id={`review-${review.id}`}
                 variants={FADE_UP}
                 layout
-                className="group relative bg-white border border-slate-100 rounded-xl hover:border-slate-200 hover:shadow-md hover:shadow-slate-900/5 transition-all duration-200"
+                className={cn(
+                  "group relative bg-white border rounded-xl transition-all duration-200",
+                  highlightedReviewId === review.id
+                    ? "border-emerald-400 ring-2 ring-emerald-200/60 shadow-lg shadow-emerald-200/30"
+                    : "border-slate-100 hover:border-slate-200 hover:shadow-md hover:shadow-slate-900/5"
+                )}
               >
                 {/* Status accent bar */}
                 <div className={cn(
                   "absolute left-0 top-3 bottom-3 w-1 rounded-r-full transition-all duration-300",
                   !review.supplierResponse && review.status === "pending"
-                    ? "bg-gradient-to-b from-amber-400 to-amber-300"
+                    ? "bg-linear-to-b from-amber-400 to-amber-300"
                     : review.supplierResponse
-                      ? "bg-gradient-to-b from-emerald-400 to-emerald-300"
+                      ? "bg-linear-to-b from-emerald-400 to-emerald-300"
                       : review.status === "approved"
-                        ? "bg-gradient-to-b from-emerald-400 to-emerald-300"
-                        : "bg-gradient-to-b from-slate-300 to-slate-200"
+                        ? "bg-linear-to-b from-emerald-400 to-emerald-300"
+                        : "bg-linear-to-b from-slate-300 to-slate-200"
                 )} />
 
                 <div className="pl-5 pr-5 py-5">
@@ -587,7 +719,7 @@ export default function ReviewsPage() {
                   <div className="flex items-start gap-3.5 mb-3">
                     <button
                       onClick={() => handleCustomerClick(review)}
-                      className="w-10 h-10 rounded-full shrink-0 ring-1 ring-emerald-200/50 overflow-hidden bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center hover:ring-emerald-400 transition-all"
+                      className="w-10 h-10 rounded-full shrink-0 ring-1 ring-emerald-200/50 overflow-hidden bg-linear-to-br from-emerald-50 to-emerald-100 flex items-center justify-center hover:ring-emerald-400 transition-all"
                     >
                       {review.customerPhoto ? (
                         <img src={optimizeImage(review.customerPhoto, 40)} alt="" className="w-full h-full object-cover" />
@@ -646,10 +778,13 @@ export default function ReviewsPage() {
                   {/* Metadata badges */}
                   <div className="flex items-center gap-3 mt-3">
                     {review.photos > 0 && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200/50">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); openLightbox(review.photoUrls, 0); }}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200/50 hover:bg-amber-100 cursor-pointer transition-colors"
+                      >
                         <Camera size={12} />
                         {review.photos} {review.photos === 1 ? "photo" : "photos"}
-                      </span>
+                      </button>
                     )}
                     {review.helpful > 0 && (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200/50">
@@ -759,7 +894,7 @@ export default function ReviewsPage() {
               className="fixed right-0 top-0 h-full w-full max-w-[420px] bg-white shadow-2xl shadow-black/10 z-50 flex flex-col"
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-[#044b3b] to-emerald-700 px-5 h-16 flex items-center justify-between relative shrink-0">
+              <div className="bg-linear-to-r from-[#044b3b] to-emerald-700 px-5 h-16 flex items-center justify-between relative shrink-0">
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-40" />
                 <h3 className="relative text-sm font-semibold text-white/90">Customer Profile</h3>
                 <button
@@ -774,7 +909,7 @@ export default function ReviewsPage() {
               <div className="relative -mt-4 px-4 shrink-0">
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
                   <div className="flex items-center gap-3">
-                    <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[#044b3b] to-emerald-500 text-xl font-bold text-white shadow-sm ring-2 ring-white/80">
+                    <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-linear-to-br from-[#044b3b] to-emerald-500 text-xl font-bold text-white shadow-sm ring-2 ring-white/80">
                       <span>{(selectedCustomer.customerName || "?").charAt(0).toUpperCase()}</span>
                       {selectedCustomer.customerPhoto && (
                         <img
@@ -900,6 +1035,18 @@ export default function ReviewsPage() {
               </div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Photo Lightbox */}
+      <AnimatePresence>
+        {lightboxPhotos && (
+          <ReviewPhotoLightbox
+            photos={lightboxPhotos}
+            index={lightboxIndex}
+            onClose={closeLightbox}
+            onIndexChange={changeLightboxIndex}
+          />
         )}
       </AnimatePresence>
     </div>

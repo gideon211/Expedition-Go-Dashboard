@@ -541,7 +541,7 @@ export default function SpecialOffersListPage() {
                 className="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden max-h-[90vh] flex flex-col"
               >
                 {/* Header accent strip */}
-                <div className={cn("relative px-6 pt-6 pb-5 bg-gradient-to-r text-white", headerAccent)}>
+                <div className={cn("relative px-6 pt-6 pb-5 bg-linear-to-r text-white", headerAccent)}>
                   <button
                     onClick={() => setSelectedOffer(null)}
                     className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"

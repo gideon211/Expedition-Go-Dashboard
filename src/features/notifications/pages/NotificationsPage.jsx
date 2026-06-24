@@ -167,7 +167,7 @@ export default function NotificationsPage() {
       {/* Header */}
       <div className="relative flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 pb-5 border-b border-blue-100">
         <div className="relative">
-          <div className="absolute -left-4 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-blue-300 rounded-full hidden sm:block" />
+          <div className="absolute -left-4 top-0 bottom-0 w-1 bg-linear-to-b from-blue-500 to-blue-300 rounded-full hidden sm:block" />
           <h1 className="text-xl md:text-2xl font-bold text-slate-800 flex items-center gap-2.5">
             <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
             Notifications
@@ -231,31 +231,31 @@ export default function NotificationsPage() {
           <div className="space-y-4">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="flex items-start gap-4 p-4 bg-white border border-blue-100/60 rounded-xl animate-pulse">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 shrink-0" />
+                <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-100 to-blue-50 shrink-0" />
                 <div className="flex-1 space-y-2.5 pt-1">
-                  <div className="h-4 w-2/5 bg-gradient-to-r from-blue-100 to-transparent rounded" />
-                  <div className="h-3 w-4/5 bg-gradient-to-r from-blue-50 to-transparent rounded" />
+                  <div className="h-4 w-2/5 bg-linear-to-r from-blue-100 to-transparent rounded" />
+                  <div className="h-3 w-4/5 bg-linear-to-r from-blue-50 to-transparent rounded" />
                 </div>
               </div>
             ))}
           </div>
         ) : isError ? (
           <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center mx-auto mb-4 ring-1 ring-red-200">
+            <div className="w-16 h-16 rounded-full bg-linear-to-br from-red-50 to-red-100 flex items-center justify-center mx-auto mb-4 ring-1 ring-red-200">
               <Bell size={24} className="text-red-400" />
             </div>
             <p className="text-sm font-semibold text-slate-600 mb-1">Could not load notifications</p>
             <p className="text-xs text-slate-400 mb-4">Something went wrong. Please try again.</p>
             <button
               onClick={() => refetch()}
-              className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm font-medium rounded-lg shadow-sm shadow-blue-200 hover:from-blue-700 hover:to-blue-600 transition-all"
+              className="px-5 py-2.5 bg-linear-to-r from-blue-600 to-blue-500 text-white text-sm font-medium rounded-lg shadow-sm shadow-blue-200 hover:from-blue-700 hover:to-blue-600 transition-all"
             >
               Try again
             </button>
           </div>
         ) : Object.entries(groupedNotifications).length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center mx-auto mb-4 ring-1 ring-blue-200/60 shadow-sm">
+            <div className="w-16 h-16 rounded-full bg-linear-to-br from-blue-50 to-blue-100 flex items-center justify-center mx-auto mb-4 ring-1 ring-blue-200/60 shadow-sm">
               <Bell size={24} className="text-blue-400" />
             </div>
             <p className="text-sm font-semibold text-slate-600">
@@ -271,11 +271,11 @@ export default function NotificationsPage() {
           Object.entries(groupedNotifications).map(([dateLabel, items]) => (
             <div key={dateLabel}>
               <div className="flex items-center gap-3 mb-3 sticky top-0 bg-white/95 backdrop-blur-sm py-2 px-4 md:px-6 z-10 border-b border-blue-100">
-                <div className="h-px flex-1 bg-gradient-to-r from-blue-200 to-transparent" />
+                <div className="h-px flex-1 bg-linear-to-r from-blue-200 to-transparent" />
                 <span className="text-[11px] font-semibold text-blue-600 uppercase tracking-widest">
                   {dateLabel}
                 </span>
-                <div className="h-px flex-1 bg-gradient-to-l from-blue-200 to-transparent" />
+                <div className="h-px flex-1 bg-linear-to-l from-blue-200 to-transparent" />
               </div>
               <div className="space-y-2">
                 {items.map((notification) => {
@@ -293,13 +293,13 @@ export default function NotificationsPage() {
                       transition={{ duration: 0.2 }}
                       className={`group relative border rounded-xl transition-all ${
                         isUnread
-                          ? "bg-gradient-to-r from-blue-50/50 via-white to-white border-blue-200/60 shadow-sm shadow-blue-100/30"
+                          ? "bg-linear-to-r from-blue-50/50 via-white to-white border-blue-200/60 shadow-sm shadow-blue-100/30"
                           : "bg-white border-slate-100 hover:border-blue-200 hover:shadow-sm hover:shadow-blue-100/20"
                       }`}
                     >
                       <div className="flex items-start gap-3.5 p-4 sm:p-5">
                         {isUnread && (
-                          <span className="absolute left-0 top-3 bottom-3 w-1 bg-gradient-to-b from-blue-500 to-blue-400 rounded-r-full" />
+                          <span className="absolute left-0 top-3 bottom-3 w-1 bg-linear-to-b from-blue-500 to-blue-400 rounded-r-full" />
                         )}
 
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${typeConfig.color} ring-1 ring-black/5`}>

@@ -324,7 +324,7 @@ export default function AvailabilityPage() {
                 <p className="text-xs text-slate-400 leading-tight mt-0.5">{s.label}</p>
               </div>
             </div>
-            <div className={`absolute bottom-0 left-0 h-1 bg-gradient-to-r ${s.bar} transition-all duration-500 ease-out rounded-full`}
+            <div className={`absolute bottom-0 left-0 h-1 bg-linear-to-r ${s.bar} transition-all duration-500 ease-out rounded-full`}
               style={{ width: s.value > 0 ? `${Math.min((s.value / totalDays) * 100, 100)}%` : "0%" }}
             />
           </div>
@@ -564,7 +564,7 @@ export default function AvailabilityPage() {
 
               {/* --- Summary card --- */}
               {editStatus !== "blocked" && (
-                <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-4 border border-slate-200">
+                <div className="bg-linear-to-br from-slate-50 to-white rounded-xl p-4 border border-slate-200">
                   <div className="flex items-center gap-1.5 mb-3">
                     <Users size={12} className="text-slate-400" />
                     <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Booking Summary</p>

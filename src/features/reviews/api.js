@@ -17,6 +17,7 @@ export function mapReviewRow(review) {
     date: review.createdAt,
     status: review.status?.toLowerCase() || "pending",
     photos: review.photos?.length || 0,
+    photoUrls: review.photos || [],
     helpful: review.helpfulCount || 0,
     bookingId: review.bookingId,
     supplierResponse: review.supplierResponse || null,

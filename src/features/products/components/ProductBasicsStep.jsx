@@ -541,14 +541,14 @@ export default function ProductBasicsStep() {
             />
             <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 text-xs text-slate-500">
               <div className="flex items-start sm:items-center gap-1.5">
-                <svg className="w-3.5 h-3.5 mt-0.5 sm:mt-0 flex-shrink-0 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="w-3.5 h-3.5 mt-0.5 sm:mt-0 shrink-0 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
                 </svg>
                 <span>Keep between <strong>120–160 characters</strong> for optimal Google search snippets.</span>
               </div>
               <span className="hidden sm:inline text-slate-400">|</span>
               <div className="flex items-start sm:items-center gap-1.5">
-                <svg className="w-3.5 h-3.5 mt-0.5 sm:mt-0 flex-shrink-0 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="w-3.5 h-3.5 mt-0.5 sm:mt-0 shrink-0 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>Include primary keywords naturally — this appears in search results and social shares.</span>

@@ -17,7 +17,7 @@ export default function Skeleton({
   count = 1,
   ...props 
 }) {
-  const baseClasses = "animate-pulse bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 bg-[length:200%_100%]";
+  const baseClasses = "animate-pulse bg-linear-to-r from-slate-200 via-slate-100 to-slate-200 bg-[length:200%_100%]";
   
   const variantClasses = {
     text: "h-4 rounded",

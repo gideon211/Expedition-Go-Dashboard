@@ -130,7 +130,7 @@ export default function ProductContentStep() {
                 <ul className="mt-3 space-y-1.5 rounded-xl border border-slate-200 bg-slate-50 p-3">
                   {highlights.map((item, index) => (
                     <li key={`${item}-${index}`} className="flex items-start gap-2 text-sm text-slate-600">
-                      <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-600" />
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-600" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -273,7 +273,7 @@ export default function ProductContentStep() {
   return (
     <div className="flex flex-col lg:flex-row gap-6">
       {/* Sidebar Navigation */}
-      <div className="lg:w-72 flex-shrink-0">
+      <div className="lg:w-72 shrink-0">
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
           <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
@@ -295,15 +295,15 @@ export default function ProductContentStep() {
                       : "text-slate-800 hover:bg-slate-50"
                   }`}
                 >
-                  <div className={`flex-shrink-0 ${isActive ? "text-emerald-600" : "text-slate-500"}`}>
+                  <div className={`shrink-0 ${isActive ? "text-emerald-600" : "text-slate-500"}`}>
                     <Icon size={18} />
                   </div>
                   <span className="flex-1">{section.label}</span>
                   {isComplete && (
-                    <Check size={16} className="text-emerald-500 flex-shrink-0" />
+                    <Check size={16} className="text-emerald-500 shrink-0" />
                   )}
                   {!isComplete && isActive && (
-                    <ChevronRight size={16} className="text-emerald-600 flex-shrink-0" />
+                    <ChevronRight size={16} className="text-emerald-600 shrink-0" />
                   )}
                 </button>
               );
@@ -392,7 +392,7 @@ function ItineraryBuilder({ items, onChange, error }) {
           {items.map((item, index) => (
             <div key={index} className="flex gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
               <div className="flex flex-col items-center">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-600 flex-shrink-0 mt-1.5" />
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-600 shrink-0 mt-1.5" />
                 {index < items.length - 1 && <div className="w-0.5 flex-1 bg-slate-200 my-1" />}
               </div>
               <div className="flex-1 min-w-0">
@@ -411,7 +411,7 @@ function ItineraryBuilder({ items, onChange, error }) {
                     <button
                       type="button"
                       onClick={() => startEdit(index)}
-                      className="p-1.5 text-slate-400 hover:text-emerald-600 transition-colors flex-shrink-0"
+                      className="p-1.5 text-slate-400 hover:text-emerald-600 transition-colors shrink-0"
                       aria-label="Edit itinerary item"
                     >
                       <Pencil size={13} />
@@ -419,7 +419,7 @@ function ItineraryBuilder({ items, onChange, error }) {
                     <button
                       type="button"
                       onClick={() => removeItem(index)}
-                      className="p-1.5 text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"
+                      className="p-1.5 text-slate-400 hover:text-red-500 transition-colors shrink-0"
                       aria-label="Remove itinerary item"
                     >
                       <X size={13} />
@@ -601,7 +601,7 @@ function TagList({ label, items, placeholder, onChange, accent = "green" }) {
             type="button"
             onClick={addItem}
             disabled={!inputValue.trim()}
-            className="flex items-center justify-center gap-1.5 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+            className="flex items-center justify-center gap-1.5 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
           >
             <Plus size={16} />
             <span>Add</span>
@@ -619,13 +619,13 @@ function TagList({ label, items, placeholder, onChange, accent = "green" }) {
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isGreen ? "bg-emerald-400" : "bg-red-400"}`} />
+                  <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isGreen ? "bg-emerald-400" : "bg-red-400"}`} />
                   <span className="text-sm text-slate-700 truncate">{item}</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => removeItem(index)}
-                  className="flex-shrink-0 p-1 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+                  className="shrink-0 p-1 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
                 >
                   <X size={14} />
                 </button>

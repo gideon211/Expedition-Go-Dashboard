@@ -100,11 +100,11 @@ export default function LoginPage() {
             alt="African travel and safari experiences"
             className="absolute inset-0 w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-emerald-700/30 via-emerald-800/15 to-emerald-900/5" />
+          <div className="absolute inset-0 bg-linear-to-t from-emerald-700/30 via-emerald-800/15 to-emerald-900/5" />
 
           <div className="relative z-10 flex flex-col p-6 xl:p-8 text-white flex-1">
             <motion.div variants={fadeUp} className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-950/40">
+              <div className="w-8 h-8 rounded-lg bg-linear-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-950/40">
                 <Compass size={15} className="text-white" />
               </div>
               <span className="text-sm font-bold tracking-tight" style={{ fontFamily: "'DM Sans', system-ui, sans-serif", letterSpacing: "-0.02em" }}>TravioAfrica</span>
@@ -124,7 +124,7 @@ export default function LoginPage() {
             <motion.ul variants={stagger} initial="initial" animate="animate" className="space-y-2">
               {FEATURES.map(({ icon: Icon, label }) => (
                 <motion.li key={label} variants={fadeUp} className="flex items-center gap-2.5 text-white/80">
-                  <span className="w-7 h-7 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center flex-shrink-0 ring-1 ring-white/15">
+                  <span className="w-7 h-7 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center shrink-0 ring-1 ring-white/15">
                     <Icon size={13} />
                   </span>
                   <span className="text-xs font-medium">{label}</span>
@@ -153,7 +153,7 @@ export default function LoginPage() {
               transition={{ delay: 0.1, duration: 0.35 }}
               className="lg:hidden text-center mb-8"
             >
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-lg shadow-emerald-950/20 mb-3">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-linear-to-br from-emerald-500 to-emerald-700 shadow-lg shadow-emerald-950/20 mb-3">
                 <Compass size={20} className="text-white" />
               </div>
               <h1 className="text-2xl font-bold text-slate-800">Supplier Login</h1>
@@ -175,7 +175,7 @@ export default function LoginPage() {
                 animate={{ opacity: 1, height: "auto" }}
                 className="flex items-start gap-3 p-3.5 mb-5 bg-red-50 border border-red-200 rounded-lg"
               >
-                <AlertCircle size={16} className="text-red-500 mt-0.5 flex-shrink-0" />
+                <AlertCircle size={16} className="text-red-500 mt-0.5 shrink-0" />
                 <p className="text-sm text-red-700">{error}</p>
               </motion.div>
             )}

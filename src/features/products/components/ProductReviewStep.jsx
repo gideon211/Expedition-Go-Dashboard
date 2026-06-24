@@ -14,7 +14,7 @@ function ErrorList({ errors, stepIndex, goToStep }) {
             onClick={() => goToStep(stepIndex)}
             className="flex items-center gap-1.5 text-xs text-red-600 hover:text-red-800 hover:underline transition-colors"
           >
-            <span className="w-1 h-1 rounded-full bg-red-400 flex-shrink-0" />
+            <span className="w-1 h-1 rounded-full bg-red-400 shrink-0" />
             {err}
             <ArrowRight size={11} className="opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
@@ -124,7 +124,7 @@ export default function ProductReviewStep() {
         <div className={`px-5 py-4 flex items-start gap-4 ${
           allValid ? "bg-emerald-50" : "bg-amber-50"
         }`}>
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
             allValid ? "bg-emerald-500" : "bg-amber-400"
           }`}>
             {allValid ? (
@@ -170,7 +170,7 @@ export default function ProductReviewStep() {
               <div className="pl-5 pr-5 py-4">
                 <div className="flex items-start gap-3.5">
                   {/* Icon */}
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
                     result.isValid ? "bg-emerald-100 text-emerald-600" : "bg-red-100 text-red-500"
                   }`}>
                     {result.isValid ? (
@@ -187,13 +187,13 @@ export default function ProductReviewStep() {
                         {step.number}. {step.label}
                       </p>
                       {!result.isValid && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-100 text-red-600 flex-shrink-0">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-100 text-red-600 shrink-0">
                           <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
                           {Object.keys(result.errors).length} issue{Object.keys(result.errors).length > 1 ? "s" : ""}
                         </span>
                       )}
                       {result.isValid && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-600 flex-shrink-0">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-600 shrink-0">
                           <Check size={11} />
                           Complete
                         </span>
@@ -314,7 +314,7 @@ export default function ProductReviewStep() {
                   }`}
                 >
                   <div className="flex items-start gap-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                       selected ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-400"
                     }`}>
                       <Icon size={20} />
@@ -324,7 +324,7 @@ export default function ProductReviewStep() {
                         <p className={`text-sm font-semibold ${selected ? "text-emerald-800" : "text-slate-800"}`}>
                           {status.label}
                         </p>
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
                           selected ? "border-emerald-600" : "border-slate-200"
                         }`}>
                           {selected && <div className="w-2.5 h-2.5 rounded-full bg-emerald-600" />}

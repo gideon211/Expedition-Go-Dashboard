@@ -168,7 +168,7 @@ export default function SpecialOfferBuilderPage() {
       <div className="flex items-center gap-3 mb-7">
         <button
           onClick={() => navigate("/special-offers")}
-          className="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors flex-shrink-0"
+          className="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors shrink-0"
         >
           <ArrowLeft size={17} className="text-slate-500" />
         </button>
@@ -200,7 +200,7 @@ export default function SpecialOfferBuilderPage() {
             {/* Step Title */}
             <div className="px-5 md:px-7 py-4 border-b border-emerald-100/60">
               <div className="flex items-center gap-3">
-                <span className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center flex-shrink-0">
+                <span className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
                   <StepIcon index={currentStep} />
                 </span>
                 <div>

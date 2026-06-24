@@ -86,7 +86,7 @@ function SectionCard({ title, children, className }) {
       {title && (
         <div className="px-5 py-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-0.5 h-4 bg-gradient-to-b from-emerald-500 to-emerald-300 rounded-full flex-shrink-0" />
+            <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
             <h2 className="text-sm font-semibold text-slate-800 tracking-tight">{title}</h2>
           </div>
         </div>
@@ -103,7 +103,7 @@ function DetailRow({ icon: Icon, label, value, children }) {
   return (
     <div className="grid grid-cols-[90px_1fr] gap-x-3 gap-y-0.5 py-2 first:pt-0 last:pb-0 border-b border-slate-100 last:border-0">
       <div className="flex items-center gap-1.5">
-        <Icon size={11} className="text-slate-400 flex-shrink-0" />
+        <Icon size={11} className="text-slate-400 shrink-0" />
         <span className="text-[11px] text-slate-400 uppercase tracking-wider">{label}</span>
       </div>
       <div className="min-w-0">
@@ -263,7 +263,7 @@ const skeletonVariants = {
 };
 
 function SkeletonBlock({ className, style }) {
-  return <div className={cn("animate-pulse bg-gradient-to-r from-slate-100 via-slate-200/50 to-slate-100 bg-[length:200%_100%] rounded-lg", className)} style={style} />;
+  return <div className={cn("animate-pulse bg-linear-to-r from-slate-100 via-slate-200/50 to-slate-100 bg-[length:200%_100%] rounded-lg", className)} style={style} />;
 }
 
 function DetailPageSkeleton() {
@@ -428,14 +428,14 @@ export default function ProductDetailPage() {
         <div className="max-w-5xl mx-auto px-4 md:px-6">
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-2 min-w-0">
-              <button onClick={() => navigate("/products")} className="flex items-center gap-1.5 h-8 px-2.5 text-xs font-medium text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all flex-shrink-0">
+              <button onClick={() => navigate("/products")} className="flex items-center gap-1.5 h-8 px-2.5 text-xs font-medium text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all shrink-0">
                 <ArrowLeft size={14} />
                 <span className="hidden sm:inline">Products</span>
               </button>
-              <span className="text-xs text-slate-300 flex-shrink-0">/</span>
+              <span className="text-xs text-slate-300 shrink-0">/</span>
               <h1 className="text-sm font-semibold text-slate-800 truncate">{tour.title}</h1>
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => navigate(`/products/build/${id}/type`)}
                 className="flex items-center gap-1.5 px-3.5 h-8 bg-emerald-700 text-white rounded-lg text-xs font-medium hover:bg-emerald-800 transition-all shadow-sm shadow-emerald-200"
@@ -480,7 +480,7 @@ export default function ProductDetailPage() {
               {displayPhotos.slice(0, 5).map((photo, i) => (
                 <button key={i} onClick={() => setLightboxIndex(i)} className={cn("relative overflow-hidden bg-slate-100 group cursor-pointer", i === 0 ? "md:col-span-2 md:row-span-2 min-h-[260px] md:min-h-[440px]" : "min-h-[130px] md:min-h-[219px]")}>
                   <img src={i === 0 ? getCloudinaryHero(photo) : getCloudinaryUrl(photo, 600, 450)} alt={`${tour.title} - Photo ${i + 1}`} className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105" onError={(e) => handleImageError(e, i)} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300" />
                   {i === 0 && (
                     <div className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-white/10 backdrop-blur-sm border border-white/20 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300">
                       <Camera size={12} /> <span>View all {displayPhotos.length} photos</span>
@@ -491,7 +491,7 @@ export default function ProductDetailPage() {
               {displayPhotos.length > 5 && (
                 <button onClick={() => setGalleryOpen(true)} className="relative overflow-hidden bg-slate-100 min-h-[130px] md:min-h-[219px] group cursor-pointer">
                   <img src={getCloudinaryUrl(displayPhotos[5], 600, 450)} alt={`${tour.title} - Photo 6`} className="absolute inset-0 w-full h-full object-cover transition-all duration-500 group-hover:scale-105" onError={(e) => handleImageError(e, 5)} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex items-end justify-center pb-4 sm:pb-5 transition-all duration-300 group-hover:from-black/80">
+                  <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/30 to-transparent flex items-end justify-center pb-4 sm:pb-5 transition-all duration-300 group-hover:from-black/80">
                     <span className="text-xs font-semibold text-white/90 bg-white/10 backdrop-blur-sm border border-white/20 px-3 py-1.5 rounded-lg">+{displayPhotos.length - 5} more</span>
                   </div>
                 </button>
@@ -551,7 +551,7 @@ export default function ProductDetailPage() {
           className="mb-8"
         >
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-1 h-10 bg-gradient-to-b from-emerald-500 to-emerald-300 rounded-full flex-shrink-0" />
+            <div className="w-1 h-10 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <StatusBadge status={tour.status} label={PRODUCT_STATUSES[tour.status]?.label} size="sm" />
@@ -581,7 +581,7 @@ export default function ProductDetailPage() {
                 <ul className="space-y-3">
                   {content.highlights.map((h, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-[7px] flex-shrink-0" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-[7px] shrink-0" />
                       <span>{h}</span>
                     </li>
                   ))}
@@ -594,7 +594,7 @@ export default function ProductDetailPage() {
               <SectionCard title="Itinerary">
                 <div className="relative">
                   {/* Gradient timeline rail */}
-                  <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-emerald-300 via-emerald-400 to-emerald-300 rounded-full opacity-70" />
+                  <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-linear-to-b from-emerald-300 via-emerald-400 to-emerald-300 rounded-full opacity-70" />
 
                   <div className="space-y-6">
                     {content.itinerary.map((item, idx) => {
@@ -623,12 +623,12 @@ export default function ProductDetailPage() {
                               className="mb-4 -ml-[46px] pl-[46px]"
                             >
                               <div className="flex items-center gap-3">
-                                <div className="h-px flex-1 bg-gradient-to-r from-emerald-200/60 to-transparent" />
+                                <div className="h-px flex-1 bg-linear-to-r from-emerald-200/60 to-transparent" />
                                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 shadow-sm whitespace-nowrap">
                                   <Calendar size={11} />
                                   {item.day}
                                 </span>
-                                <div className="h-px flex-1 bg-gradient-to-l from-emerald-200/60 to-transparent" />
+                                <div className="h-px flex-1 bg-linear-to-l from-emerald-200/60 to-transparent" />
                               </div>
                             </motion.div>
                           )}
@@ -668,7 +668,7 @@ export default function ProductDetailPage() {
                   </div>
 
                   {/* Subtle bottom fade */}
-                  <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 right-0 h-6 bg-linear-to-t from-white to-transparent pointer-events-none" />
                 </div>
               </SectionCard>
             )}
@@ -683,7 +683,7 @@ export default function ProductDetailPage() {
                       <ul className="space-y-2.5">
                         {included.map((item, i) => (
                           <li key={i} className="flex items-start gap-2.5 text-sm text-slate-600">
-                            <div className="w-4 h-4 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <div className="w-4 h-4 rounded-full bg-emerald-50 flex items-center justify-center shrink-0 mt-0.5">
                               <Check size={10} className="text-emerald-500" />
                             </div>
                             <span>{item}</span>
@@ -698,7 +698,7 @@ export default function ProductDetailPage() {
                       <ul className="space-y-2.5">
                         {excluded.map((item, i) => (
                           <li key={i} className="flex items-start gap-2.5 text-sm text-slate-600">
-                            <div className="w-4 h-4 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <div className="w-4 h-4 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
                               <XIcon size={10} className="text-red-400" />
                             </div>
                             <span>{item}</span>
@@ -717,7 +717,7 @@ export default function ProductDetailPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {content.whatToBring.map((item, i) => (
                     <div key={i} className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg bg-slate-50 text-sm text-slate-600">
-                      <Check size={12} className="text-emerald-500 flex-shrink-0" />
+                      <Check size={12} className="text-emerald-500 shrink-0" />
                       <span>{item}</span>
                     </div>
                   ))}
@@ -744,10 +744,10 @@ export default function ProductDetailPage() {
               transition={{ duration: 0.35, ease: "easeOut" }}
               className="bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
             >
-              <div className="px-5 py-4 bg-gradient-to-r from-slate-50 to-white border-b border-slate-100">
+              <div className="px-5 py-4 bg-linear-to-r from-slate-50 to-white border-b border-slate-100">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-0.5 h-4 bg-gradient-to-b from-emerald-500 to-emerald-300 rounded-full flex-shrink-0" />
+                    <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
                     <h3 className="text-sm font-semibold text-slate-800">Pricing</h3>
                   </div>
                   {currency && <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">{currency}</span>}
@@ -776,13 +776,13 @@ export default function ProductDetailPage() {
                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Discount Perks</p>
                     {schedules.discountPerks.groupDiscount && (
                       <div className="flex items-center gap-2 text-xs text-slate-600 bg-emerald-50/50 rounded-lg px-3 py-2">
-                        <Percent size={12} className="text-emerald-500 flex-shrink-0" />
+                        <Percent size={12} className="text-emerald-500 shrink-0" />
                         <span>Group: <strong>{schedules.discountPerks.groupDiscount.discountPercentage}% off</strong> ({schedules.discountPerks.groupDiscount.minTravelers}+ travelers)</span>
                       </div>
                     )}
                     {schedules.discountPerks.earlyBirdDiscount && (
                       <div className="flex items-center gap-2 text-xs text-slate-600 bg-amber-50/50 rounded-lg px-3 py-2">
-                        <Percent size={12} className="text-amber-500 flex-shrink-0" />
+                        <Percent size={12} className="text-amber-500 shrink-0" />
                         <span>Early bird: <strong>{schedules.discountPerks.earlyBirdDiscount.discountPercentage}% off</strong> (book {schedules.discountPerks.earlyBirdDiscount.daysBeforeBooking} days ahead)</span>
                       </div>
                     )}
@@ -801,7 +801,7 @@ export default function ProductDetailPage() {
             >
               <div className="px-5 py-4 border-b border-slate-100">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-0.5 h-4 bg-gradient-to-b from-emerald-500 to-emerald-300 rounded-full flex-shrink-0" />
+                  <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
                   <h3 className="text-sm font-semibold text-slate-800">Details</h3>
                 </div>
               </div>
@@ -834,7 +834,7 @@ export default function ProductDetailPage() {
               >
                 <div className="px-5 py-4 border-b border-slate-100">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-0.5 h-4 bg-gradient-to-b from-emerald-500 to-emerald-300 rounded-full flex-shrink-0" />
+                    <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
                     <h3 className="text-sm font-semibold text-slate-800">Location</h3>
                   </div>
                 </div>
@@ -860,7 +860,7 @@ export default function ProductDetailPage() {
             >
               <div className="px-5 py-4 border-b border-slate-100">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-0.5 h-4 bg-gradient-to-b from-emerald-500 to-emerald-300 rounded-full flex-shrink-0" />
+                  <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
                   <h3 className="text-sm font-semibold text-slate-800">Availability</h3>
                 </div>
               </div>
@@ -886,7 +886,7 @@ export default function ProductDetailPage() {
               >
                 <div className="px-5 py-4 border-b border-slate-100">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-0.5 h-4 bg-gradient-to-b from-emerald-500 to-emerald-300 rounded-full flex-shrink-0" />
+                    <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
                     <h3 className="text-sm font-semibold text-slate-800">Schedule</h3>
                   </div>
                 </div>
@@ -940,7 +940,7 @@ export default function ProductDetailPage() {
             >
               <div className="px-5 py-4 border-b border-slate-100">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-0.5 h-4 bg-gradient-to-b from-emerald-500 to-emerald-300 rounded-full flex-shrink-0" />
+                  <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
                   <h3 className="text-sm font-semibold text-slate-800">Booking Rules</h3>
                 </div>
               </div>
@@ -954,43 +954,43 @@ export default function ProductDetailPage() {
                 )}
                 {booking.ticketType && (
                   <div className="flex items-center gap-2.5 text-slate-600">
-                    <Tag size={14} className="text-slate-400 flex-shrink-0" /> <span>Ticket type: <strong className="text-slate-700">{booking.ticketType}</strong></span>
+                    <Tag size={14} className="text-slate-400 shrink-0" /> <span>Ticket type: <strong className="text-slate-700">{booking.ticketType}</strong></span>
                   </div>
                 )}
                 <div className="flex items-center gap-2.5 text-slate-600">
-                  {booking.instantBooking ? <Check size={14} className="text-emerald-500 flex-shrink-0" /> : <Clock size={14} className="text-slate-400 flex-shrink-0" />}
+                  {booking.instantBooking ? <Check size={14} className="text-emerald-500 shrink-0" /> : <Clock size={14} className="text-slate-400 shrink-0" />}
                   <span>{booking.instantBooking ? "Instant booking" : "Request booking"}</span>
                 </div>
                 {typeof booking.instantConfirmation === 'boolean' && (
                   <div className="flex items-center gap-2.5 text-slate-600">
-                    {booking.instantConfirmation ? <Check size={14} className="text-emerald-500 flex-shrink-0" /> : <Clock size={14} className="text-slate-400 flex-shrink-0" />}
+                    {booking.instantConfirmation ? <Check size={14} className="text-emerald-500 shrink-0" /> : <Clock size={14} className="text-slate-400 shrink-0" />}
                     <span>{booking.instantConfirmation ? "Instant confirmation" : "Manual confirmation"}</span>
                   </div>
                 )}
                 {schedules.travelerDetails?.maxTravelersPerBooking && (
                   <div className="flex items-center gap-2.5 text-slate-600">
-                    <Users size={14} className="text-slate-400 flex-shrink-0" /> Max travelers: <strong className="text-slate-700">{schedules.travelerDetails.maxTravelersPerBooking}</strong>
+                    <Users size={14} className="text-slate-400 shrink-0" /> Max travelers: <strong className="text-slate-700">{schedules.travelerDetails.maxTravelersPerBooking}</strong>
                   </div>
                 )}
                 {booking.maxQuantity && (
                   <div className="flex items-center gap-2.5 text-slate-600">
-                    <Users size={14} className="text-slate-400 flex-shrink-0" /> Max per booking: <strong className="text-slate-700">{booking.maxQuantity}</strong>
+                    <Users size={14} className="text-slate-400 shrink-0" /> Max per booking: <strong className="text-slate-700">{booking.maxQuantity}</strong>
                   </div>
                 )}
                 {booking.bookingWindow?.start && booking.bookingWindow?.end && (
                   <div className="flex items-start gap-2.5 text-slate-600">
-                    <Calendar size={14} className="text-slate-400 mt-0.5 flex-shrink-0" />
+                    <Calendar size={14} className="text-slate-400 mt-0.5 shrink-0" />
                     <div><span className="font-medium text-slate-700">Booking window:</span> <span className="text-slate-500">{formatDate(booking.bookingWindow.start)} \u2013 {formatDate(booking.bookingWindow.end)}</span></div>
                   </div>
                 )}
                 {booking.minAdvanceBookingHours && (
                   <div className="flex items-center gap-2.5 text-slate-600">
-                    <Clock size={14} className="text-slate-400 flex-shrink-0" /> Book <strong className="text-slate-700">{booking.minAdvanceBookingHours}h</strong> in advance
+                    <Clock size={14} className="text-slate-400 shrink-0" /> Book <strong className="text-slate-700">{booking.minAdvanceBookingHours}h</strong> in advance
                   </div>
                 )}
                 {cancellation.type && (
                   <div className="flex items-start gap-2.5 text-slate-600">
-                    <Shield size={14} className="text-slate-400 mt-0.5 flex-shrink-0" />
+                    <Shield size={14} className="text-slate-400 mt-0.5 shrink-0" />
                     <div>
                       <span className="font-medium text-slate-700">Cancellation:</span> <span className="text-slate-500">{cancellation.type}{cancellation.refundPercentage ? ` (${cancellation.refundPercentage}% refund)` : ""}</span>
                       {cancellation.refundRules?.length > 0 && (
@@ -1023,7 +1023,7 @@ export default function ProductDetailPage() {
               >
                 <div className="px-5 py-4 border-b border-slate-100">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-0.5 h-4 bg-gradient-to-b from-emerald-500 to-emerald-300 rounded-full flex-shrink-0" />
+                    <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
                     <h3 className="text-sm font-semibold text-slate-800">Languages</h3>
                   </div>
                 </div>
@@ -1050,7 +1050,7 @@ export default function ProductDetailPage() {
               >
                 <div className="px-5 py-4 border-b border-slate-100">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-0.5 h-4 bg-gradient-to-b from-emerald-500 to-emerald-300 rounded-full flex-shrink-0" />
+                    <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
                     <h3 className="text-sm font-semibold text-slate-800">Tags</h3>
                   </div>
                 </div>

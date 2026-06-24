@@ -38,7 +38,7 @@ export default function Step1Products() {
     <div className="space-y-6">
       {errors.targets && (
         <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
-          <AlertCircle size={16} className="text-red-500 flex-shrink-0" />
+          <AlertCircle size={16} className="text-red-500 shrink-0" />
           <p className="text-sm text-red-600">{errors.targets}</p>
         </div>
       )}
@@ -103,7 +103,7 @@ export default function Step1Products() {
                         : "hover:bg-emerald-50"
                     )}
                   >
-                    <div className="w-11 h-11 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200">
+                    <div className="w-11 h-11 rounded-lg bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
                       {tour.photos?.[0] ? (
                         <img src={tour.photos[0]} alt="" className="w-full h-full object-cover" />
                       ) : (
@@ -172,7 +172,7 @@ export default function Step1Products() {
                   transition={{ duration: 0.2 }}
                   className="flex items-center gap-3.5 p-3.5 bg-white rounded-xl border border-emerald-200 shadow-sm"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-emerald-100 overflow-hidden flex-shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-100 overflow-hidden shrink-0">
                     {target.tourPhotos?.[0] ? (
                       <img src={target.tourPhotos[0]} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -190,7 +190,7 @@ export default function Step1Products() {
                   <button
                     type="button"
                     onClick={() => removeTarget(index)}
-                    className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"
+                    className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors shrink-0"
                     title="Remove"
                   >
                     <X size={15} />

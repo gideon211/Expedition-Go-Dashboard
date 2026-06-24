@@ -281,7 +281,7 @@ export default function DashboardPage() {
                       onClick={() => navigate("/notifications")}
                       className={`relative rounded-lg border transition-all cursor-pointer ${
                         isUnread
-                          ? "border-[#059669]/20 bg-gradient-to-r from-[#059669]/[0.04] to-transparent hover:border-[#059669]/40 hover:shadow-sm"
+                          ? "border-[#059669]/20 bg-linear-to-r from-[#059669]/[0.04] to-transparent hover:border-[#059669]/40 hover:shadow-sm"
                           : "border-transparent hover:border-slate-200 hover:bg-slate-50/80"
                       }`}
                     >

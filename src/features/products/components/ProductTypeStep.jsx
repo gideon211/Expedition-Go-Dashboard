@@ -221,7 +221,7 @@ export default function ProductTypeStep() {
               }`}
             >
               {/* Radio indicator */}
-              <div className="mt-1 flex-shrink-0">
+              <div className="mt-1 shrink-0">
                 <div
                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
                     isSelected ? "border-emerald-600" : "border-slate-300"
@@ -234,7 +234,7 @@ export default function ProductTypeStep() {
               </div>
 
               {/* Icon */}
-              <div className="flex-shrink-0 text-slate-500">
+              <div className="shrink-0 text-slate-500">
                 <Icon size={32} strokeWidth={1.5} />
               </div>
 
@@ -289,7 +289,7 @@ export default function ProductTypeStep() {
                               <span className="text-slate-400">Select transportation modes</span>
                             )}
                           </div>
-                          <ChevronDown size={16} className={`text-slate-400 transition-transform flex-shrink-0 ml-2 ${transportDropdownOpen ? "rotate-180" : ""}`} />
+                          <ChevronDown size={16} className={`text-slate-400 transition-transform shrink-0 ml-2 ${transportDropdownOpen ? "rotate-180" : ""}`} />
                         </button>
 
                         {transportDropdownOpen && (
@@ -398,7 +398,7 @@ export default function ProductTypeStep() {
                               <span className="text-slate-400">Select one (or more)</span>
                             )}
                           </div>
-                          <ChevronDown size={16} className={`text-slate-400 transition-transform flex-shrink-0 ml-2 ${activityDropdownOpen ? "rotate-180" : ""}`} />
+                          <ChevronDown size={16} className={`text-slate-400 transition-transform shrink-0 ml-2 ${activityDropdownOpen ? "rotate-180" : ""}`} />
                         </button>
 
                         {activityDropdownOpen && (
@@ -515,7 +515,7 @@ export default function ProductTypeStep() {
                               <span className="text-slate-400">Select one (or more)</span>
                             )}
                           </div>
-                          <ChevronDown size={16} className={`text-slate-400 transition-transform flex-shrink-0 ml-2 ${transportCategoryDropdownOpen ? "rotate-180" : ""}`} />
+                          <ChevronDown size={16} className={`text-slate-400 transition-transform shrink-0 ml-2 ${transportCategoryDropdownOpen ? "rotate-180" : ""}`} />
                         </button>
 
                         {transportCategoryDropdownOpen && (

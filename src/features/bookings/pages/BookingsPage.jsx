@@ -14,7 +14,7 @@ import {
   PAGE_SIZE_OPTIONS,
   SUPPLIER_BOOKING_STATUS_OPTIONS,
 } from "@/lib/constants";
-import { formatCurrency, formatDate, formatTime } from "@/lib/utils";
+import { formatCurrency, formatDate, formatTime, cn } from "@/lib/utils";
 import { optimizeImage } from "@/lib/image";
 import DatePicker from "@/components/forms/DatePicker";
 import { fetchSupplierBookings, updateBookingStatus } from "../api";
@@ -52,6 +52,7 @@ export default function BookingsPage() {
   const [error, setError] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [highlightedBookingId, setHighlightedBookingId] = useState(searchParams.get("bookingId") || null);
 
   const page = parseInt(searchParams.get("page") || "0", 10);
   const pageSize = parseInt(searchParams.get("pageSize") || String(DEFAULT_PAGE_SIZE), 10);
@@ -89,6 +90,27 @@ export default function BookingsPage() {
   }, [page, pageSize, apiStatus]);
 
   useEffect(() => { loadBookings(); }, [loadBookings]);
+
+  useEffect(() => {
+    if (highlightedBookingId && bookings.length > 0) {
+      const match = bookings.find((b) => b.id === highlightedBookingId);
+      if (match) {
+        setTimeout(() => {
+          const el = document.getElementById(`booking-${highlightedBookingId}`);
+          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 100);
+        const timer = setTimeout(() => {
+          setHighlightedBookingId(null);
+          setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            next.delete("bookingId");
+            return next;
+          }, { replace: true });
+        }, 8000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [highlightedBookingId, bookings, setSearchParams]);
 
   const updateFilters = useCallback((updates) => {
     const params = new URLSearchParams(searchParams);
@@ -312,14 +334,23 @@ export default function BookingsPage() {
               const isUpdating = updatingId === booking.id;
 
               return (
-                <div key={booking.id} className="group bg-white rounded-xl border border-emerald-100/60 hover:border-emerald-200 hover:shadow-lg transition-all duration-200 overflow-hidden">
+                <div
+                  key={booking.id}
+                  id={`booking-${booking.id}`}
+                  className={cn(
+                    "group bg-white rounded-xl border transition-all duration-200 overflow-hidden",
+                    highlightedBookingId === booking.id
+                      ? "border-emerald-400 ring-2 ring-emerald-200/60 shadow-lg shadow-emerald-200/30"
+                      : "border-emerald-100/60 hover:border-emerald-200 hover:shadow-lg"
+                  )}
+                >
                   <div className="flex flex-col sm:flex-row">
                     {/* Tour photo */}
                     <div className="sm:w-48 shrink-0 relative">
                       {booking.tourPhoto ? (
                         <img src={optimizeImage(booking.tourPhoto, 192)} alt="" className="w-full sm:w-48 h-40 sm:h-48 object-cover" />
                       ) : (
-                        <div className="w-full sm:w-48 h-40 sm:h-48 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                        <div className="w-full sm:w-48 h-40 sm:h-48 bg-linear-to-br from-slate-100 to-slate-200 flex items-center justify-center">
                           <span className="text-2xl text-slate-300">🏰</span>
                         </div>
                       )}

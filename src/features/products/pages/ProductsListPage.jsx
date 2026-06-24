@@ -195,7 +195,7 @@ export default function ProductsListPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-1 h-10 bg-gradient-to-b from-emerald-500 to-emerald-300 rounded-full" />
+          <div className="w-1 h-10 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full" />
           <div>
             <div className="flex items-center gap-2.5">
               <h1 className="text-xl md:text-2xl font-bold text-slate-800">Products</h1>

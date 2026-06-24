@@ -149,7 +149,7 @@ export default function FinancePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-1 h-10 bg-gradient-to-b from-emerald-500 to-emerald-300 rounded-full" />
+          <div className="w-1 h-10 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full" />
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-slate-800">Finance</h1>
             <p className="text-sm text-slate-500 mt-0.5">Track earnings, payouts, and payment methods</p>

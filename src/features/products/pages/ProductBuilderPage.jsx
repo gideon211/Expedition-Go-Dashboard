@@ -349,7 +349,7 @@ export default function ProductBuilderPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-4 p-4 bg-amber-50 border border-amber-400 rounded-xl flex items-start gap-3 shadow-sm"
         >
-          <RotateCcw size={18} className="text-amber-700 mt-0.5 flex-shrink-0" />
+          <RotateCcw size={18} className="text-amber-700 mt-0.5 shrink-0" />
           <div className="flex-1">
             <p className="text-sm font-medium text-slate-800">
               You have an unsaved draft
@@ -384,7 +384,7 @@ export default function ProductBuilderPage() {
 
       {/* Page Header */}
       <div className="flex items-start gap-3 mb-6 max-w-5xl mx-auto">
-        <div className="w-1 h-10 bg-gradient-to-b from-emerald-500 to-emerald-300 rounded-full flex-shrink-0" />
+        <div className="w-1 h-10 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-slate-800">
             {id && id !== "new" ? "Edit Product" : "Create New Product"}

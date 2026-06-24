@@ -70,7 +70,7 @@ export default function SettingsPage() {
     <div className="p-5 md:p-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <div className="w-1 h-10 bg-gradient-to-b from-emerald-500 to-emerald-300 rounded-full" />
+        <div className="w-1 h-10 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full" />
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-slate-800">Settings</h1>
           <p className="text-sm text-slate-500 mt-0.5">Manage your account and business settings</p>
@@ -351,7 +351,7 @@ function ProfileTab() {
         </div>
         <div className="px-6 py-5">
           <div className="flex items-start gap-6">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               {logoPreview ? (
                 <div className="relative w-24 h-24 rounded-xl border border-slate-200 overflow-hidden shadow-sm">
                   <img src={logoPreview} alt="Preview" className="w-full h-full object-cover" />

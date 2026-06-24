@@ -140,7 +140,7 @@ export default function Sidebar() {
           w-[260px]`}
       >
         {/* Brand + Collapse */}
-        <div className={`flex items-center h-[80px] flex-shrink-0 border-b border-white/10 ${isCollapsed ? "justify-center px-2" : "justify-between px-5"}`}>
+        <div className={`flex items-center h-[80px] shrink-0 border-b border-white/10 ${isCollapsed ? "justify-center px-2" : "justify-between px-5"}`}>
           {!isCollapsed && (
             <div className="min-w-0">
               <span className="text-2xl font-bold text-white tracking-tight block leading-none">TravioAfrica</span>
@@ -161,7 +161,7 @@ export default function Sidebar() {
           onClick={() => navigate("/settings?tab=profile")}
           onMouseEnter={() => setProfileHover(true)}
           onMouseLeave={() => setProfileHover(false)}
-          className={`flex-shrink-0 w-full text-center cursor-pointer hover:bg-white/5 transition-colors border-b border-white/5 relative ${isCollapsed ? "py-4" : "py-4 px-5"}`}
+          className={`shrink-0 w-full text-center cursor-pointer hover:bg-white/5 transition-colors border-b border-white/5 relative ${isCollapsed ? "py-4" : "py-4 px-5"}`}
         >
           <div className={`flex flex-col items-center gap-2 ${isCollapsed ? "" : "relative"}`}>
             <div className="relative shrink-0">
@@ -224,7 +224,7 @@ export default function Sidebar() {
         </nav>
 
         {/* Sign Out */}
-        <div className={`border-t border-white/10 flex-shrink-0 relative ${isCollapsed ? "p-2" : "px-3 py-2"}`}>
+        <div className={`border-t border-white/10 shrink-0 relative ${isCollapsed ? "p-2" : "px-3 py-2"}`}>
           <button
             onClick={() => setShowLogoutConfirm(!showLogoutConfirm)}
             onBlur={() => setTimeout(() => setShowLogoutConfirm(false), 200)}

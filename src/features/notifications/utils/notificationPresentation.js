@@ -13,16 +13,16 @@
 
 function getNotificationRoute(type, data = {}) {
   if (data.bookingId) {
-    return { path: "/bookings", label: "View Booking" };
+    return { path: `/bookings?bookingId=${data.bookingId}`, label: "View Booking" };
   }
   if (data.tourId) {
-    return { path: "/products", label: "View Product" };
+    return { path: `/products/${data.tourId}`, label: "View Product" };
   }
   if (data.reviewId) {
-    return { path: "/reviews", label: "View Review" };
+    return { path: `/reviews?reviewId=${data.reviewId}`, label: "View Review" };
   }
   if (data.payoutId) {
-    return { path: "/finance", label: "View Payout" };
+    return { path: `/finance?tab=payouts&payoutId=${data.payoutId}`, label: "View Payout" };
   }
 
   switch (type) {

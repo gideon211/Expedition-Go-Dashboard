@@ -19,7 +19,7 @@ export default function FormError({ className, children, ...props }) {
       role="alert"
       {...props}
     >
-      <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+      <AlertCircle size={16} className="mt-0.5 shrink-0" />
       <span>{children}</span>
     </div>
   );

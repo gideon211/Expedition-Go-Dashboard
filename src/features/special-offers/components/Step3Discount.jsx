@@ -171,7 +171,7 @@ export default function Step3Discount() {
       )}
 
       {/* Price Preview */}
-      <div className="bg-gradient-to-r from-emerald-50 to-emerald-100/60 rounded-xl border border-emerald-200 p-5">
+      <div className="bg-linear-to-r from-emerald-50 to-emerald-100/60 rounded-xl border border-emerald-200 p-5">
         <p className="text-xs font-medium text-emerald-700 uppercase tracking-wider mb-3">Price Preview</p>
         <div className="flex items-center justify-between">
           <div>
