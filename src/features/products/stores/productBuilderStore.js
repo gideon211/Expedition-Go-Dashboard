@@ -208,7 +208,7 @@ const INITIAL_PRODUCT = {
     pickupAppearance: "",
     pickupPhotoUrls: [],
     additionalInfo: "",
-    uniqueSellingPoints: "",
+    uniqueSellingPoints: [],
     travelerRequirements: "",
     languages: ["English"],
     writingLanguage: "English",
@@ -487,10 +487,8 @@ export const useProductBuilderStore = create(
             break;
 
           case 8: // What Makes Your Product Unique
-            if (!product.content.uniqueSellingPoints?.trim()) {
-              errors.uniqueSellingPoints = "Please describe what makes your product unique";
-            } else if (product.content.uniqueSellingPoints.trim().length < 100) {
-              errors.uniqueSellingPoints = "Please enter a minimum of 100 characters";
+            if (!product.content.uniqueSellingPoints?.length) {
+              errors.uniqueSellingPoints = "Add at least one selling point";
             }
             break;
 

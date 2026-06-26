@@ -514,7 +514,6 @@ export default function ThemeStep() {
             <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
               <Info size={14} className="text-amber-500 shrink-0 mt-0.5" />
               <p className="text-xs text-amber-700 leading-relaxed">
-                Select up to {maxSelections} themes that best describe this product.
                 Selecting multiple themes increases visibility in traveler searches.
               </p>
             </div>

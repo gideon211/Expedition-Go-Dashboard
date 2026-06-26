@@ -66,8 +66,8 @@ function buildFormData(product) {
   formData.append("categorization", JSON.stringify(categorization));
 
   const theme = {
-    primary: product.primaryTheme || product.theme || "",
-    secondary: product.secondaryThemes || [],
+    primaryTheme: product.primaryTheme || product.theme || "",
+    secondaryThemes: product.secondaryThemes || [],
     tags: product.tags || [],
   };
   formData.append("theme", JSON.stringify(theme));
@@ -82,7 +82,7 @@ function buildFormData(product) {
     itinerary: product.content?.itinerary || [],
     meetingInstructions: product.content?.meetingInstructions || "",
     additionalInfo: product.content?.additionalInfo || "",
-    uniqueSellingPoints: product.content?.uniqueSellingPoints || "",
+    uniqueSellingPoints: product.content?.uniqueSellingPoints || [],
     travelerRequirements: product.content?.travelerRequirements || "",
     languages: product.content?.languages || ["English"],
     hasGuideLead: product.content?.hasGuideLead ?? false,

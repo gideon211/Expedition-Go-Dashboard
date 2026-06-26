@@ -32,7 +32,9 @@ export default function PreviewStep() {
 
   const heroPhoto = product.photos?.find(p => p.id === product.heroImage) || product.photos?.[0] || null;
   const enabledAgeGroups = product.pricing?.ageGroups?.filter(ag => ag.enabled) || [];
-  const highlights = product.content?.highlights?.filter(h => h.trim()) || [];
+  const highlights = (product.content?.highlights || []).filter(h => typeof h === 'string' && h.trim());
+  const rawUSP = product.content?.uniqueSellingPoints || [];
+  const uniqueSellingPoints = Array.isArray(rawUSP) ? rawUSP : (rawUSP.trim() ? [rawUSP.trim()] : []);
   const itinerary = product.content?.itinerary || [];
   const included = product.content?.included || [];
   const excluded = product.content?.excluded || [];
@@ -290,9 +292,16 @@ export default function PreviewStep() {
           )}
 
           {/* Unique Selling Points */}
-          {product.content?.uniqueSellingPoints && (
+          {uniqueSellingPoints.length > 0 && (
             <Section title="Unique Selling Points" icon={Star}>
-              <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">{product.content.uniqueSellingPoints}</p>
+              <ul className="space-y-1.5">
+                {uniqueSellingPoints.map((point, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                    <Check size={12} className="text-emerald-500 shrink-0" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
             </Section>
           )}
 

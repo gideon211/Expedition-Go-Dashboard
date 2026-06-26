@@ -6,7 +6,7 @@ import {
   Clock, Users, Star, Globe, Calendar,
   Check, X as XIcon, Camera, ChevronLeft, ChevronRight,
   Eye, Shield, Activity, Navigation, MoreHorizontal,
-  Tag, Award, Percent, DollarSign, MessageSquare,
+  Tag, Award, Percent, DollarSign, MessageSquare, Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { getMyProduct, updateProduct, deleteProduct } from "@/features/products/api";
@@ -74,20 +74,44 @@ function formatDuration(duration) {
    SUB-COMPONENTS
    ====================================================================== */
 
-function SectionCard({ title, children, className }) {
+const SECTION_EDIT_MAP = {
+  "Description": { section: "basics", step: "language-and-title" },
+  "What Makes This Unique": { section: "product-content", step: "unique-selling-points" },
+  "Highlights": { section: "product-content", step: "tour-details" },
+  "Itinerary": { section: "product-content", step: "tour-details" },
+  "What's Included": { section: "product-content", step: "inclusions-exclusions" },
+  "What to Bring": { section: "product-content", step: "info-travelers-need" },
+  "What to Know": { section: "product-content", step: "info-travelers-need" },
+  "Accessibility & Health": { section: "product-content", step: "info-travelers-need" },
+  "Pricing": { section: "schedules-and-pricing", step: "pricing-schedules" },
+  "Details": { section: "basics", step: "categorization" },
+  "Traveler Info Required": { section: "booking-and-tickets", step: "traveler-required-info" },
+  "Location": { section: "basics", step: "categorization" },
+  "Schedule": { section: "schedules-and-pricing", step: "pricing-schedules" },
+  "Booking Rules": { section: "booking-and-tickets", step: "booking-process" },
+  "Languages": { section: "product-content", step: "languages-offered" },
+  "Tags": { section: "basics", step: "theme" },
+};
+
+function SectionCard({ title, children, className, onEdit }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-30px" }}
       transition={{ duration: 0.35, ease: "easeOut" }}
-      className={cn("bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200", className)}
+      className={cn("group bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200", className)}
     >
       {title && (
         <div className="px-5 py-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
             <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
-            <h2 className="text-sm font-semibold text-slate-800 tracking-tight">{title}</h2>
+            <h2 className="text-sm font-semibold text-slate-800 tracking-tight flex-1">{title}</h2>
+            {onEdit && (
+              <button onClick={onEdit} className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors opacity-0 group-hover:opacity-100" title={`Edit ${title}`}>
+                <Pencil size={13} />
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -395,6 +419,10 @@ export default function ProductDetailPage() {
 
   const categorization = tour.categorization || {};
   const content = { ...tour.productContent, itinerary: normalizeItinerary(tour.productContent?.itinerary) };
+  if (content.uniqueSellingPoints && !Array.isArray(content.uniqueSellingPoints)) {
+    const val = content.uniqueSellingPoints;
+    content.uniqueSellingPoints = (typeof val === 'string' && val.trim()) ? [val.trim()] : [];
+  }
   const schedules = tour.schedulesAndPricing || {};
   const booking = tour.bookingAndTickets || {};
   const pricingSchedules = schedules.pricingSchedules || {};
@@ -434,6 +462,12 @@ export default function ProductDetailPage() {
   })();
 
   const hasAnyStat = [tour.totalBookings, tour._count?.bookings, tour.totalRevenue, tour.averageRating, tour._count?.reviews, tour.viewCount].some(v => v > 0);
+
+  const handleEditSection = (sectionKey) => {
+    const mapping = SECTION_EDIT_MAP[sectionKey];
+    if (!mapping) return;
+    navigate(`/products/build/${tour.id}?section=${mapping.section}&step=${mapping.step}`);
+  };
 
   return (
     <div className="min-h-screen bg-slate-50/80">
@@ -593,19 +627,33 @@ export default function ProductDetailPage() {
         </motion.div>
 
         {/* ===== MAIN LAYOUT ===== */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
           {/* ======== LEFT COLUMN (8/12) ======== */}
           <div className="lg:col-span-8 space-y-6">
 
             {/* DESCRIPTION */}
-            <SectionCard title="Description">
+            <SectionCard title="Description" onEdit={() => handleEditSection("Description")}>
               <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{tour.description}</p>
             </SectionCard>
 
+            {/* UNIQUE SELLING POINTS */}
+            {content.uniqueSellingPoints?.length > 0 && (
+              <SectionCard title="What Makes This Unique" onEdit={() => handleEditSection("What Makes This Unique")}>
+                <ul className="space-y-2">
+                  {content.uniqueSellingPoints.map((point, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-sm text-slate-600">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-[7px] shrink-0" />
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </SectionCard>
+            )}
+
             {/* HIGHLIGHTS */}
             {content.highlights?.length > 0 && (
-              <SectionCard title="Highlights">
+              <SectionCard title="Highlights" onEdit={() => handleEditSection("Highlights")}>
                 <ul className="space-y-3">
                   {content.highlights.map((h, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
@@ -619,7 +667,7 @@ export default function ProductDetailPage() {
 
             {/* ITINERARY */}
             {content.itinerary?.length > 0 && Array.isArray(content.itinerary) && (
-              <SectionCard title="Itinerary">
+              <SectionCard title="Itinerary" onEdit={() => handleEditSection("Itinerary")}>
                 <div className="relative">
                   {/* Gradient timeline rail */}
                   <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-linear-to-b from-emerald-300 via-emerald-400 to-emerald-300 rounded-full opacity-70" />
@@ -703,7 +751,7 @@ export default function ProductDetailPage() {
 
             {/* INCLUDED / EXCLUDED */}
             {(included.length > 0 || excluded.length > 0) && (
-              <SectionCard title="What's Included">
+              <SectionCard title="What's Included" onEdit={() => handleEditSection("What's Included")}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
                   {included.length > 0 && (
                     <div className="pb-4 sm:pb-0 sm:pr-6">
@@ -741,7 +789,7 @@ export default function ProductDetailPage() {
 
             {/* WHAT TO BRING */}
             {content.whatToBring?.length > 0 && (
-              <SectionCard title="What to Bring">
+              <SectionCard title="What to Bring" onEdit={() => handleEditSection("What to Bring")}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {content.whatToBring.map((item, i) => (
                     <div key={i} className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg bg-slate-50 text-sm text-slate-600">
@@ -755,10 +803,81 @@ export default function ProductDetailPage() {
 
             {/* WHAT TO KNOW / ADDITIONAL INFO */}
             {whatToKnow && (
-              <SectionCard title="What to Know">
+              <SectionCard title="What to Know" onEdit={() => handleEditSection("What to Know")}>
                 <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{whatToKnow}</p>
               </SectionCard>
             )}
+
+            {/* ACCESSIBILITY & HEALTH */}
+            {(() => {
+              const a = content.accessibility || {};
+              const restrictions = [
+                !a.wheelchairAccessible && "Not wheelchair accessible",
+                !a.strollerAccessible && "Not stroller accessible",
+                !a.serviceAnimalsAllowed && "No service animals",
+                !a.publicTransportation && "No public transportation nearby",
+                !a.infantsOnLaps && "Infants must sit on laps",
+                !a.infantSeatsAvailable && "No infant seats available",
+              ].filter(Boolean);
+              const hasHealth = content.healthRestrictions?.length > 0;
+              const hasPhysical = !!content.physicalDifficulty;
+              const hasAccess = restrictions.length > 0;
+              if (!hasAccess && !hasHealth && !hasPhysical) return null;
+              return (
+                <SectionCard title="Accessibility & Health" onEdit={() => handleEditSection("Accessibility & Health")}>
+                  <div className="space-y-2">
+                    {hasPhysical && (
+                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                        <Activity size={12} className="text-slate-400 shrink-0" />
+                        <span>Physical level: <strong className="text-slate-700 capitalize">{content.physicalDifficulty}</strong></span>
+                      </div>
+                    )}
+                    {restrictions.map((item, i) => (
+                      <div key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                        <XIcon size={12} className="text-amber-400 shrink-0" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                    {hasHealth && (
+                      <div className="pt-2 mt-2 border-t border-slate-100">
+                        <p className="text-xs font-medium text-slate-500 mb-1.5">Health Restrictions</p>
+                        {content.healthRestrictions.map((r, i) => (
+                          <div key={i} className="flex items-center gap-2 text-sm text-slate-600 py-0.5">
+                            <AlertCircle size={11} className="text-amber-400 shrink-0" />
+                            <span>{r}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </SectionCard>
+              );
+            })()}
+
+            {/* AVAILABILITY */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.35, ease: "easeOut", delay: 0.15 }}
+              className="bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
+            >
+              <div className="px-5 py-4 border-b border-slate-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
+                  <h3 className="text-sm font-semibold text-slate-800">Availability</h3>
+                </div>
+              </div>
+              <div className="p-5">
+                {availLoading ? (
+                  <div className="flex items-center justify-center py-8"><Loader2 size={18} className="animate-spin text-slate-400" /></div>
+                ) : availability.length > 0 ? (
+                  <AvailabilityCalendar availability={availability} availMonth={availMonth} setAvailMonth={setAvailMonth} />
+                ) : (
+                  <p className="text-xs text-slate-400 text-center py-6">No availability data for this period</p>
+                )}
+              </div>
+            </motion.div>
           </div>
 
           {/* ======== RIGHT COLUMN (4/12) ======== */}
@@ -770,7 +889,7 @@ export default function ProductDetailPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.35, ease: "easeOut" }}
-              className="bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
+              className="group bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
             >
               <div className="px-5 py-4 bg-linear-to-r from-slate-50 to-white border-b border-slate-100">
                 <div className="flex items-center justify-between">
@@ -778,7 +897,12 @@ export default function ProductDetailPage() {
                     <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
                     <h3 className="text-sm font-semibold text-slate-800">Pricing</h3>
                   </div>
-                  {currency && <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">{currency}</span>}
+                  <div className="flex items-center gap-2">
+                    {currency && <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">{currency}</span>}
+                    <button onClick={() => handleEditSection("Pricing")} className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors opacity-0 group-hover:opacity-100" title="Edit Pricing">
+                      <Pencil size={13} />
+                    </button>
+                  </div>
                 </div>
               </div>
               <div className="p-5 space-y-3">
@@ -825,12 +949,17 @@ export default function ProductDetailPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.35, ease: "easeOut", delay: 0.05 }}
-              className="bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
+              className="group bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
             >
               <div className="px-5 py-4 border-b border-slate-100">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
-                  <h3 className="text-sm font-semibold text-slate-800">Details</h3>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
+                    <h3 className="text-sm font-semibold text-slate-800">Details</h3>
+                  </div>
+                  <button onClick={() => handleEditSection("Details")} className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors opacity-0 group-hover:opacity-100" title="Edit Details">
+                    <Pencil size={13} />
+                  </button>
                 </div>
               </div>
               <div className="px-5 py-2">
@@ -848,8 +977,51 @@ export default function ProductDetailPage() {
                   ) : null;
                 })()}
                 <DetailRow icon={Navigation} label="Transport" value={categorization.transportMode && Object.keys(categorization.transportMode).length > 0 ? Object.entries(categorization.transportMode).map(([mode, items]) => items?.length ? `${mode}: ${items.join(", ")}` : "").filter(Boolean).join(" | ") : null} />
+                <DetailRow icon={Users} label="Group Type" value={content.isPrivateActivity ? "Private" : "Group"} />
+                <DetailRow icon={DollarSign} label="Pricing" value={schedules.travelerDetails?.pricingModel === "perPerson" ? "Per person" : "Per group"} />
+                {schedules.travelerDetails?.ageGroups?.filter(ag => ag.enabled)?.length > 0 && (
+                  <DetailRow icon={Users} label="Ages" value={schedules.travelerDetails.ageGroups.filter(ag => ag.enabled).map(ag => `${ag.name} (${ag.minAge}–${ag.maxAge})`).join(", ")} />
+                )}
               </div>
             </motion.div>
+
+            {/* TRAVELER INFO REQUIRED */}
+            {(() => {
+              const flags = [
+                content.passportRequired && "Passport",
+                content.flightInfoRequired && "Flight Info",
+                content.shipInfoRequired && "Ship/Cruise Info",
+                content.trainInfoRequired && "Train Info",
+                content.hotelInfoRequired && "Hotel Info",
+              ].filter(Boolean);
+              if (flags.length === 0) return null;
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.35, ease: "easeOut", delay: 0.08 }}
+                  className="group bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
+                >
+                  <div className="px-5 py-4 border-b border-slate-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
+                        <h3 className="text-sm font-semibold text-slate-800">Traveler Info Required</h3>
+                      </div>
+                      <button onClick={() => handleEditSection("Traveler Info Required")} className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors opacity-0 group-hover:opacity-100" title="Edit Traveler Info">
+                        <Pencil size={13} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="px-5 py-4 flex flex-wrap gap-1.5">
+                    {flags.map(f => (
+                      <span key={f} className="text-xs px-2.5 py-1 rounded-md bg-slate-50 text-slate-500 font-medium border border-slate-100">{f}</span>
+                    ))}
+                  </div>
+                </motion.div>
+              );
+            })()}
 
             {/* LOCATION */}
             {(location.city || location.country || tour.latitude) && (
@@ -858,12 +1030,17 @@ export default function ProductDetailPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.35, ease: "easeOut", delay: 0.1 }}
-                className="bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
+                className="group bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
               >
                 <div className="px-5 py-4 border-b border-slate-100">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
-                    <h3 className="text-sm font-semibold text-slate-800">Location</h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
+                      <h3 className="text-sm font-semibold text-slate-800">Location</h3>
+                    </div>
+                    <button onClick={() => handleEditSection("Location")} className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors opacity-0 group-hover:opacity-100" title="Edit Location">
+                      <Pencil size={13} />
+                    </button>
                   </div>
                 </div>
                 <div className="px-5 py-4">
@@ -878,31 +1055,6 @@ export default function ProductDetailPage() {
               </motion.div>
             )}
 
-            {/* AVAILABILITY */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.35, ease: "easeOut", delay: 0.15 }}
-              className="bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
-            >
-              <div className="px-5 py-4 border-b border-slate-100">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
-                  <h3 className="text-sm font-semibold text-slate-800">Availability</h3>
-                </div>
-              </div>
-              <div className="p-5">
-                {availLoading ? (
-                  <div className="flex items-center justify-center py-8"><Loader2 size={18} className="animate-spin text-slate-400" /></div>
-                ) : availability.length > 0 ? (
-                  <AvailabilityCalendar availability={availability} availMonth={availMonth} setAvailMonth={setAvailMonth} />
-                ) : (
-                  <p className="text-xs text-slate-400 text-center py-6">No availability data for this period</p>
-                )}
-              </div>
-            </motion.div>
-
             {/* SCHEDULE */}
             {schedules.operatingDays?.length > 0 && (
               <motion.div
@@ -910,12 +1062,17 @@ export default function ProductDetailPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.35, ease: "easeOut", delay: 0.2 }}
-                className="bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
+                className="group bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
               >
                 <div className="px-5 py-4 border-b border-slate-100">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
-                    <h3 className="text-sm font-semibold text-slate-800">Schedule</h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
+                      <h3 className="text-sm font-semibold text-slate-800">Schedule</h3>
+                    </div>
+                    <button onClick={() => handleEditSection("Schedule")} className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors opacity-0 group-hover:opacity-100" title="Edit Schedule">
+                      <Pencil size={13} />
+                    </button>
                   </div>
                 </div>
                 <div className="p-5 space-y-4">
@@ -964,12 +1121,17 @@ export default function ProductDetailPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.35, ease: "easeOut", delay: 0.25 }}
-              className="bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
+              className="group bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
             >
               <div className="px-5 py-4 border-b border-slate-100">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
-                  <h3 className="text-sm font-semibold text-slate-800">Booking Rules</h3>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
+                    <h3 className="text-sm font-semibold text-slate-800">Booking Rules</h3>
+                  </div>
+                  <button onClick={() => handleEditSection("Booking Rules")} className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors opacity-0 group-hover:opacity-100" title="Edit Booking Rules">
+                    <Pencil size={13} />
+                  </button>
                 </div>
               </div>
               <div className="p-5 space-y-3 text-sm">
@@ -1037,6 +1199,27 @@ export default function ProductDetailPage() {
                     <p className="text-sm text-slate-600">{booking.pickupDetails}</p>
                   </div>
                 )}
+                {content.meetingInstructions && (
+                  <div className="flex items-start gap-2.5 text-sm text-slate-600">
+                    <MessageSquare size={14} className="text-slate-400 mt-0.5 shrink-0" />
+                    <span>{content.meetingInstructions}</span>
+                  </div>
+                )}
+                {content.contactPhone?.number && (
+                  <div className="flex items-center gap-2.5 text-sm text-slate-600">
+                    <Globe size={14} className="text-slate-400 shrink-0" /> Contact: <strong className="text-slate-700">{content.contactPhone.countryCode} {content.contactPhone.number}</strong>
+                  </div>
+                )}
+                {booking.travelerRequiredInfo?.length > 0 && (
+                  <div className="pt-2 mt-2 border-t border-slate-100">
+                    <p className="text-xs font-medium text-slate-500 mb-1.5">Traveler Required Info</p>
+                    <div className="flex flex-wrap gap-1">
+                      {booking.travelerRequiredInfo.map((info, i) => (
+                        <span key={i} className="text-xs px-2 py-0.5 rounded-md bg-slate-50 text-slate-500 border border-slate-100">{info}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
 
@@ -1047,14 +1230,19 @@ export default function ProductDetailPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.35, ease: "easeOut", delay: 0.3 }}
-                className="bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
+                className="group bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
               >
-                <div className="px-5 py-4 border-b border-slate-100">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
-                    <h3 className="text-sm font-semibold text-slate-800">Languages</h3>
+                  <div className="px-5 py-4 border-b border-slate-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
+                        <h3 className="text-sm font-semibold text-slate-800">Languages</h3>
+                      </div>
+                      <button onClick={() => handleEditSection("Languages")} className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors opacity-0 group-hover:opacity-100" title="Edit Languages">
+                        <Pencil size={13} />
+                      </button>
+                    </div>
                   </div>
-                </div>
                 <div className="px-5 py-4">
                   <div className="flex flex-wrap gap-1.5">
                     {content.languages.map((lang) => (
@@ -1074,12 +1262,17 @@ export default function ProductDetailPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.35, ease: "easeOut", delay: 0.35 }}
-                className="bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
+                className="group bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-900/5 overflow-hidden hover:shadow-md hover:shadow-slate-900/5 hover:border-slate-200 transition-all duration-200"
               >
-                <div className="px-5 py-4 border-b border-slate-100">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
-                    <h3 className="text-sm font-semibold text-slate-800">Tags</h3>
+                  <div className="px-5 py-4 border-b border-slate-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-0.5 h-4 bg-linear-to-b from-emerald-500 to-emerald-300 rounded-full shrink-0" />
+                        <h3 className="text-sm font-semibold text-slate-800">Tags</h3>
+                    </div>
+                    <button onClick={() => handleEditSection("Tags")} className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors opacity-0 group-hover:opacity-100" title="Edit Tags">
+                      <Pencil size={13} />
+                    </button>
                   </div>
                 </div>
                 <div className="px-5 py-4">

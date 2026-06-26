@@ -1,4 +1,5 @@
-import { Info } from "lucide-react";
+import { useState } from "react";
+import { Info, Plus, X } from "lucide-react";
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
 
 function inputCls(error) {
@@ -8,14 +9,28 @@ function inputCls(error) {
 }
 
 export default function USPStep() {
-  const { product, errors, updateNested, updateProduct } = useProductBuilderStore();
+  const { product, errors, updateNested } = useProductBuilderStore();
   const { content } = product;
-  const text = content.uniqueSellingPoints || "";
-  const chars = text.trim().length;
+  const [inputValue, setInputValue] = useState("");
+  const points = content.uniqueSellingPoints || [];
 
-  const handleChange = (value) => {
-    updateNested("content.uniqueSellingPoints", value);
-    updateProduct({ description: value });
+  const addPoint = () => {
+    const trimmed = inputValue.trim();
+    if (!trimmed) return;
+    if (points.length >= 10) return;
+    updateNested("content.uniqueSellingPoints", [...points, trimmed]);
+    setInputValue("");
+  };
+
+  const removePoint = (index) => {
+    updateNested("content.uniqueSellingPoints", points.filter((_, i) => i !== index));
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addPoint();
+    }
   };
 
   return (
@@ -25,37 +40,64 @@ export default function USPStep() {
           What sets your activity apart?
         </h2>
         <p className="text-sm text-slate-500 mt-2 leading-relaxed">
-          Encourage travelers to book your activity by highlighting what makes it unique and interesting.
+          Add points that highlight what makes your activity unique and interesting.
         </p>
       </div>
 
-      {/* Textarea */}
+      {/* Add input */}
       <div className="space-y-1.5">
         <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-          Description <span className="text-red-400">*</span>
+          Selling Points <span className="text-red-400">*</span>
         </label>
-        <textarea
-          value={text}
-          onChange={(e) => handleChange(e.target.value)}
-          rows={6}
-          placeholder="Our tour is the only one that offers..."
-          className={`${inputCls(errors.uniqueSellingPoints)} resize-none`}
-        />
+        <div className="flex gap-2 max-w-lg">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="e.g. Only tour with local village visit"
+            className={`${inputCls(errors.uniqueSellingPoints)} flex-1`}
+          />
+          <button
+            type="button"
+            onClick={addPoint}
+            disabled={!inputValue.trim() || points.length >= 10}
+            className="px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+          >
+            <Plus size={16} />
+          </button>
+        </div>
         {errors.uniqueSellingPoints && (
           <p className="text-xs text-red-500">{errors.uniqueSellingPoints}</p>
         )}
-        <div className="flex justify-end">
-          {chars < 100 ? (
-            <span className="text-xs text-slate-400">
-              {100 - chars} characters needed
-            </span>
-          ) : (
-            <span className="text-xs text-emerald-600">
-              {chars} characters
-            </span>
-          )}
-        </div>
+        <p className="text-xs text-slate-400">
+          {points.length}/10 points added. Press Enter or click + to add.
+        </p>
       </div>
+
+      {/* List */}
+      {points.length > 0 && (
+        <div className="space-y-2">
+          {points.map((point, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-100"
+            >
+              <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold flex items-center justify-center shrink-0">
+                {i + 1}
+              </span>
+              <span className="text-sm text-slate-700 flex-1">{point}</span>
+              <button
+                type="button"
+                onClick={() => removePoint(i)}
+                className="p-1 text-slate-400 hover:text-red-500 rounded-lg hover:bg-white transition-colors shrink-0"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Private Activity */}
       <div className="space-y-3">

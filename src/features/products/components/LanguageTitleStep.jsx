@@ -94,6 +94,29 @@ export default function LanguageTitleStep() {
       </div>
 
       <div className="space-y-2">
+        <label className="block text-sm font-medium text-slate-800">
+          Product Description
+        </label>
+        <p className="text-sm text-slate-500 -mt-1">
+          Describe your product for travelers.
+        </p>
+        <textarea
+          value={product.description || ""}
+          onChange={(e) => updateProduct({ description: e.target.value })}
+          rows={4}
+          placeholder="Tell travelers about your product..."
+          className={cn(
+            "w-full px-4 py-2.5 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 bg-white shadow-sm transition-all resize-none",
+            "focus:outline-none",
+            errors.description
+              ? "border-2 border-red-500"
+              : "border border-slate-200 hover:border-slate-300",
+          )}
+        />
+        {errors.description && <p className="text-xs text-red-500">{errors.description}</p>}
+      </div>
+
+      <div className="space-y-2">
         <button
           type="button"
           onClick={() => setShowRefCode(!showRefCode)}
