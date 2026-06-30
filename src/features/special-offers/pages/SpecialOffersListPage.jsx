@@ -5,6 +5,7 @@ import { Plus, Search, Edit, Power, Trash2, Package, Percent, Tag, X, TicketChec
 import { toast } from "sonner";
 import { fetchSpecialOffers, deleteSpecialOffer, toggleSpecialOffer } from "@/features/special-offers/api";
 import LoadingSkeleton from "@/components/shared/Skeleton";
+import CountdownBadge from "@/components/shared/CountdownBadge";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -351,9 +352,17 @@ export default function SpecialOffersListPage() {
                     {/* Product section */}
                     {offer.targets?.length > 0 && (
                       <div className="space-y-1.5 pt-0.5">
-                        <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 border border-emerald-200 rounded-md">
-                          <Tag size={11} className="text-emerald-500" />
-                          <span className="text-xs font-semibold text-emerald-700">{offer.name}</span>
+                        <div className="inline-flex items-center gap-1.5 flex-wrap">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 border border-emerald-200 rounded-md">
+                            <Tag size={11} className="text-emerald-500" />
+                            <span className="text-xs font-semibold text-emerald-700">{offer.name}</span>
+                          </span>
+                          {offer.status === "scheduled" && offer.startDate && (
+                            <CountdownBadge targetDate={offer.startDate} label="Starts in" variant="start" />
+                          )}
+                          {offer.status === "active" && offer.startDate && offer.endDate && (
+                            <CountdownBadge targetDate={offer.endDate} label="Ends in" variant="end" />
+                          )}
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                           {offer.targets.slice(0, 3).map((t) => {
