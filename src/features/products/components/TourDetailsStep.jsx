@@ -478,15 +478,6 @@ export default function TourDetailsStep() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-xl font-medium tracking-tight text-slate-900">
-          Tour Details
-        </h2>
-        <p className="text-sm text-slate-500 mt-2">
-          Add itinerary and highlights for your product.
-        </p>
-      </div>
-
       <ItineraryBuilder
         items={content.itinerary || []}
         onChange={(items) => updateNested("content.itinerary", items)}

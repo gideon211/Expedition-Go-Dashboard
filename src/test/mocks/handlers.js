@@ -332,6 +332,32 @@ export const handlers = [
     return new HttpResponse(null, { status: 204 });
   }),
 
+  // Backend Location API (proxy)
+  http.get(`${API_BASE_URL}/locations/autocomplete`, ({ request }) => {
+    const url = new URL(request.url);
+    const q = url.searchParams.get('q') || '';
+
+    if (q.toLowerCase().includes('arusha')) {
+      return HttpResponse.json({
+        data: {
+          results: [
+            {
+              formatted: 'Arusha, Tanzania',
+              city: 'Arusha',
+              country: 'Tanzania',
+              region: 'Arusha Region',
+              latitude: -3.3869,
+              longitude: 36.683,
+              source: 'geoapify',
+            },
+          ],
+        },
+      });
+    }
+
+    return HttpResponse.json({ data: { results: [] } });
+  }),
+
   // Geoapify Geocoding (free tier autocomplete)
   http.get('https://api.geoapify.com/v1/geocode/autocomplete', ({ request }) => {
     const url = new URL(request.url);

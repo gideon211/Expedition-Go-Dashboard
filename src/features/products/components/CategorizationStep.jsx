@@ -690,6 +690,76 @@ export default function CategorizationStep() {
           </motion.p>
         )}
       </AnimatePresence>
+
+      {/* Category & Duration — shown for all product types */}
+      <AnimatePresence>
+        {product.productType && (
+          <motion.div
+            variants={contentVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="space-y-5"
+          >
+            <div>
+              <label className="flex items-center gap-1.5 text-sm font-medium text-slate-800 mb-2.5">
+                Category
+                <HelpCircle size={14} className="text-slate-300 shrink-0" />
+              </label>
+              <select
+                value={product.category || ""}
+                onChange={(e) => updateProduct({ category: e.target.value })}
+                className="flex min-h-[42px] w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm shadow-sm transition-all focus:border-emerald-600 focus:outline-none"
+              >
+                <option value="">Select a category</option>
+                <option value="Adventure">Adventure</option>
+                <option value="Cultural & Historical">Cultural & Historical</option>
+                <option value="Nature & Wildlife">Nature & Wildlife</option>
+                <option value="Food & Drink">Food & Drink</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Sports & Wellness">Sports & Wellness</option>
+                <option value="Educational">Educational</option>
+                <option value="Nightlife">Nightlife</option>
+                <option value="Sightseeing">Sightseeing</option>
+              </select>
+              {errors.category && (
+                <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="mt-1.5 text-xs text-red-500">{errors.category}</motion.p>
+              )}
+            </div>
+
+            <div>
+              <label className="flex items-center gap-1.5 text-sm font-medium text-slate-800 mb-2.5">
+                Duration
+                <HelpCircle size={14} className="text-slate-300 shrink-0" />
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  value={product.duration || ""}
+                  onChange={(e) => updateProduct({ duration: e.target.value })}
+                  placeholder="e.g. 3"
+                  className="flex min-h-[42px] w-28 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm shadow-sm transition-all focus:border-emerald-600 focus:outline-none"
+                />
+                <select
+                  value={product.durationUnit || "hours"}
+                  onChange={(e) => updateProduct({ durationUnit: e.target.value })}
+                  className="flex min-h-[42px] rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm shadow-sm transition-all focus:border-emerald-600 focus:outline-none"
+                >
+                  <option value="minutes">Minutes</option>
+                  <option value="hours">Hours</option>
+                  <option value="days">Days</option>
+                  <option value="weeks">Weeks</option>
+                </select>
+              </div>
+              {errors.duration && (
+                <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="mt-1.5 text-xs text-red-500">{errors.duration}</motion.p>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

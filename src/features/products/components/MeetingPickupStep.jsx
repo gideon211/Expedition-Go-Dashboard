@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { Plus, X, MapPin, Info } from "lucide-react";
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
 import LocationMapPicker from "@/components/shared/LocationMapPicker";
-import config from "@/config";
+import LocationAutocomplete from "@/components/shared/LocationAutocomplete";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const PICKUP_AREAS = ["Hotel", "Port", "Airport", "Other"];
@@ -59,14 +59,22 @@ export default function MeetingPickupStep() {
 
   const addLocation = (area) => {
     const locations = [...(content.pickupLocations || [])];
-    locations.push({ area, address: "" });
+    locations.push({ area, address: "", latitude: null, longitude: null });
     updateNested("content.pickupLocations", locations);
   };
 
-  const updateLocation = (index, address) => {
+  const updateLocation = (index, data) => {
     const locations = [...(content.pickupLocations || [])];
-    locations[index] = { ...locations[index], address };
+    locations[index] = { ...locations[index], ...data };
     updateNested("content.pickupLocations", locations);
+  };
+
+  const handlePickupLocationSelect = (index, result) => {
+    updateLocation(index, {
+      address: result.formatted,
+      latitude: result.latitude,
+      longitude: result.longitude,
+    });
   };
 
   const removeLocation = (index) => {
@@ -189,13 +197,16 @@ export default function MeetingPickupStep() {
                         </p>
                         {areaLocations.map((loc) => (
                           <div key={loc.idx} className="flex items-center gap-2">
-                            <input
-                              type="text"
-                              value={loc.address}
-                              onChange={(e) => updateLocation(loc.idx, e.target.value)}
-                              placeholder={`Enter ${area.toLowerCase()} location`}
-                              className={inputCls(errors.pickupLocations)}
-                            />
+                            <div className="flex-1">
+                              <LocationAutocomplete
+                                initialQuery={loc.address}
+                                onSelect={(result) => handlePickupLocationSelect(loc.idx, result)}
+                                onChange={(val) => updateLocation(loc.idx, { address: val })}
+                                hideLabel
+                                hideAttribution
+                                placeholder={`Enter ${area.toLowerCase()} location`}
+                              />
+                            </div>
                             <button
                               type="button"
                               onClick={() => removeLocation(loc.idx)}
@@ -452,36 +463,31 @@ export default function MeetingPickupStep() {
             Where will you meet travelers that don&apos;t require pickup?
           </h3>
 
-          <div className="space-y-1.5">
-            <label className={labelCls()}>Where is the meeting point for your activity?</label>
-            <div className="relative">
-              <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                value={content.meetingPoint || ""}
-                onChange={(e) => updateNested("content.meetingPoint", e.target.value)}
-                placeholder="Search for a location..."
-                className={inputCls(errors.meetingPoint) + " pl-10"}
-              />
-            </div>
-            {errors.meetingPoint && (
-              <p className="text-xs text-red-500">{errors.meetingPoint}</p>
-            )}
-          </div>
-
-          <p className="text-xs text-slate-400">
-            Drag and drop the pin to make the location more accurate.
-          </p>
-
           <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
             <LocationMapPicker
-              accessToken={config.maps.mapboxAccessToken}
               initialLat={content.meetingPointLat}
               initialLng={content.meetingPointLng}
               label="Set Meeting Point"
               placeholder="Search for the meeting location..."
               onSelect={handleMapSelect}
             />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className={labelCls()}>Or enter manually</label>
+            <div className="relative">
+              <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={content.meetingPoint || ""}
+                onChange={(e) => updateNested("content.meetingPoint", e.target.value)}
+                placeholder="Enter meeting point name (e.g., Accra Coliseum or Lapaz)"
+                className={inputCls(errors.meetingPoint) + " pl-10"}
+              />
+            </div>
+            {errors.meetingPoint && (
+              <p className="text-xs text-red-500">{errors.meetingPoint}</p>
+            )}
           </div>
         </div>
       </SectionCard>

@@ -1,20 +1,18 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { MapPin, Loader2, Search, X } from "lucide-react";
+import { MapPin, Loader2, Search, X, AlertTriangle, RefreshCw } from "lucide-react";
 import { useGeocoding } from "@/hooks/useGeocoding";
-import { config } from "@/config";
 
 /**
  * LocationAutocomplete
  *
  * Accessible autocomplete for location search.
- * Uses Geoapify (free tier) with Nominatim fallback.
+ * Searches via backend API which caches and auto-falls back across providers.
  * Auto-fills city, country, region, latitude, longitude on selection.
  */
-export default function LocationAutocomplete({ onSelect, disabled = false }) {
-  const apiKey = config.maps?.geoapifyApiKey || "";
-  const { search, clear, results, loading, error } = useGeocoding(apiKey);
+export default function LocationAutocomplete({ onSelect, onChange, disabled = false, hideLabel = false, hideAttribution = false, initialQuery = "", placeholder }) {
+  const { search, retry, clear, results, loading, error } = useGeocoding();
 
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [open, setOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
@@ -36,6 +34,7 @@ export default function LocationAutocomplete({ onSelect, disabled = false }) {
   const handleInputChange = (e) => {
     const value = e.target.value;
     setQuery(value);
+    onChange?.(value);
     setHighlightedIndex(-1);
     if (value.trim().length >= 2) {
       search(value);
@@ -106,12 +105,14 @@ export default function LocationAutocomplete({ onSelect, disabled = false }) {
 
   return (
     <div ref={containerRef} className="relative">
-      <label className="block text-sm font-medium text-[#1e293b] mb-2">
-        <span className="flex items-center gap-1.5">
-          <MapPin size={14} className="text-[#64748b]" />
-          Location Search
-        </span>
-      </label>
+      {!hideLabel && (
+        <label className="block text-sm font-medium text-[#1e293b] mb-2">
+          <span className="flex items-center gap-1.5">
+            <MapPin size={14} className="text-[#64748b]" />
+            Location Search
+          </span>
+        </label>
+      )}
 
       <div className="relative">
         <Search
@@ -128,7 +129,7 @@ export default function LocationAutocomplete({ onSelect, disabled = false }) {
             if (results.length > 0) setOpen(true);
           }}
           disabled={disabled}
-          placeholder="Start typing a location (e.g., Arusha, Tanzania)"
+          placeholder={placeholder || "Start typing a location (e.g., Arusha, Tanzania)"}
           className="w-full pl-10 pr-10 py-2.5 border border-[#eaeaea] rounded-lg text-sm text-[#1e293b] placeholder:text-[#9e9e9e] focus:outline-none focus:ring-2 focus:ring-[#044b3b]/20 focus:border-[#044b3b] disabled:opacity-50 disabled:cursor-not-allowed"
           aria-expanded={open}
           aria-autocomplete="list"
@@ -164,11 +165,24 @@ export default function LocationAutocomplete({ onSelect, disabled = false }) {
           )}
 
           {!loading && error && (
-            <div className="px-4 py-3 text-sm text-[#dc3545]">
-              {error}
-              <p className="text-xs text-[#9e9e9e] mt-1">
-                You can still enter location details manually below.
-              </p>
+            <div className="px-4 py-3">
+              <div className="flex items-start gap-2">
+                <AlertTriangle size={14} className="text-[#dc2626] shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-[#dc2626]">{error}</p>
+                  <p className="text-xs text-[#9e9e9e] mt-1">
+                    You can still enter location details manually below.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={retry}
+                  className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-[#dc2626] hover:bg-[#fee2e2] rounded shrink-0 transition-colors"
+                >
+                  <RefreshCw size={12} />
+                  Retry
+                </button>
+              </div>
             </div>
           )}
 
@@ -207,19 +221,20 @@ export default function LocationAutocomplete({ onSelect, disabled = false }) {
         </div>
       )}
 
-      {/* Attribution (required by Nominatim terms) */}
-      <p className="text-[10px] text-[#9e9e9e] mt-1">
-        Location data ©{" "}
-        <a
-          href="https://www.openstreetmap.org/copyright"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline hover:text-[#64748b]"
-        >
-          OpenStreetMap
-        </a>{" "}
-        contributors
-      </p>
+      {!hideAttribution && (
+        <p className="text-[10px] text-[#9e9e9e] mt-1">
+          Location data ©{" "}
+          <a
+            href="https://www.openstreetmap.org/copyright"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-[#64748b]"
+          >
+            OpenStreetMap
+          </a>{" "}
+          contributors
+        </p>
+      )}
     </div>
   );
 }

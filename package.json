@@ -33,7 +33,7 @@
     "firebase": "^12.13.0",
     "framer-motion": "^12.40.0",
     "lucide-react": "^1.16.0",
-    "mapbox-gl": "^3.24.0",
+    "maplibre-gl": "^4.7.1",
     "react": "^19.2.6",
     "react-apexcharts": "^2.1.0",
     "react-datepicker": "^9.1.0",

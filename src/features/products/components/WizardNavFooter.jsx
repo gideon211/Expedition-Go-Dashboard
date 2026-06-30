@@ -22,13 +22,21 @@ function buildFormData(product) {
     durationValue = (Number(product.duration) || 0) * 7;
   }
 
+  const TRANSPORT_AIR_ITEMS = ["Biplane", "Glider Plane", "Gyrocopter", "Helicopter", "Hot Air Balloon", "Jet Fighter", "Plane", "Seaplane", "Tiger Moth"];
+  const TRANSPORT_LAND_ITEMS = ["4WD", "ATV", "Bike", "Buggy", "Bus/Coach", "Cable Car", "Car", "Classic Car", "E-Bike", "Golf Cart", "Hiking", "Horse Drawn Carriage", "Luxury Car", "Metro/Subway", "Minibus", "Minivan", "Motorcycle", "Mountain Bike", "Rickshaw", "Running", "Scoot Coupe", "Scooter/Moped", "Segway", "Sidecar", "Train/Rail", "Trikke", "Trolley", "Tuk Tuk", "Walking"];
+  const TRANSPORT_ANIMAL_ITEMS = ["Alpaca", "Camel", "Donkey/Mule", "Horse", "Llama", "Reindeer"];
+  const TRANSPORT_WATER_ITEMS = ["Airboat", "Aqua Cycle", "Boat", "Canoe", "Catamaran", "Gondola", "Inflatable Raft", "Inner Tube", "Jet Boat", "Jet Ski", "Kayak", "Paddle Boat", "Speedboat", "Steamboat", "Submarine", "Swimming", "Wooden Raft", "Yacht"];
+
   const transportMode = {};
   if (product.tourTransportationModes?.length) {
     transportMode.land = product.tourTransportationModes.filter((m) =>
-      ["4WD", "ATV", "Bus", "Car", "Funicular", "Horse", "Minivan", "Motorcycle", "Rickshaw", "Segway", "Subway", "Train", "Tram", "Trolley", "Walking"].includes(m),
+      [...TRANSPORT_LAND_ITEMS, ...TRANSPORT_ANIMAL_ITEMS].includes(m),
     );
     transportMode.air = product.tourTransportationModes.filter((m) =>
-      ["Plane", "Helicopter"].includes(m),
+      TRANSPORT_AIR_ITEMS.includes(m),
+    );
+    transportMode.water = product.tourTransportationModes.filter((m) =>
+      TRANSPORT_WATER_ITEMS.includes(m),
     );
   }
 

@@ -135,7 +135,6 @@ const INITIAL_PRODUCT = {
   metaDescription: "",
   photos: [],
   heroImage: null,
-  videoUrl: "",
   pricing: {
     pricingModel: "perPerson",
     vehicleType: "",
@@ -153,8 +152,6 @@ const INITIAL_PRODUCT = {
       endDate: "",
       prices: [],
     }],
-    taxes: "",
-    fees: "",
     commissionRate: 15,
   },
   cancellationPolicy: "flexible",
@@ -423,13 +420,19 @@ export const useProductBuilderStore = create(
               errors.title = "Title must be less than 200 characters";
             }
 
+            if (!product.description?.trim() || product.description.trim().length < 50) {
+              errors.description = "Description must be at least 50 characters";
+            }
+
             if (!product.content?.writingLanguage) {
               errors.writingLanguage = "Please select a language";
             }
             break;
 
           case 1: // Categorization
-            if (!product.productType) errors.productType = "Please select a product type";
+            if (!product.productType) { errors.productType = "Please select a product type"; break; }
+            if (!product.category?.trim()) errors.category = "Please select a category";
+            if (!product.duration || Number(product.duration) < 1) errors.duration = "Duration is required";
             if (product.productType === "tour") {
               if (!product.tourTransportationModes?.length) errors.tourTransportationModes = "Please select at least one transportation mode";
             }

@@ -1,65 +1,57 @@
 import { useState, useRef, useEffect } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
-import { Search, MapPin, Loader2 } from "lucide-react";
+import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
+import { Search, MapPin, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
+import config from "@/config";
 
 const defaultCenter = { lng: -0.187, lat: 5.6037 };
+const TILE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 
-async function fetchNominatim(query, signal) {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`;
-  const res = await fetch(url, { signal, headers: { "Accept-Language": "en" } });
-  if (!res.ok) throw new Error(`Nominatim HTTP ${res.status}`);
-  const data = await res.json();
-  return (Array.isArray(data) ? data : []).map((r) => ({
-    formatted: r.display_name || "",
-    city: r.address?.city || r.address?.town || r.address?.village || r.address?.county || "",
-    country: r.address?.country || "",
-    region: r.address?.state || r.address?.region || r.address?.district || "",
-    latitude: r.lat ? Number(r.lat) : null,
-    longitude: r.lon ? Number(r.lon) : null,
-  }));
+function normalizeResult(raw) {
+  return {
+    formatted: raw.formatted || "",
+    city: raw.city || "",
+    country: raw.country || "",
+    region: raw.region || "",
+    latitude: raw.latitude ?? null,
+    longitude: raw.longitude ?? null,
+  };
 }
 
-async function reverseNominatim(lat, lng) {
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
-    { headers: { "Accept-Language": "en" } }
-  );
-  if (!res.ok) throw new Error("Nominatim reverse HTTP " + res.status);
-  return res.json();
-}
-
-export default function LocationMapPicker({ onSelect, initialLat, initialLng, label, placeholder, accessToken }) {
+export default function LocationMapPicker({ onSelect, initialLat, initialLng, label, placeholder }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [lat, setLat] = useState(initialLat ?? null);
   const [lng, setLng] = useState(initialLng ?? null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [searchError, setSearchError] = useState(null);
   const [mapReady, setMapReady] = useState(false);
+  const [mapError, setMapError] = useState(false);
   const timerRef = useRef(null);
   const abortRef = useRef(null);
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markerRef = useRef(null);
+  const onSelectRef = useRef(onSelect);
+  const apiBaseRef = useRef(config.api.baseURL);
+  onSelectRef.current = onSelect;
 
-  // Initialize Mapbox map
   useEffect(() => {
-    if (!accessToken || !mapContainerRef.current) return;
+    if (!mapContainerRef.current) return;
+    const { lng: initLng, lat: initLat } = defaultCenter;
 
-    mapboxgl.accessToken = accessToken;
-
-    const center = lat && lng ? [lng, lat] : [defaultCenter.lng, defaultCenter.lat];
-    const map = new mapboxgl.Map({
+    const center = initialLat && initialLng ? [initialLng, initialLat] : [initLng, initLat];
+    const map = new maplibregl.Map({
       container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/streets-v12",
+      style: TILE_STYLE,
       center,
-      zoom: lat && lng ? 15 : 6,
+      zoom: initialLat && initialLng ? 15 : 6,
     });
 
-    map.addControl(new mapboxgl.NavigationControl(), "top-right");
+    map.addControl(new maplibregl.NavigationControl(), "top-right");
 
     map.on("load", () => setMapReady(true));
+    map.on("error", () => setMapError(true));
 
     map.on("click", async (e) => {
       const clickLng = e.lngLat.lng;
@@ -69,22 +61,15 @@ export default function LocationMapPicker({ onSelect, initialLat, initialLng, la
       updateMarker(map, clickLng, clickLat);
 
       try {
-        const data = await reverseNominatim(clickLat, clickLng);
+        const res = await fetch(`${apiBaseRef.current}/locations/reverse?lat=${clickLat}&lng=${clickLng}`);
+        const body = await res.json();
+        const data = body?.data?.results?.[0];
         if (data) {
-          const addr = data.address || {};
-          const formatted = data.display_name || "";
-          setQuery(formatted);
-          onSelect?.({
-            formatted,
-            city: addr.city || addr.town || addr.village || "",
-            country: addr.country || "",
-            region: addr.state || "",
-            latitude: clickLat,
-            longitude: clickLng,
-          });
+          setQuery(data.formatted);
+          onSelectRef.current?.(normalizeResult(data));
         }
       } catch {
-        onSelect?.({ formatted: `${clickLat.toFixed(4)}, ${clickLng.toFixed(4)}`, city: "", country: "", region: "", latitude: clickLat, longitude: clickLng });
+        onSelectRef.current?.({ formatted: `${clickLat.toFixed(4)}, ${clickLng.toFixed(4)}`, city: "", country: "", region: "", latitude: clickLat, longitude: clickLng });
       }
     });
 
@@ -94,7 +79,7 @@ export default function LocationMapPicker({ onSelect, initialLat, initialLng, la
       map.remove();
       mapRef.current = null;
     };
-  }, [accessToken]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function updateMarker(map, markerLng, markerLat) {
     if (markerRef.current) {
@@ -103,16 +88,15 @@ export default function LocationMapPicker({ onSelect, initialLat, initialLng, la
     }
     if (markerLat != null && markerLng != null) {
       const el = document.createElement("div");
-      el.className = "mapbox-marker";
+      el.className = "maplibregl-marker";
       el.innerHTML = `<svg width="28" height="36" viewBox="0 0 28 36" fill="none"><path d="M14 0C6.27 0 0 6.27 0 14c0 10.5 14 22 14 22s14-11.5 14-22C28 6.27 21.73 0 14 0zm0 19a5 5 0 110-10 5 5 0 010 10z" fill="#044b3b"/><circle cx="14" cy="14" r="3" fill="#fff"/></svg>`;
       el.style.cursor = "pointer";
-      markerRef.current = new mapboxgl.Marker({ element: el, anchor: "bottom" })
+      markerRef.current = new maplibregl.Marker({ element: el, anchor: "bottom" })
         .setLngLat([markerLng, markerLat])
         .addTo(map);
     }
   }
 
-  // Sync marker when lat/lng change programmatically
   useEffect(() => {
     if (!mapRef.current || !mapReady) return;
     if (lat != null && lng != null) {
@@ -121,22 +105,54 @@ export default function LocationMapPicker({ onSelect, initialLat, initialLng, la
     updateMarker(mapRef.current, lng, lat);
   }, [lat, lng, mapReady]);
 
+  const doSearch = useRef((value) => {
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const url = `${apiBaseRef.current}/locations/search?q=${encodeURIComponent(value)}&limit=5`;
+    return fetch(url, { signal: controller.signal })
+      .then(res => {
+        if (!res.ok) throw new Error(`Search failed (HTTP ${res.status})`);
+        return res.json();
+      })
+      .then(body => {
+        setResults((body?.data?.results || []).map(normalizeResult));
+        setSearchError(null);
+      });
+  }).current;
+
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setQuery(value);
+    setSearchError(null);
     if (abortRef.current) abortRef.current.abort();
     if (timerRef.current) clearTimeout(timerRef.current);
     if (!value.trim()) { setResults([]); return; }
     setLoading(true);
     timerRef.current = setTimeout(async () => {
-      const controller = new AbortController();
-      abortRef.current = controller;
       try {
-        const data = await fetchNominatim(value, controller.signal);
-        setResults(data);
+        await doSearch(value);
       } catch (err) {
         if (err.name !== "AbortError") {
-          setError(err.message);
+          setSearchError(err.message);
+          setResults([]);
+        }
+      }
+      setLoading(false);
+    }, 400);
+  };
+
+  const handleRetry = () => {
+    if (!query.trim()) return;
+    setLoading(true);
+    setSearchError(null);
+    if (abortRef.current) abortRef.current.abort();
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(async () => {
+      try {
+        await doSearch(query);
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          setSearchError(err.message);
           setResults([]);
         }
       }
@@ -151,7 +167,7 @@ export default function LocationMapPicker({ onSelect, initialLat, initialLng, la
     setLng(outLng);
     setQuery(result.formatted);
     setResults([]);
-    onSelect?.({ formatted: result.formatted, city: result.city, country: result.country, region: result.region, latitude: outLat, longitude: outLng });
+    onSelect?.(result);
   };
 
   return (
@@ -178,6 +194,20 @@ export default function LocationMapPicker({ onSelect, initialLat, initialLng, la
             </div>
           )}
         </div>
+        {searchError && (
+          <div className="mt-1 flex items-center gap-2 px-3 py-2 bg-[#fef2f2] border border-[#fecaca] rounded-lg text-sm">
+            <AlertTriangle size={14} className="text-[#dc2626] shrink-0" />
+            <span className="text-[#dc2626] text-xs flex-1">Could not search locations. Backend may be offline.</span>
+            <button
+              type="button"
+              onClick={handleRetry}
+              className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-[#dc2626] hover:bg-[#fee2e2] rounded transition-colors"
+            >
+              <RefreshCw size={12} />
+              Retry
+            </button>
+          </div>
+        )}
         {results.length > 0 && (
           <ul className="mt-1 bg-white border border-[#eaeaea] rounded-lg shadow-lg max-h-48 overflow-y-auto z-10 relative">
             {results.map((r, i) => (
@@ -193,24 +223,25 @@ export default function LocationMapPicker({ onSelect, initialLat, initialLng, la
         )}
       </div>
 
-      {accessToken ? (
-        <div className="rounded-lg overflow-hidden border border-[#eaeaea] relative">
-          <div ref={mapContainerRef} className="w-full h-[280px]" />
-          {!mapReady && (
-            <div className="absolute inset-0 bg-[#f8fafc] flex items-center justify-center gap-2 text-sm text-[#64748b]">
-              <Loader2 size={16} className="animate-spin text-[#044b3b]" />
-              Loading map...
-            </div>
-          )}
-          <div className="px-3 py-2 text-xs text-[#64748b] bg-[#f8fafc] border-t border-[#eaeaea]">
-            Click on the map to set a location
+      <div className="rounded-lg overflow-hidden border border-[#eaeaea] relative">
+        <div ref={mapContainerRef} className="w-full h-[280px]" />
+        {!mapReady && !mapError && (
+          <div className="absolute inset-0 bg-[#f8fafc] flex items-center justify-center gap-2 text-sm text-[#64748b]">
+            <Loader2 size={16} className="animate-spin text-[#044b3b]" />
+            Loading map...
           </div>
+        )}
+        {mapError && (
+          <div className="absolute inset-0 bg-[#fef2f2] flex flex-col items-center justify-center gap-2 px-4 text-center">
+            <AlertTriangle size={24} className="text-[#dc2626]" />
+            <p className="text-sm font-medium text-[#dc2626]">Could not load map tiles</p>
+            <p className="text-xs text-[#b91c1c]">Check your internet connection and try again.</p>
+          </div>
+        )}
+        <div className="px-3 py-2 text-xs text-[#64748b] bg-[#f8fafc] border-t border-[#eaeaea]">
+          Click on the map to set a location
         </div>
-      ) : (
-        <div className="h-48 bg-[#f8fafc] rounded-lg border border-[#eaeaea] flex items-center justify-center text-sm text-[#64748b]">
-          Map unavailable — using text search
-        </div>
-      )}
+      </div>
 
       {lat && lng && (
         <div className="flex items-center gap-4 text-xs text-[#64748b]">
@@ -218,7 +249,6 @@ export default function LocationMapPicker({ onSelect, initialLat, initialLng, la
           <span>Lng: {lng.toFixed(6)}</span>
         </div>
       )}
-      {error && <p className="text-xs text-[#dc3545]">{error}</p>}
     </div>
   );
 }
