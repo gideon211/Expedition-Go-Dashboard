@@ -11,15 +11,16 @@ import { buildCategorizationProductTypeFields } from "@/features/products/utils/
 function buildFormData(product) {
   const formData = new FormData();
 
-  let durationValue = 0;
+  let durationMinutes = 0;
+  const durationNum = Number(product.duration) || 0;
   if (product.durationUnit === "minutes") {
-    durationValue = Number(product.duration) || 0;
+    durationMinutes = durationNum;
   } else if (product.durationUnit === "hours") {
-    durationValue = Number(product.duration) || 0;
+    durationMinutes = durationNum * 60;
   } else if (product.durationUnit === "days") {
-    durationValue = Number(product.duration) || 0;
+    durationMinutes = durationNum * 1440;
   } else if (product.durationUnit === "weeks") {
-    durationValue = (Number(product.duration) || 0) * 7;
+    durationMinutes = durationNum * 10080;
   }
 
   const TRANSPORT_AIR_ITEMS = ["Biplane", "Glider Plane", "Gyrocopter", "Helicopter", "Hot Air Balloon", "Jet Fighter", "Plane", "Seaplane", "Tiger Moth"];
@@ -61,9 +62,7 @@ function buildFormData(product) {
     difficulty: product.difficulty || "Easy",
     ...buildCategorizationProductTypeFields(product),
     duration: {
-      minutes: product.durationUnit === "minutes" ? durationValue : 0,
-      hours: product.durationUnit === "hours" ? durationValue : 0,
-      days: product.durationUnit === "days" || product.durationUnit === "weeks" ? durationValue : 0,
+      minutes: durationMinutes,
     },
     groupSize: {
       min: product.bookingRules?.minGroupSize ?? 1,
@@ -143,7 +142,7 @@ function buildFormData(product) {
 
   const schedulesAndPricing = {
     travelerDetails: {
-      pricingModel: product.pricing?.pricingModel || "perPerson",
+      pricingModel: product.pricing?.pricingModel === "perGroup" ? "group" : (product.pricing?.pricingModel || "perPerson"),
       vehicleType: product.pricing?.vehicleType || "",
       maxTravelersPerBooking: product.pricing?.maxTravelersPerBooking ?? 2,
       ageGroups,
@@ -158,7 +157,7 @@ function buildFormData(product) {
         },
       ],
     },
-    operatingDays: product.schedule?.operatingDays || [],
+    operatingDays: (product.schedule?.operatingDays || []).map(d => d.charAt(0).toUpperCase() + d.slice(1)),
     timeSlots: product.schedule?.timeSlots || [],
     capacityPerSlot: product.schedule?.capacityPerSlot ?? 20,
   };
@@ -217,14 +216,33 @@ function buildFormData(product) {
     }
   });
 
+  // Upload pickup photo files
+  (product.content?.pickupPhotoUrls || []).forEach((photo) => {
+    const file = typeof photo === 'object' && photo.file instanceof File ? photo.file : null;
+    if (file) {
+      formData.append("photos", file);
+    }
+  });
+
   const existingUrls = (product.photos || [])
     .filter((p) => {
       if (typeof p === 'string') return !p.startsWith('blob:');
       return !(p.file instanceof File) && p.url && !p.url.startsWith('blob:');
     })
     .map((p) => (typeof p === 'string' ? p : p.url));
-  if (existingUrls.length > 0) {
-    formData.append("existingPhotos", JSON.stringify(existingUrls));
+
+  // Include pickup photo existing URLs
+  const pickupExistingUrls = (product.content?.pickupPhotoUrls || [])
+    .filter((p) => {
+      if (typeof p === 'string') return !p.startsWith('blob:');
+      return !(p.file instanceof File) && p.url && !p.url.startsWith('blob:');
+    })
+    .map((p) => (typeof p === 'string' ? p : p.url));
+
+  // Merge and deduplicate
+  const allExistingUrls = [...new Set([...existingUrls, ...pickupExistingUrls])];
+  if (allExistingUrls.length > 0) {
+    formData.append("existingPhotos", JSON.stringify(allExistingUrls));
   }
 
   const heroPhoto = product.photos?.find((p) => {

@@ -1,6 +1,31 @@
-import { MapPin, Clock, Users, DollarSign, Star, Check, CheckCircle, AlertCircle, Shield, Info, FileText, ExternalLink, Trash2, FileEdit, Globe, Calendar, BookOpen, Plane, Briefcase, Tag as TagIcon } from "lucide-react";
+import { useState } from "react";
+import { MapPin, Clock, Users, DollarSign, Star, Check, CheckCircle, AlertCircle, Shield, Info, FileText, Trash2, FileEdit, Globe, Calendar, BookOpen, Plane, Briefcase, Tag as TagIcon, Plus, Pencil, Image as ImageIcon, Percent, Hash, X } from "lucide-react";
 import { useProductBuilderStore } from "@/features/products/stores/productBuilderStore";
-import { useNavigate, useParams } from "react-router-dom";
+
+const OFFER_TYPES = [
+  { value: "LIMITED_TIME", label: "Limited Time" },
+  { value: "EARLY_BIRD", label: "Early Bird" },
+  { value: "LAST_MINUTE", label: "Last Minute" },
+];
+
+const DISCOUNT_TYPES = [
+  { value: "PERCENTAGE", label: "Percentage" },
+  { value: "FIXED_AMOUNT", label: "Fixed Amount" },
+];
+
+function emptyOffer() {
+  return {
+    name: "",
+    offerType: "LIMITED_TIME",
+    discountType: "PERCENTAGE",
+    discountPercentage: 10,
+    fixedDiscountValue: null,
+    promoCode: "",
+    startDate: "",
+    endDate: "",
+    isActive: true,
+  };
+}
 
 function Section({ title, subtitle, icon: Icon, children }) {
   return (
@@ -25,10 +50,48 @@ function Section({ title, subtitle, icon: Icon, children }) {
 
 export default function PreviewStep() {
   const { product, updateProduct } = useProductBuilderStore();
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const productId = id && id !== "new" ? id : null;
   const specialOffers = product.specialOffers || [];
+
+  const [offerModal, setOfferModal] = useState(null);
+  const [offerForm, setOfferForm] = useState(emptyOffer());
+
+  const openCreateOffer = () => {
+    setOfferForm(emptyOffer());
+    setOfferModal("create");
+  };
+
+  const openEditOffer = (offer) => {
+    setOfferForm({
+      name: offer.name || "",
+      offerType: offer.offerType || "LIMITED_TIME",
+      discountType: offer.discountType || "PERCENTAGE",
+      discountPercentage: offer.discountPercentage || 10,
+      fixedDiscountValue: offer.fixedDiscountValue || null,
+      promoCode: offer.promoCode || "",
+      startDate: offer.startDate ? offer.startDate.split("T")[0] : "",
+      endDate: offer.endDate ? offer.endDate.split("T")[0] : "",
+      isActive: offer.isActive !== false,
+    });
+    setOfferModal({ mode: "edit", index: specialOffers.indexOf(offer) });
+  };
+
+  const saveOffer = () => {
+    if (!offerForm.name.trim()) return;
+    const payload = {
+      ...offerForm,
+      startDate: offerForm.startDate || null,
+      endDate: offerForm.endDate || null,
+      promoCode: offerForm.promoCode.trim() || null,
+    };
+    if (offerModal?.mode === "edit") {
+      const updated = [...specialOffers];
+      updated[offerModal.index] = { ...updated[offerModal.index], ...payload };
+      updateProduct({ specialOffers: updated });
+    } else {
+      updateProduct({ specialOffers: [...specialOffers, payload] });
+    }
+    setOfferModal(null);
+  };
 
   const heroPhoto = product.photos?.find(p => p.id === product.heroImage) || product.photos?.[0] || null;
   const enabledAgeGroups = product.pricing?.ageGroups?.filter(ag => ag.enabled) || [];
@@ -49,6 +112,13 @@ export default function PreviewStep() {
   const transportModes = product.tourTransportationModes || [];
   const prices = product.pricing?.schedules?.[0]?.prices || [];
   const hasPricing = prices.length > 0 && enabledAgeGroups.length > 0;
+
+  // Merge product + pickup photos for gallery display, dedup by URL
+  const allGalleryPhotos = (() => {
+    const productUrls = (product.photos || []).map(p => (typeof p === 'string' ? p : p.url)).filter(Boolean);
+    const pickupUrls = (product.content?.pickupPhotoUrls || []).map(p => (typeof p === 'string' ? p : p.url)).filter(Boolean);
+    return [...new Set([...productUrls, ...pickupUrls])];
+  })();
 
   return (
     <div className="space-y-6">
@@ -150,6 +220,19 @@ export default function PreviewStep() {
               <span className="text-sm font-medium text-slate-800 capitalize">{product.bookingRules?.confirmationType || "manual"}</span>
             </div>
           </div>
+
+          {/* Photos Gallery */}
+          {allGalleryPhotos.length > 0 && (
+            <Section title="Photos" subtitle={`${allGalleryPhotos.length} photo${allGalleryPhotos.length !== 1 ? "s" : ""}`} icon={ImageIcon}>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                {allGalleryPhotos.map((url, i) => (
+                  <div key={i} className="relative aspect-[4/3] rounded-lg overflow-hidden bg-slate-100">
+                    <img src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            </Section>
+          )}
 
           {/* Description */}
           {product.description && (
@@ -501,11 +584,11 @@ export default function PreviewStep() {
           <Section title="Special Offers" subtitle={`${specialOffers.length} offer${specialOffers.length !== 1 ? "s" : ""} linked`} icon={TagIcon}>
             <div className="flex items-center justify-end mb-3">
               <button
-                onClick={() => navigate(`/special-offers/build/new${productId ? `?productId=${productId}` : ""}`)}
+                onClick={openCreateOffer}
                 className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-emerald-600 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition-colors"
               >
+                <Plus size={12} />
                 Create Offer
-                <ExternalLink size={12} />
               </button>
             </div>
 
@@ -520,13 +603,22 @@ export default function PreviewStep() {
                         {offer.offerType === "LIMITED_TIME" ? " — Limited Time" : offer.offerType === "EARLY_BIRD" ? " — Early Bird" : " — Last Minute"}
                       </p>
                     </div>
-                    <button
-                      onClick={() => updateProduct({ specialOffers: specialOffers.filter((_, idx) => idx !== i) })}
-                      className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-white transition-colors shrink-0"
-                      title="Unlink offer"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => openEditOffer(offer)}
+                        className="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-white transition-colors"
+                        title="Edit offer"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={() => updateProduct({ specialOffers: specialOffers.filter((_, idx) => idx !== i) })}
+                        className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-white transition-colors"
+                        title="Unlink offer"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -536,6 +628,152 @@ export default function PreviewStep() {
               Create special offers to add discounts, early bird pricing, and promo codes.
             </p>
           </Section>
+
+          {/* Special Offer Create/Edit Modal */}
+          {offerModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-slate-900">
+                    {offerModal?.mode === "edit" ? "Edit Offer" : "Create Offer"}
+                  </h3>
+                  <button onClick={() => setOfferModal(null)} className="p-1 text-slate-400 hover:text-slate-600">
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Offer Name</label>
+                    <input
+                      type="text"
+                      value={offerForm.name}
+                      onChange={(e) => setOfferForm({ ...offerForm, name: e.target.value })}
+                      placeholder="e.g. Summer Sale"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Offer Type</label>
+                      <select
+                        value={offerForm.offerType}
+                        onChange={(e) => setOfferForm({ ...offerForm, offerType: e.target.value })}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                      >
+                        {OFFER_TYPES.map((t) => (
+                          <option key={t.value} value={t.value}>{t.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Discount Type</label>
+                      <select
+                        value={offerForm.discountType}
+                        onChange={(e) => setOfferForm({ ...offerForm, discountType: e.target.value })}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                      >
+                        {DISCOUNT_TYPES.map((t) => (
+                          <option key={t.value} value={t.value}>{t.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {offerForm.discountType === "PERCENTAGE" ? (
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                        <Percent size={12} className="inline mr-1" />
+                        Discount Percentage
+                      </label>
+                      <input
+                        type="number"
+                        value={offerForm.discountPercentage}
+                        onChange={(e) => setOfferForm({ ...offerForm, discountPercentage: Number(e.target.value) })}
+                        min="1"
+                        max="100"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                        <Hash size={12} className="inline mr-1" />
+                        Fixed Discount Value ({product.pricing?.currency || "USD"})
+                      </label>
+                      <input
+                        type="number"
+                        value={offerForm.fixedDiscountValue || ""}
+                        onChange={(e) => setOfferForm({ ...offerForm, fixedDiscountValue: Number(e.target.value) })}
+                        min="0"
+                        step="0.01"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Promo Code</label>
+                    <input
+                      type="text"
+                      value={offerForm.promoCode}
+                      onChange={(e) => setOfferForm({ ...offerForm, promoCode: e.target.value })}
+                      placeholder="e.g. SUMMER10"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
+                      <input
+                        type="date"
+                        value={offerForm.startDate}
+                        onChange={(e) => setOfferForm({ ...offerForm, startDate: e.target.value })}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">End Date</label>
+                      <input
+                        type="date"
+                        value={offerForm.endDate}
+                        onChange={(e) => setOfferForm({ ...offerForm, endDate: e.target.value })}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+
+                  <label className="flex items-center gap-2 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={offerForm.isActive}
+                      onChange={(e) => setOfferForm({ ...offerForm, isActive: e.target.checked })}
+                      className="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500"
+                    />
+                    Active immediately
+                  </label>
+                </div>
+
+                <div className="flex justify-end gap-3 mt-6">
+                  <button
+                    onClick={() => setOfferModal(null)}
+                    className="px-4 py-2 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={saveOffer}
+                    disabled={!offerForm.name.trim()}
+                    className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {offerModal?.mode === "edit" ? "Save Changes" : "Add Offer"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Inclusions / Exclusions */}
           {(included.length > 0 || excluded.length > 0) && (

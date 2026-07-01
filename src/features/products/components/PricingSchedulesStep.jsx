@@ -18,6 +18,12 @@ const CURRENCIES = [
   { value: "GHS", label: "GHS (GH₵)" },
 ];
 
+const PRICING_MODELS = [
+  { value: "perPerson", label: "Per person" },
+  { value: "group", label: "Per vehicle/group" },
+  { value: "perBooking", label: "Per booking" },
+];
+
 const VEHICLE_TYPES = [
   { value: "boat", label: "Boat" },
   { value: "group", label: "Group" },
@@ -41,7 +47,8 @@ export default function PricingSchedulesStep() {
   const [tempVehicleType, setTempVehicleType] = useState("");
 
   const handlePricingModelChange = (model) => {
-    if (model === "perGroup" && pricing.pricingModel === "perPerson") {
+    // Only show vehicle type modal when switching TO group pricing FROM perPerson
+    if (model === "group" && pricing.pricingModel === "perPerson") {
       setModalStep("confirm-switch");
     } else {
       updateNested("pricing.pricingModel", model);
@@ -49,7 +56,7 @@ export default function PricingSchedulesStep() {
   };
 
   const confirmSwitchToPerGroup = () => {
-    updateNested("pricing.pricingModel", "perGroup");
+    updateNested("pricing.pricingModel", "group");
     setModalStep("vehicle-type");
   };
 
@@ -120,34 +127,25 @@ export default function PricingSchedulesStep() {
       <div className="space-y-4">
         <label className="text-sm font-medium text-slate-700">How do you price your product?</label>
         <div className="space-y-3">
-          <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-            pricing.pricingModel === "perPerson"
-              ? "border-emerald-600 bg-emerald-50"
-              : "border-slate-200 hover:border-slate-300"
-          }`}>
-            <input
-              type="radio"
-              name="pricingModel"
-              checked={pricing.pricingModel === "perPerson"}
-              onChange={() => handlePricingModelChange("perPerson")}
-              className="w-4 h-4 text-emerald-600 border-slate-300 focus:ring-emerald-500"
-            />
-            <span className="text-sm font-medium text-slate-800">Per person</span>
-          </label>
-          <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-            pricing.pricingModel === "perGroup"
-              ? "border-emerald-600 bg-emerald-50"
-              : "border-slate-200 hover:border-slate-300"
-          }`}>
-            <input
-              type="radio"
-              name="pricingModel"
-              checked={pricing.pricingModel === "perGroup"}
-              onChange={() => handlePricingModelChange("perGroup")}
-              className="w-4 h-4 text-emerald-600 border-slate-300 focus:ring-emerald-500"
-            />
-            <span className="text-sm font-medium text-slate-800">Per vehicle/group</span>
-          </label>
+          {PRICING_MODELS.map((model) => (
+            <label
+              key={model.value}
+              className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                pricing.pricingModel === model.value
+                  ? "border-emerald-600 bg-emerald-50"
+                  : "border-slate-200 hover:border-slate-300"
+              }`}
+            >
+              <input
+                type="radio"
+                name="pricingModel"
+                checked={pricing.pricingModel === model.value}
+                onChange={() => handlePricingModelChange(model.value)}
+                className="w-4 h-4 text-emerald-600 border-slate-300 focus:ring-emerald-500"
+              />
+              <span className="text-sm font-medium text-slate-800">{model.label}</span>
+            </label>
+          ))}
         </div>
       </div>
 
@@ -400,7 +398,7 @@ export default function PricingSchedulesStep() {
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 p-6">
             <div className="flex justify-between items-start mb-4">
               <h3 className="text-lg font-semibold text-slate-900 pr-8">
-                You're changing your pricing structure to sell per group or vehicle
+                You're changing your pricing structure to sell per vehicle/group
               </h3>
               <button onClick={() => setModalStep(null)} className="p-1 text-slate-400 hover:text-slate-600">
                 <X size={20} />
@@ -457,6 +455,10 @@ export default function PricingSchedulesStep() {
                 <label className="flex items-center gap-3 p-3 border-2 border-emerald-600 bg-emerald-50 rounded-xl">
                   <input type="radio" checked readOnly className="w-4 h-4 text-emerald-600" />
                   <span className="text-sm font-medium text-emerald-700">Per vehicle/group</span>
+                </label>
+                <label className="flex items-center gap-3 p-3 border border-slate-200 rounded-xl opacity-50">
+                  <input type="radio" disabled className="w-4 h-4" />
+                  <span className="text-sm text-slate-600">Per booking</span>
                 </label>
               </div>
               <div className="space-y-2">

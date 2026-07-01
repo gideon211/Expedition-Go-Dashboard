@@ -442,6 +442,10 @@ export const useProductBuilderStore = create(
             if (product.productType === "transport") {
               if (!product.transportCategories?.length) errors.transportCategories = "Please select at least one transportation type";
             }
+            if (product.tags?.length > 10) {
+              errors.tags = "Maximum 10 tags allowed";
+              break;
+            }
             break;
 
           case 2: // Theme
@@ -452,13 +456,15 @@ export const useProductBuilderStore = create(
             }
             break;
 
-          case 3: // Photos & Media
-            if (!product.photos || product.photos.length === 0) {
+          case 3: { // Photos & Media
+            const totalPhotos = (product.photos || []).length + (product.content?.pickupPhotoUrls || []).length;
+            if (totalPhotos === 0) {
               errors.photos = "At least one photo is required";
-            } else if (product.photos.length > 20) {
-              errors.photos = "Maximum 20 photos allowed";
+            } else if (totalPhotos > 20) {
+              errors.photos = "Maximum 20 photos total (product + pickup)";
             }
             break;
+          }
 
           case 4: // Meeting & Pickup
             if (product.content.pickupAvailable) {
@@ -519,7 +525,7 @@ export const useProductBuilderStore = create(
             }
             break;
 
-          case 11: // Pricing Schedules
+          case 11: { // Pricing Schedules
             if (!product.pricing.pricingModel) {
               errors.pricingModel = "Pricing model is required";
             }
@@ -532,7 +538,41 @@ export const useProductBuilderStore = create(
             if (!product.pricing.maxTravelersPerBooking || product.pricing.maxTravelersPerBooking < 1) {
               errors.maxTravelers = "Maximum travelers per booking is required";
             }
+
+            const enabledGroups = (product.pricing.ageGroups || []).filter(ag => ag.enabled);
+
+            for (const ag of enabledGroups) {
+              if (ag.minAge < 0 || ag.maxAge > 120 || ag.minAge > ag.maxAge) {
+                errors.ageGroups = `Invalid age range for "${ag.name}": minAge must be 0–120, maxAge must be 0–120, and minAge must be ≤ maxAge`;
+                break;
+              }
+            }
+
+            const schedule = product.pricing.schedules?.[0];
+            if (schedule) {
+              if (!schedule.startDate) {
+                errors.startDate = "Schedule start date is required";
+              } else if (schedule.endDate && new Date(schedule.endDate) < new Date(schedule.startDate)) {
+                errors.endDate = "End date must be on or after start date";
+              }
+
+              if (enabledGroups.length > 0) {
+                const priceAgeGroups = (schedule.prices || []).map(p => p.ageGroup);
+                for (const ag of enabledGroups) {
+                  if (!priceAgeGroups.includes(ag.name)) {
+                    errors.prices = `Price required for "${ag.name}" age group`;
+                    break;
+                  }
+                  const price = (schedule.prices || []).find(p => p.ageGroup === ag.name);
+                  if (!price || price.retailPrice === undefined || Number(price.retailPrice) < 0.01) {
+                    errors.prices = `"${ag.name}" must have a retail price of at least 0.01`;
+                    break;
+                  }
+                }
+              }
+            }
             break;
+          }
 
           case 12: // Booking Process
             if (!product.schedule.operatingDays?.length) {
